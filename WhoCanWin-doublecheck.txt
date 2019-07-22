@@ -1,0 +1,12 @@
+
+Steve Steenwyk: 21 points, SC and Oregon
+Amy Wilsterman: 20 points, Gonzaga and Oregon
+
+UNC beats GONZ  Amy W   [21]
+UNC beats SC    Steve S [22]
+ORE beats GONZ  Amy W   [23]
+ORE beats SC    Steve S [24]
+GONZ beats UNC  Amy W   [22]
+GONZ beats ORE  Amy W   [23]
+SC beats UNC    Steve S [23]
+SC beats ORE    Steve S [24] 

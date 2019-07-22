@@ -1,0 +1,100 @@
+---
+title: "NCAA Modeling 2016"
+output: 
+  pdf_document: 
+    fig_height: 3
+    fig_width: 5
+---
+
+# Commissioner's Report
+
+```{r include=FALSE}
+require(mosaic)
+require(lubridate)
+require(humanparser)
+trellis.par.set(theme = theme.mosaic())
+source("Tourny.R")
+source("Loaders.R")
+knitr::opts_chunk$set(fig.align = "center")
+Bracket <- LoadBracket()
+E <- LoadEntries()
+G <- LoadGameScores()
+T <- resultsTable(E, Bracket, G)
+T$dept[T$dept == "Select a department"] <- "Math/Stat"
+H <- humanparser::parse_names(sapply(E, function(x) x$name))
+All <-
+  H %>% 
+  mutate(
+    email = sapply(E, function(x) x$email),
+    date  = sapply(E, function(x) as.character(x$time)),
+    date2 = lubridate::ymd_hms(date) - hours(4)
+  ) %>% 
+  merge(T, by.x = "fullName", by.y = "name")
+```
+
+## Scores were a bit lower this year
+
+```{r echo=FALSE}
+histogram(~ score, data = T, width = 1, type = "count")
+```
+
+```{r include = FALSE}
+msuPicks <- sum( sapply(E, function(x) x$teamsLogical["Michigan St"] ) )
+```
+
+This is in part due to the early loss by Michigan State.  We don't have official records going back to
+check, but this was likely the single biggest waste of capital in the history of this event.
+`r msuPicks` contestants chose MSU for a combined capital expenditure of 
+`r msuPicks * 18` points with a return on investment of 0.
+
+None of the contrarians were able to take advantage of this 18 point headstart -- Herb Fynewever (this year's winner) was one of those who lost MSU in the first round. 
+Interestingly, the difference between this year's winning score (19) and last year's (25) is the number
+of games MSU would have won had they won the tournament.  (But that would not have added 6 wins to
+all `r msuPicks` contestants who chose MSU, since some of those folks also chose teams that MSU would have had to defeat along the way.)
+
+\newpage
+
+## How'd we do?
+
+Here's a breakdown of scores by department.
+
+```{r, echo = FALSE}
+dotplot(dept ~ score, data = T, 
+        jitter.y = TRUE, factor = 1, horizontal = TRUE, alpha = 0.5, cex = 1.5)
+```
+
+```{r, echo = FALSE}
+T %>% 
+  group_by(dept) %>% 
+  summarise(n=n(), avg_score = round(mean(score, na.rm = TRUE), 2), max_score = max(score), min_score = min(score)) %>%
+  ungroup() %>% 
+  arrange(avg_score)
+```
+
+
+\newpage
+
+## When should I submit my entry next year?
+
+Is it better to submit as soon as the contest opens or to pour over the data for several days?
+Let's see how the scores related to submission times.
+
+```{r, echo = FALSE}
+ggplot(data = All, aes(x = date2, y = score)) +
+  geom_smooth(alpha = 0.5) +
+  geom_point(alpha = .5) + # , position = "jitter") +
+  labs(x = "time of (final) submission") +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+## Company time?
+
+At what time of day were people submitting their entries?  (It was Spring Break, so I guess
+it really wasn't company time in quite the same way this year.)
+
+```{r, echo = FALSE, message = FALSE}
+ggplot(data = All, aes(x = hour(date2) + minute(date2)/60)) +
+  geom_histogram(alpha = 0.5, binwidth = 1) +
+  labs(x = "time of day of (final) submission") +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```

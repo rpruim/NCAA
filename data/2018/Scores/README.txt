@@ -1,0 +1,1 @@
+Touch this file to force reload of game scores.  

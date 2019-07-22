@@ -1,0 +1,111 @@
+---
+title: "NCAA Modeling 2017"
+output:
+  html_document:
+    fig_height: 3
+    fig_width: 5
+  pdf_document:
+    fig_height: 3
+    fig_width: 5
+---
+
+# Commissioner's Report
+
+```{r include=FALSE}
+require(mosaic)
+require(ggformula)
+theme_set(theme_minimal())
+require(lubridate)
+require(humanparser)
+require(printr)
+trellis.par.set(theme = theme.mosaic())
+source("Tourny.R")
+source("Loaders.R")
+knitr::opts_chunk$set(
+  fig.align = "center", 
+  comment = NA,
+  echo = FALSE,
+  cache = TRUE)
+Bracket <- LoadBracket()
+E <- LoadEntries()
+G <- LoadGameScores()
+T <- resultsTable(E, Bracket, G)
+T$dept[T$dept == "Select a department"] <- "Math/Stat"
+H <- humanparser::parse_names(sapply(E, function(x) x$name))
+All <-
+  H %>% 
+  mutate(
+    email = sapply(E, function(x) x$email),
+    date  = sapply(E, function(x) as.character(x$time)),
+    date2 = lubridate::ymd_hms(date) - hours(4)
+  ) %>% 
+  merge(T, by.x = "fullName", by.y = "name")
+```
+
+## Scores this year
+
+The maximun score of 21 was acheived by four people this year.  
+
+
+```{r echo=FALSE}
+gf_histogram(~ score, data = T, binwidth = 1) # , type = "count")
+```
+
+### Winner: Amy Wilsterman
+
+Tie breakers needed to go back to the round of 16.
+
+Winners of the "Oh So Close Awrard" this year: John Ubels, Michelle Krul, and Steve Steenwyk.
+
+```{r}
+T %>% filter(score == 21) %>% select(name, dept, score, `score details`)
+```
+
+
+
+## How'd we do?
+
+Here's a breakdown of scores by department.
+
+```{r, echo = FALSE}
+dotplot(dept ~ score, data = T, 
+        jitter.y = TRUE, factor = 1, horizontal = TRUE, alpha = 0.5, cex = 1.5)
+```
+
+```{r, echo = FALSE}
+T %>% 
+  group_by(dept) %>% 
+  summarise(n=n(), avg_score = round(mean(score, na.rm = TRUE), 2), max_score = max(score), min_score = min(score)) %>%
+  ungroup() %>% 
+  arrange(avg_score)
+```
+
+Engineering had an especially strong showing this year
+with all five entries scoring at least 17 points.
+
+
+
+## When should I submit my entry next year?
+
+Is it better to submit as soon as the contest opens or to pour over the data for
+several days? Let's see how the scores related to submission times.
+
+```{r, echo = FALSE}
+ggplot(data = All, aes(x = date2, y = score)) +
+  geom_smooth(alpha = 0.5) +
+  geom_point(alpha = .5) + # , position = "jitter") +
+  labs(x = "time of (final) submission") +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+## Company time?
+
+At what time of day were people submitting their entries?  
+
+```{r, echo = FALSE, message = FALSE}
+ggplot(data = All, aes(x = hour(date2) + minute(date2)/60)) +
+  geom_histogram(alpha = 0.5, binwidth = 1) +
+  labs(x = "time of day of (final) submission") +
+  xlim(0,24) + 
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```

@@ -1,0 +1,65 @@
+seed,team,region
+1,Villanova,east
+16,Mount St Mary's,east
+8,Wisconsin,east
+9,Virginia Tech,east
+5,Virginia,east
+12,UNC Wilmington,east
+4,Florida,east
+13,East Tennessee St,east
+6,SMU,east
+11,USC,east
+3,Baylor,east
+14,New Mexico St,east
+7,South Carolina,east
+10,Marquette,east
+2,Duke,east
+15,Troy,east
+1,Gonzaga,west
+16,South Dakota St,west
+8,Northwestern,west
+9,Vanderbilt,west
+5,Notre Dame,west
+12,Princeton,west
+4,West Virginia,west
+13,Bucknell,west
+6,Maryland,west
+11,Xavier,west
+3,Florida St,west
+14,Florida Gulf Coast,west
+7,St. Mary's,west
+10,VCU,west
+2,Arizona,west
+15,North Dakota,west
+1,Kansas,midwest
+16,UC Davis,midwest
+8,Miami FL,midwest
+9,Michigan St,midwest
+5,Iowa St,midwest
+12,Nevada,midwest
+4,Purdue,midwest
+13,Vermont,midwest
+6,Creighton,midwest
+11,Rhode Island,midwest
+3,Oregon,midwest
+14,Iona,midwest
+7,Michigan,midwest
+10,Oklahoma St,midwest
+2,Louisville,midwest
+15,Jacksonville St,midwest
+1,North Carolina,south
+16,Texas Southern,south
+8,Arkansas,south
+9,Seton Hall,south
+5,Minnesota,south
+12,Middle Tennessee,south
+4,Butler,south
+13,Winthrop,south
+6,Cincinnati,south
+11,Kansas St,south
+3,UCLA,south
+14,Kent St,south
+7,Dayton,south
+10,Wichita St,south
+2,Kentucky,south
+15,Northern Kentucky,south

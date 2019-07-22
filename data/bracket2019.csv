@@ -1,0 +1,65 @@
+seed,team,region
+1,Duke,East
+16,North Dakota St,East
+8,VCU,East
+9,UCF,East
+5,Mississippi St,East
+12,Liberty,East
+4,Virginia Tech,East
+13,St Louis,East
+6,Maryland,East
+11,Belmont,East
+3,LSU,East
+14,Yale,East
+7,Louisville,East
+10,Minnesota,East
+2,Michigan St,East
+15,Bradley,East
+1,Gonzaga,West
+16,F Dickinson,West
+8,Syracuse,West
+9,Baylor,West
+5,Marquette,West
+12,Murray St,West
+4,Florida St,West
+13,Vermont,West
+6,Buffalo,West
+11,Arizona St,West
+3,Texas Tech,West
+14,Northern Kentucky,West
+7,Nevada,West
+10,Florida,West
+2,Michigan,West
+15,Montana,West
+1,Virginia,South
+16,Gardner-Webb,South
+8,Ole Miss,South
+9,Oklahoma,South
+5,Wisconsin,South
+12,Oregon,South
+4,Kansas St,South
+13,UC Irvine,South
+6,Villanova,South
+11,St Mary's,South
+3,Purdue,South
+14,Old Dominion,South
+7,Cincinnati,South
+10,Iowa,South
+2,Tennessee,South
+15,Colgate,South
+1,North Carolina,Midwest
+16,Iona,Midwest
+8,Utah St,Midwest
+9,Washington,Midwest
+5,Auburn,Midwest
+12,New Mexico St,Midwest
+4,Kansas,Midwest
+13,Northeastern,Midwest
+6,Iowa St,Midwest
+11,Ohio St,Midwest
+3,Houston,Midwest
+14,Georgia St,Midwest
+7,Wofford,Midwest
+10,Seton Hall,Midwest
+2,Kentucky,Midwest
+15,Abilene Christian,Midwest

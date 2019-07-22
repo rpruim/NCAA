@@ -1,0 +1,115 @@
+---
+title: "NCAA Modeling 2019"
+output:
+  pdf_document:
+    fig_height: 3
+    fig_width: 5
+  html_document:
+    fig_height: 3
+    fig_width: 5
+---
+
+# Commissioner's Report
+
+```{r include=FALSE}
+require(mosaic)
+require(ggformula)
+theme_set(theme_minimal())
+require(lubridate)
+require(humanparser)
+require(printr)
+trellis.par.set(theme = theme.mosaic())
+source("../Tourny.R")
+source("../Loaders.R")
+knitr::opts_chunk$set(
+  fig.align = "center", 
+  comment = NA,
+  echo = FALSE,
+  cache = TRUE)
+Bracket <- LoadBracket(file = "../data/bracket2019.csv")
+E <- LoadEntries(path = "../data/Entries/", year = 2019)
+G <- LoadGameScores(path = "../data/Scores", year = 2019)
+T <- resultsTable(E, Bracket, G)
+# T$dept[T$dept == "Select a department"] <- "Math/Stat"
+# H <- humanparser::parse_names(sapply(E, function(x) x$name))
+# All <-
+#   H %>% 
+#   mutate(
+#     email = sapply(E, function(x) x$email),
+#     date  = sapply(E, function(x) as.character(x$time)),
+#     date2 = lubridate::ymd_hms(date) - hours(4)
+#   ) %>% 
+#   merge(T, by.x = "fullName", by.y = "name")
+```
+
+## Scores this year
+
+```{r echo=FALSE}
+gf_histogram(~ score, data = T, binwidth = 1) # , type = "count")
+```
+
+### Winner: Ryan Bebej
+
+No tie breakers were needed this year, but Gary Talsma would
+have won had the championship game result been reversed.
+So he's this year's winner of the "Oh So Close Award".
+
+### Top Ten finishers
+
+```{r, results = "asis"}
+T %>% filter(score >= 17) %>% 
+  select(name, dept, score, `score details`) %>%
+  knitr::kable()
+```
+
+
+\newpage
+
+## How'd we do?
+
+Here's a breakdown of scores by department.
+
+```{r, echo = FALSE}
+gf_jitter(dept ~ score, 
+          data = T %>% mutate(dept = reorder(dept, score, mean)), 
+          width = 0, height = 0.3, alpha = 0.8,
+          shape = 1,
+          size = 3, color = "maroon") %>%
+gf_point(
+  dept ~ score,
+  data = T %>% group_by(dept) %>% summarise(score = mean(score)),
+  color = "goldenrod",
+  shape = 1,
+  size = 4,
+  alpha = 0.7
+) %>%
+gf_point(
+  dept ~ score,
+  data = T %>% group_by(dept) %>% summarise(score = median(score)),
+  color = "goldenrod",
+  shape = 2,
+  size = 4,
+  alpha = 0.7
+) %>%
+  gf_labs(title = "Performance by Department",
+          caption = "Gold circles = mean; Gold triangles = median")
+  
+
+
+```
+
+```{r, echo = FALSE, results = "asis"}
+T %>% 
+  group_by(dept) %>% 
+  summarise(n=n(), avg_score = round(mean(score, na.rm = TRUE), 2), max_score = max(score), min_score = min(score)) %>%
+  ungroup() %>% 
+  arrange(-avg_score) %>%
+  knitr::kable()
+```
+
+Math/Stat had an espeically strong showing this year. 
+All six contestants scored better than the est entry in 
+several other departments.
+
+
+
