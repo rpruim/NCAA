@@ -38,7 +38,7 @@ shinyUI(
                   the latest round\". That is, the first tie-breaker is choosing the champion.
                   The second tie-breaker is choosing the second place team.
                   The third tie-breaker is number of semifinalists chosen. And so forth."),
-          tags$li("Entries are due by the noon Thursday of Round 2.")
+          tags$li("Entries are due by the noon Eastern Time on the first day of the round of 64.")
         ),
         fluidRow(
           column(1),
