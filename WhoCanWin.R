@@ -77,7 +77,7 @@ WhoCanWin <- function(Entries, M, Standings,
   LosingScores <-
     Outcomes %>% apply(2, base::min, na.rm = TRUE)
   
-  res <- data_frame(
+  res <- tibble(
     name = Standings$name,
     email = row.names(Standings)
   ) 
@@ -114,7 +114,7 @@ WhoCanWinOld <- function(Entries, M, Standings, results = (teamData() %>% filter
   LosingScores <-
     Outcomes %>% apply(2, base::min, na.rm = TRUE)
   
-  res <- data_frame(
+  res <- tibble(
     name = Standings$name,
     email = row.names(Standings)
   ) 

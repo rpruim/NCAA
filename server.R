@@ -192,7 +192,7 @@ shinyServer(function(input, output, session) {
       away <- awayTeam(gts, Bracket, GetGameScores())
       createLogEntry(paste("Score enterred:", away, "vs.", home, as, "-", hs))
       write.csv(
-        data_frame(home = home, away = away, hscore = hs, ascore = as),
+        tibble(home = home, away = away, hscore = hs, ascore = as),
         row.names = FALSE,
         file = paste0("data/Scores/Game-",gsub("/"," or ", home),"-", gsub("/", " or ", away),
                       "-", humanTime(), ".csv")
@@ -491,7 +491,7 @@ shinyServer(function(input, output, session) {
     bestText <- ifelse(best > 0, paste("win by", best), ifelse (best == 0, "tie", paste("lose by", -best)))
     worst <- outer(1:n, input$oneEntrant, head2head_byindex)
     worstText <- ifelse(worst > 0, paste("lose by", worst), ifelse (worst == 0, "tie", paste("win by" , -worst)))
-    data_frame(
+    tibble(
       `other player` = sapply(E, function(x) x$name),
       `best head-to-head result` = as.vector(bestText),
       `worst head-to-head result` = as.vector(worstText),

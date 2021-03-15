@@ -321,7 +321,7 @@ if (FALSE) {
 updateGameScores <- function(GS, home, away, hscore, ascore) {
   plyr::rbind.fill( 
     GS[!(GS$home == home & GS$away == away), ],   # remove previous score if it exists
-    addWL(dplyr::data_frame(home=home, away=away, hscore=hscore, ascore=ascore))
+    addWL(dplyr::tibble(home=home, away=away, hscore=hscore, ascore=ascore))
   )
 }
 
