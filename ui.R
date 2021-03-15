@@ -12,15 +12,15 @@ shinyUI(
   fluidPage(
     titlePanel("NCAA Modeling Contest"),
     tabsetPanel(
-      id = "Tabset", 
+      id = "Tabset",
       selected = "Rules & History",
       tabPanel(
         "Rules & History",
         h2("History"),
-        p(paste( 
+        p(paste(
         "Calvin faculty and staff have been participating in this NCAA modeling contest since 1995",
         "when Mike Stob introduced the contest.  In his honor, each year's winner is presented the",
-        "traveling Mike Stob Trophy which they display proudly until presenting it to the next winner.", 
+        "traveling Mike Stob Trophy which they display proudly until presenting it to the next winner.",
         "Past winners are listed at the bottom of this page.")),
         p(paste(
         "The Clarance Menninga Trophy was named after the first person to win it twice and is",
@@ -35,8 +35,8 @@ shinyUI(
           tags$li("The four play-in games do not count -- you buy the spot in the bracket and get the team that wins the play-in game but only score points starting with round 2."),
           tags$li("The contestant with the most points wins."),
           tags$li("In case of a tie, the winner is the contestant who scores the \"most points in
-                  the latest round\". That is, the first tie-breaker is choosing the champion. 
-                  The second tie-breaker is choosing the second place team. 
+                  the latest round\". That is, the first tie-breaker is choosing the champion.
+                  The second tie-breaker is choosing the second place team.
                   The third tie-breaker is number of semifinalists chosen. And so forth."),
           tags$li("Entries are due by the noon Thursday of Round 2.")
         ),
@@ -73,25 +73,25 @@ shinyUI(
           br(),
           fluidRow(
             column(3, textInput("name", "Name:", "")),
-            column(3, 
+            column(3,
                    textInput("email", "e-mail:", ""),
                    p("One entry per email address.")
                    ),
-            column(3, selectInput("dept", "Department:", 
-                                  c("Select a department","Administration","Bio","Chem","CS","Engr","GGES","Math/Stat","Nursing","Phys/Ast","Psych","Other")))
+            column(3, selectInput("dept", "Department:",
+                                  c("Select a department","Admin","Bio","Chem","CS","Engr","GEO","Math/Stat","Nursing","Phys/Ast","Psych","Other")))
           ),
           fluidRow(
-            column(3, 
+            column(3,
                    conditionalPanel(
-                     condition = "output.pointsSpent <= 200 && input.name.length > 2 && input.email.length > 2",  
+                     condition = "output.pointsSpent <= 200 && input.name.length > 2 && input.email.length > 2",
                      column(3, actionButton("submitButton", "Submit Teams"))
                    )),
-            column(6, 
+            column(6,
                    h4(textOutput("pointsRemaining")),
                    helpText(textOutput("spendMessage")),
-                   conditionalPanel( 
+                   conditionalPanel(
                      condition = "input.name.length < 3 || input.email.length < 3",
-                     helpText("The submit button won't appear until you have entered a name and email address.  Only one submission is allowed per email address.")
+                     helpText("The submit button won't appear until you have entered a name and email address.  Only one submission is allowed per email address. Each new submission will replace any previous submissions.")
                    )
             )
           ),  # fluid row
@@ -112,20 +112,20 @@ shinyUI(
           actionButton("reviseButton", "Revise my entry")
         )
       ),  # tabPanel choose wisely
-      
+
       # tabPanel(
       #   "Scores",
       #   br(),br(),
       #   conditionalPanel(
-      #     condition = '! output.showStandings', 
+      #     condition = '! output.showStandings',
       #     helpText("Information will display here after the first tournament results are in.")
       #   ),
       #   conditionalPanel(
-      #     condition = 'true', # 'output.showStandings', 
+      #     condition = 'true', # 'output.showStandings',
       #     dataTableOutput("ScoresTable")
       #   )
       # ), # tabPanel Scores
-       
+
       tabPanel(
         "Team Data",
         br(),br(),
@@ -173,25 +173,26 @@ shinyUI(
       #   br()
       #   )
       # ),
-      # 
-      tabPanel(
-         "Who Can Win?",
-         br(),br(),
-         # conditionalPanel(
-         #   condition = '! output.showStandings',
-         #   helpText("Information will be displayed after the first tournament results are in.")
-         # ),
-         conditionalPanel(
-           p("Note: The results below take into account tie breakers that can be resolved in the ",
-             "final four rounds of the tournament, but do not take into account tie breakers that ",
-             "go back into the first two rounds. ",
-             "For tie breaker rules, see the official rules of the contest."),
-           br(), br(),
-           dataTableOutput("WhoCanWinTable"),
-           br()
-         )
-       ),
-          
+      #
+
+      # tabPanel(
+      #    "Who Can Win?",
+      #    br(),br(),
+      #    # conditionalPanel(
+      #    #   condition = '! output.showStandings',
+      #    #   helpText("Information will be displayed after the first tournament results are in.")
+      #    # ),
+      #    conditionalPanel(
+      #      p("Note: The results below take into account tie breakers that can be resolved in the ",
+      #        "final four rounds of the tournament, but do not take into account tie breakers that ",
+      #        "go back into the first two rounds. ",
+      #        "For tie breaker rules, see the official rules of the contest."),
+      #      br(), br(),
+      #      dataTableOutput("WhoCanWinTable"),
+      #      br()
+      #    )
+      #  ),
+
       # tabPanel(
       #   "Group Photo",
       #   br(), br(),
