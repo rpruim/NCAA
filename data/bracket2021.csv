@@ -1,6 +1,6 @@
 seed,team,region
 1,Michigan,East
-16,Mt St Mary's/Texas Southern,East
+16,Texas Southern,East
 8,LSU,East
 9,St Bonaventure,East
 5,Colorado,East
@@ -8,7 +8,7 @@ seed,team,region
 4,Florida St,East
 13,UNCG,East
 6,BYU,East
-11,Michigan St/UCLA,East
+11,UCLA,East
 3,Texas,East
 14,Abilene Chr,East
 7,Connecticut,East
@@ -16,7 +16,7 @@ seed,team,region
 2,Alabama,East
 15,Iona,East
 1,Gonzaga,West
-16,Norfolk St/App St,West
+16,Norfolk St,West
 8,Oklahoma,West
 9,Missouri,West
 5,Creighton,West
@@ -24,7 +24,7 @@ seed,team,region
 4,Virginia,West
 13,Ohio,West
 6,USC,West
-11,Wichita St/Drake,West
+11,Drake,West
 3,Kansas,West
 14,E Washington,West
 7,Oregon,West
