@@ -173,25 +173,25 @@ shinyUI(
       #   br()
       #   )
       # ),
-      #
 
-      # tabPanel(
-      #    "Who Can Win?",
-      #    br(),br(),
-      #    # conditionalPanel(
-      #    #   condition = '! output.showStandings',
-      #    #   helpText("Information will be displayed after the first tournament results are in.")
-      #    # ),
-      #    conditionalPanel(
-      #      p("Note: The results below take into account tie breakers that can be resolved in the ",
-      #        "final four rounds of the tournament, but do not take into account tie breakers that ",
-      #        "go back into the first two rounds. ",
-      #        "For tie breaker rules, see the official rules of the contest."),
-      #      br(), br(),
-      #      dataTableOutput("WhoCanWinTable"),
-      #      br()
-      #    )
-      #  ),
+
+      tabPanel(
+         "Who Can Win?",
+         br(),br(),
+         # conditionalPanel(
+         #   condition = '! output.showStandings',
+         #   helpText("Information will be displayed after the first tournament results are in.")
+         # ),
+         conditionalPanel(
+           p("Note: The results below take into account tie breakers that can be resolved in the ",
+             "final four rounds of the tournament, but do not take into account tie breakers that ",
+             "go back into the first two rounds. ",
+             "For tie breaker rules, see the official rules of the contest."),
+           br(), br(),
+           dataTableOutput("WhoCanWinTable"),
+           br()
+         )
+       ),
 
       # tabPanel(
       #   "Group Photo",
