@@ -23,7 +23,7 @@ shinyUI(
         "traveling Mike Stob Trophy which they display proudly until presenting it to the next winner.",
         "Past winners are listed at the bottom of this page.")),
         p(paste(
-        "The Clarance Menninga Trophy was named after the first person to win it twice and is",
+        "The Clarence Menninga Trophy was named after the first person to win it twice and is",
         "presented each year to the contestant with the lowest score.",
         "The recipients of this trophy are not listed at the bottom of this page."
         )),
