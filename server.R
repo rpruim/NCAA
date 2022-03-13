@@ -25,6 +25,9 @@ defaultYear <- 2019
 deadline <- "2021-03-19 11:30"   # standard time!
 defaultYear <- 2021
 
+deadline <- "2022-03-17 11:30"   # standard time!
+defaultYear <- 2022
+
 humanTime <- function() format(Sys.time(), "%Y%m%d-%H%M%OS")
 
 sessionID <- function(session) {
@@ -32,7 +35,7 @@ sessionID <- function(session) {
 }
 
 the_year <- function() {
-  return(2021)
+  return(2022)
   # the above is a temporary hack.
   qq <- query()
   if ("year" %in% names(qq)) {

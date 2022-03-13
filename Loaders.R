@@ -9,7 +9,7 @@ testBracketFile <- "data/bracket2016.csv"
 entryPattern <- "Entry-.*rds"
 
 # adaptable version
-year <- 2021
+year <- 2022
 bracketFile <- paste0("data/bracket", year, ".csv")
 testBracketFile <- paste0("data/bracket", year - 1, ".csv")
 entryPattern <- paste0("Entry-",year,".*rds")
