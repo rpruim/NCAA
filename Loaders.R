@@ -85,16 +85,16 @@ LoadBracket <- function(file = NULL) {
       } else {
         read.csv(testBracketFile, as.is=TRUE)
       }
-
-    bracket %>%
-      mutate(cost = seedCost[seed],
-             cost.old = seedCostOld[seed],
-             # which regions play in final 4 is determined by order of appearence in bracket.csv
-             slot = ( as.numeric(factor(region, levels = unique(region), # c('east','west','south','midwest'),
-                                        ordered=TRUE)) * 100 + order(seedOrder)[seed] )
-      ) %>%
-      arrange(slot)
   }
+
+  bracket %>%
+    mutate(cost = seedCost[seed],
+           cost.old = seedCostOld[seed],
+           # which regions play in final 4 is determined by order of appearence in bracket.csv
+           slot = ( as.numeric(factor(region, levels = unique(region), # c('east','west','south','midwest'),
+                                      ordered=TRUE)) * 100 + order(seedOrder)[seed] )
+    ) %>%
+    arrange(slot)
 }
 
 completedGames <- function(scores, bracket) {
