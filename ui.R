@@ -11,7 +11,6 @@ library(d3heatmap)
 shinyUI(
   fluidPage(
     titlePanel("NCAA Modeling Contest"),
-    helpText(textOutput("statusMessage")),
     tabsetPanel(
       id = "Tabset",
       selected = "Rules & History",
