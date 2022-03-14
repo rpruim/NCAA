@@ -2,7 +2,6 @@ if (! "seedCost" %in% ls()) {
   source("Tourny.R")
 }
 
-
 # hard-coded version
 bracketFile <- "data/bracket2017.csv"
 testBracketFile <- "data/bracket2016.csv"
@@ -34,7 +33,7 @@ update_teams <- function(teams, canonical_teams) {
 
 LoadEntries <-
   function(
-    path = "data/Entries/", year = 2021)
+    path = "data/Entries/", year = 2022)
   {
     # rdsFile <- paste0(path, "Entries.rds")
     # if (file.exists(rdsFile)) {
@@ -60,7 +59,7 @@ LoadEntries <-
     res
   }
 
-LoadGameScores <- function(path = "data/Scores/", year = 2021){
+LoadGameScores <- function(path = "data/Scores/", year = 2022){
   gfiles <- dir(path, pattern = paste0("Game.*", year, ".*csv"), full.names = TRUE)
   if (length(gfiles) < 1)
     return(tibble(home = NA, away = NA, hscore = NA, ascore = NA) %>% head(0))
