@@ -161,7 +161,7 @@ shinyUI(
           helpText("Standings will be displayed after the first tournament results are in.")
         ),
         conditionalPanel(
-          condition = 'true | output.showStandings',
+          condition = 'output.showStandings',
           strong(textOutput("tournyStatus")),
           dataTableOutput("ResultsTable")
         )
@@ -181,7 +181,7 @@ shinyUI(
                    strong("Honorary Commissioner & Historian:"), span("M Stob"), br()
                  ),
                  conditionalPanel(
-                   condition = "true | output.showAdminTab",
+                   condition = "output.showAdminTab",
                    textInput("passwd", label = h3("Access Code"), value = ""),
                    h3("System Log"),
                    dataTableOutput("logTable")
@@ -190,7 +190,7 @@ shinyUI(
           column(
             6,
             conditionalPanel(
-              condition = "true | output.showGameEntry",
+              condition = "output.showGameEntry",
               h3("Enter Game Results"),
               # radioButtons(
               #   "MorW", "Choose Tournament",
