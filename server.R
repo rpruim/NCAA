@@ -36,6 +36,15 @@ humanTime <- function() format(Sys.time(), "%Y%m%d-%H%M%OS")
 BracketM <<- LoadBracket('data/bracket2022.csv')
 BracketW <<- LoadBracket('data/bracket2022w.csv')
 
+TMinit <<- tournament_init(names = BracketM[['team']], seeds = BracketM[['seed']], label = "M")
+TWinit <<- tournament_init(names = BracketW[['team']], seeds = BracketW[['seed']], label = "W")
+
+Entries <<- load_entries_from_files(TMinit, path = "data/Entries/2022/", year = 2022)
+
+EM <<- build_entry_matrix(Entries, ext = "M")
+EW <<- build_entry_matrix(Entries, ext = "W")
+
+
 ### Some utility functions
 
 sessionID <- function(session) {
@@ -375,7 +384,7 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "showGameEntry", suspendWhenHidden = FALSE)
 
   output$showStandings <- reactive({
-    nrow(GetCompletedGames()) > 0 && length(GetEntries()) > 0
+    nrow(GetCompletedGames()) > 0 && nrow(EM) > 0
   } )
   outputOptions(output, "showStandings", suspendWhenHidden = FALSE)
 
@@ -525,6 +534,16 @@ shinyServer(function(input, output, session) {
       select(game, winner, loser, score)
   })
 
+  GetTM <- reactive({
+    Scores <- GetGameScoresM()
+    TMinit |> tournament_update(games = Scores[['game_number']], results = Scores[['winner_01']])
+  })
+
+  GetTW <- reactive({
+    Scores <- GetGameScoresW()
+    TMinit |> tournament_update(TWinit, games = Scores[['game_number']], results = Scores[['winner_01']])
+  })
+
   ########## Bracket ###############
 
   # updates when games scores change
@@ -559,8 +578,9 @@ shinyServer(function(input, output, session) {
     })
 
   ############# Results Table #####################
-  ResultsDF <- reactive({
-    resultsTable(GetEntries(), GetBracketWithTeamStatusM(), possibleMatchups(BracketM))
+  ResultsDFM <- reactive({
+    # resultsTable(GetEntries(), GetBracketWithTeamStatusM(), possibleMatchups(BracketM))
+    contest_status(GetTM(), EM, BracketM)
   })
 
   output$ResultsTable <- renderDataTable(
@@ -573,13 +593,13 @@ shinyServer(function(input, output, session) {
     ), {
 #      GetGameScoresM()
 #      resultsTable(GetEntries(), GetBracketWithTeamStatus(), possibleMatchups(Bracket))
-      ResultsDF()
+      ResultsDFM()
     })
 
   ######### reactive text messages #########
   output$tournyStatus <- renderText({
     games <- nrow(GetCompletedGames()) # sum(GetBracketWithTeamStatus()$wins, na.rm=TRUE)
-    paste0("Data based on ", length(GetEntries()), " contestants and ", games, " games.")
+    paste0("Data based on ", nrow(EM), " contestants and ", games, " games.")
   })
 
   ######### (basketball) team data table #########
@@ -672,54 +692,54 @@ shinyServer(function(input, output, session) {
     H2H()
   })
 
-  Sweet16M <-
-    reactiveFileReader(
-      2000, session,
-      "data/Sweet16winMatrix.rds",
-      readRDS
-    )
+  # Sweet16M <-
+  #   reactiveFileReader(
+  #     2000, session,
+  #     "data/Sweet16winMatrix.rds",
+  #     readRDS
+  #   )
+  #
+  # Sweet16Standings <-
+  #   reactiveFileReader(
+  #     2000, session,
+  #     "data/Sweet16Standings.rds",
+  #     readRDS
+  #   )
 
-  Sweet16Standings <-
-    reactiveFileReader(
-      2000, session,
-      "data/Sweet16Standings.rds",
-      readRDS
-    )
+  # output$WhoCanWinTable <- renderDataTable(
+  #   options=list(pageLength = 100,                    # initial number of records
+  #                lengthMenu=c(25,50,100),             # records/page options
+  #                lengthChange=0,                      # show/hide records per page dropdown
+  #                searching=1,                         # global search box on/off
+  #                info=1,                              # information on/off (how many records filtered, etc)
+  #                ordering = TRUE,
+  #                autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
+  #   ),
+  #   WhoCanWin(
+  #     GetEntries(),
+  #     M = Sweet16M(), Sweet16Standings(),
+  #     results = (GetTeamData() %>% filter(Team %in% rownames(Sweet16M())))$Wins - 2
+  #     ) %>%
+  #     merge(ResultsDF(), by = "name") %>%
+  #     select(name, `winning scenarios`, `win percent`,
+  #            score, `guaranteed wins`, `max possible`,
+  #            `losing scenarios`, `lose percent`)
+  # )
 
-  output$WhoCanWinTable <- renderDataTable(
-    options=list(pageLength = 100,                    # initial number of records
-                 lengthMenu=c(25,50,100),             # records/page options
-                 lengthChange=0,                      # show/hide records per page dropdown
-                 searching=1,                         # global search box on/off
-                 info=1,                              # information on/off (how many records filtered, etc)
-                 ordering = TRUE,
-                 autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ),
-    WhoCanWin(
-      GetEntries(),
-      M = Sweet16M(), Sweet16Standings(),
-      results = (GetTeamData() %>% filter(Team %in% rownames(Sweet16M())))$Wins - 2
-      ) %>%
-      merge(ResultsDF(), by = "name") %>%
-      select(name, `winning scenarios`, `win percent`,
-             score, `guaranteed wins`, `max possible`,
-             `losing scenarios`, `lose percent`)
-  )
-
-  output$dendroPlot <- renderD3heatmap({
-    E <- GetEntries()
-    M <- do.call(rbind, lapply(E, function(x) x$teamsLogical))
-    rownames(M) <- sapply(E, function(x) x$name)
-    D <- as.data.frame(M)
-    D <- as.data.frame(lapply(D, function(x) as.numeric(x)))
-    rownames(D) <- rownames(M)
-    Rowv  <- D %>% dist(method = "euclidean") %>% hclust %>% as.dendrogram %>%
-      set("branches_k_color", k = 5) %>% set("branches_lwd", 2) %>%
-      ladderize()
-    Colv  <- D %>% t %>% dist(method = "euclidean") %>% hclust %>% as.dendrogram %>%
-      set("branches_k_color", k = 7) %>% set("branches_lwd", 2) %>%
-      ladderize()
-    d3heatmap(D, Rowv = Rowv, Colv = Colv, color="Blues")
-  })
+  # output$dendroPlot <- renderD3heatmap({
+  #   E <- GetEntries()
+  #   M <- do.call(rbind, lapply(E, function(x) x$teamsLogical))
+  #   rownames(M) <- sapply(E, function(x) x$name)
+  #   D <- as.data.frame(M)
+  #   D <- as.data.frame(lapply(D, function(x) as.numeric(x)))
+  #   rownames(D) <- rownames(M)
+  #   Rowv  <- D %>% dist(method = "euclidean") %>% hclust %>% as.dendrogram %>%
+  #     set("branches_k_color", k = 5) %>% set("branches_lwd", 2) %>%
+  #     ladderize()
+  #   Colv  <- D %>% t %>% dist(method = "euclidean") %>% hclust %>% as.dendrogram %>%
+  #     set("branches_k_color", k = 7) %>% set("branches_lwd", 2) %>%
+  #     ladderize()
+  #   d3heatmap(D, Rowv = Rowv, Colv = Colv, color="Blues")
+  # })
 
 })

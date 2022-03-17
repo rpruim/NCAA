@@ -141,6 +141,33 @@ shinyUI(
       ),  # tabPanel choose wisely
 
       tabPanel(
+        "Scores",
+        br(),br(),
+        conditionalPanel(
+          condition = '! output.showStandings',
+          helpText("Information will display here after the first tournament results are in.")
+        ),
+        conditionalPanel(
+          condition = 'true', # 'output.showStandings',
+          dataTableOutput("ScoresTable")
+        )
+      ), # tabPanel Scores
+
+      tabPanel(
+        "Standings (Men's)",
+        br(),br(),
+        conditionalPanel(
+          condition = '! output.showStandings',
+          helpText("Standings will be displayed after the first tournament results are in.")
+        ),
+        conditionalPanel(
+          condition = 'true | output.showStandings',
+          strong(textOutput("tournyStatus")),
+          dataTableOutput("ResultsTable")
+        )
+      ),
+
+      tabPanel(
         "Admin",
         fluidRow(
           column(6,
