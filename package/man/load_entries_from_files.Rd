@@ -8,7 +8,8 @@ load_entries_from_files(
   tournament,
   path,
   year = 2022,
-  pattern = paste0("Entry-", year, ".*rds")
+  pattern = paste0("Entry-", year, ".*rds"),
+  keep.all = FALSE
 )
 }
 \arguments{

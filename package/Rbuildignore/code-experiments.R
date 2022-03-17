@@ -9,6 +9,7 @@ TMinit <<- tournament_init(names = BracketM[['team']], seeds = BracketM[['seed']
 TWinit <<- tournament_init(names = BracketW[['team']], seeds = BracketW[['seed']], label = "W")
 
 Entries <<- load_entries_from_files(TMinit, path = "data/Entries/2022/", year = 2022)
+Entries0 <<- load_entries_from_files(TMinit, path = "data/Entries/2022/", year = 2022, keep.all = TRUE)
 
 EM <<- build_entry_matrix(Entries, ext = "M")
 EW <<- build_entry_matrix(Entries, ext = "W")

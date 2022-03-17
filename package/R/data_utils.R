@@ -36,7 +36,7 @@ build_entry_matrix <- function(E, ext = c("M", "W")){
 #' @param year used to create the default value of pattern.
 #' @export
 load_entries_from_files <-
-  function(tournament, path, year = 2022, pattern =  paste0("Entry-", year, ".*rds"))
+  function(tournament, path, year = 2022, pattern =  paste0("Entry-", year, ".*rds"), keep.all = FALSE)
   {
     efiles <- dir(path, pattern = pattern, full.names = TRUE)
     res <- list()
@@ -51,8 +51,25 @@ load_entries_from_files <-
       # ensure the order is the same for all the logical vectors and matches the bracket order
       # this should now be happening at the time of creation
       # e$teamsLogical <- e$teamsLogical[Bracket$team]
-
-      res[[e$email]] <- e
+      if (keep.all) {
+        res[[paste0(sprintf("%03d", 1 + length(res)), "-", e$email)]] <- e
+      } else {
+        if (!is.null(res[[e$email]])) {
+          if (purrr::pluck(e, 'points') < 190 && purrr::pluck(res, e$email, 'points') >= 190) {
+            e[['points']] <- NULL
+            e[['teams']] <- NULL
+            e[['teamsLogical']] <- NULL
+          }
+          if (purrr::pluck(e, 'pointsW') < 190 && purrr::pluck(res, e$email, 'pointsW') >= 190) {
+            e[['pointsW']] <- NULL
+            e[['teamsW']] <- NULL
+            e[['teamsLogicalW']] <- NULL
+          }
+          res[[e$email]] <- modifyList(res[[e$email]], e)
+        } else {
+          res[[e$email]] <- e
+        }
+      }
     }
     res
   }
