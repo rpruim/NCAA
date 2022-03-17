@@ -118,7 +118,7 @@ shinyUI(
               fluidRow(
                 column(6,
                        h4(textOutput("pointsRemainingM")),
-                       helpText(textOutput("spendMessageM")),
+                       helpText(textOutput("spendMessageM"))
                 )),  # fluid row
               br(),
               hr(),
@@ -138,7 +138,64 @@ shinyUI(
           br(),
           actionButton("reviseButton", "Revise my entry")
         ) # conditional panel
-      )  # tabPanel choose wisely
+      ),  # tabPanel choose wisely
+
+      tabPanel(
+        "Admin",
+        fluidRow(
+          column(6,
+                 conditionalPanel(
+                   condition = "!output.showAdminTab",
+                   helpText("If you have administrative access, you should know how to unlock the door."),
+                   helpText("If not, this tab will be pretty boring."),
+                   br(), br(),
+                   strong("Commissioner:"), span("R Pruim"), br(),
+                   strong("Scoremaster:"), span("R Bebej"), br(),
+                   strong("Honorary Commissioner & Historian:"), span("M Stob"), br()
+                 ),
+                 conditionalPanel(
+                   condition = "true | output.showAdminTab",
+                   textInput("passwd", label = h3("Access Code"), value = ""),
+                   h3("System Log"),
+                   dataTableOutput("logTable")
+                 ) # conditionalPanel
+          ),  # column
+          column(
+            6,
+            conditionalPanel(
+              condition = "true | output.showGameEntry",
+              h3("Enter Game Results"),
+              # radioButtons(
+              #   "MorW", "Choose Tournament",
+              #   choiceNames = c("Women's", "Men's"),
+              #   choiceValues = c("W", "M")
+              # ),
+              tabsetPanel(
+                id = "gameScores",
+                type = "tabs",
+                tabPanel(
+                  "Women's",
+                  id = "gameScoresW",
+                  uiOutput("gameScoreSelectorW"),
+                  uiOutput("awayTeamScoreW"),
+                  uiOutput("homeTeamScoreW"),
+                   actionButton("saveScoreButtonW", "Submit Score"),
+                   textOutput("scoreSavedTextW")
+                ),
+                tabPanel(
+                  "Men's",
+                  id = "gameScoresM",
+                  uiOutput("gameScoreSelectorM"),
+                  uiOutput("awayTeamScoreM"),
+                  uiOutput("homeTeamScoreM"),
+                  actionButton("saveScoreButtonM", "Submit Score"),
+                  textOutput("scoreSavedTextM")
+                ) # tabPanel
+              ) # tabsetPanel
+            ) # conditionalPanel
+          ) # column
+        ) # fluidRow
+      ) # tabPanel
     ) # tabsetPanel
   ) # fluidPage
 ) # shinyUI

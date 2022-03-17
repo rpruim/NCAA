@@ -10,6 +10,7 @@ library(dplyr)
 library(dendextend)
 # library(dendextendRcpp)
 library(d3heatmap)
+library(madness)
 
 source("Tourny.R")
 source("Loaders.R")
@@ -29,6 +30,13 @@ deadline <- "2022-03-17 11:30"   # standard time!
 defaultYear <- 2022
 
 humanTime <- function() format(Sys.time(), "%Y%m%d-%H%M%OS")
+
+### Read in some data
+
+BracketM <<- LoadBracket('data/bracket2022.csv')
+BracketW <<- LoadBracket('data/bracket2022w.csv')
+
+### Some utility functions
 
 sessionID <- function(session) {
   digest::digest(session$request)
@@ -58,12 +66,7 @@ regionChoices <- function(region, bracket=BracketM) {
   res
 }
 
-head2head_byindex <- Vectorize( function(i, j) head2head(F[[i]]$teams, F[[j]]$teams, BracketM, Games) )
-
-### Read in some data
-
-BracketM <<- LoadBracket()
-BracketW <<- LoadBracket('data/bracket2022w.csv')
+# head2head_byindex <- Vectorize( function(i, j) head2head(F[[i]]$teams, F[[j]]$teams, BracketM, Games) )
 
 
 shinyServer(function(input, output, session) {
@@ -76,7 +79,8 @@ shinyServer(function(input, output, session) {
       session = session,
       function() file.mtime("data/Entries/"),
       function() {
-        LoadEntries(
+        load_entries_from_files(   # was LoadEntries
+          path = "data/Entries/",
           year = the_year()
           )
       }
@@ -87,17 +91,18 @@ shinyServer(function(input, output, session) {
     reactivePoll(
       1000,
       session = session,
-      function() file.mtime("data/Scores"),
-      LoadGameScores
+      function() file.mtime("data/Scores/Mens"),
+      function() {LoadGameScores("data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv")}
     )
 
   GetGameScoresW <-
     reactivePoll(
       1000,
       session = session,
-      function() file.mtime("data/Scores"),
-      LoadGameScores
+      function() file.mtime("data/Scores/Womens"),
+      function() {LoadGameScores("data/Scores/2022/Womens/", pattern = "W-.*2022.*\\.csv")}
     )
+
 
   createLogEntry <- function(text) {
     isolate( rValues$newLogEntries <- rValues$newLogEntries + 1 )
@@ -144,15 +149,7 @@ shinyServer(function(input, output, session) {
 
   query <- reactive( parseQueryString(session$clientData$url_search) )
 
-  ########## Bracket ###############
-
-  # updates when games scores change
-  GetBracketWithTeamStatusM <- reactive({
-    addTeamStatus(BracketM, scheduledGames(bracket=BracketM, results = GetGameScoresM()))
-  })
-  GetBracketWithTeamStatusW <- reactive({
-    addTeamStatus(BracketW, scheduledGames(bracket=BracketW, results = GetGameScoresW()))
-  })
+  ########## Instructions/Background Info
 
   output$CostTable1 <- renderDataTable(
     options=list(lengthChange=0,                      # show/hide records per page dropdown
@@ -195,34 +192,6 @@ shinyServer(function(input, output, session) {
     History <- read.csv("data/historical-winners.csv", header=TRUE)
     History %>% arrange(year, winner)
   })
-
-  ########## Game Results ##########
-  # updates when a new score is saved (button)
-  observeEvent( input$saveScoreButton, {
-    if (as.numeric(input$saveScoreButton) > 0) {
-      gts <- as.numeric(input$gameToScore)
-      hs <- as.numeric(input$hscore)
-      as <- as.numeric(input$ascore)
-      home <- homeTeam(gts, BracketM, GetGameScoresM())
-      away <- awayTeam(gts, BracketM, GetGameScoresM())
-      createLogEntry(paste("Score enterred:", away, "vs.", home, as, "-", hs))
-      write.csv(
-        tibble(home = home, away = away, hscore = hs, ascore = as),
-        row.names = FALSE,
-        file = paste0("data/Scores/Game-",gsub("/"," or ", home),"-", gsub("/", " or ", away),
-                      "-", humanTime(), ".csv")
-      )
-    }
-  })
-
-  GetCompletedGames <- reactive({
-    compGames <- completedGames(GetGameScoresM(), BracketM)
-    if (nrow(compGames) < 1) return(compGames)
-    compGames %>%
-      arrange(game) %>%
-      select(game, winner, loser, score)
-  })
-
 
   ############ Select Teams and Store Entry ###########
   TeamsM <- reactive(c( input$regionM1, input$regionM2, input$regionM3, input$regionM4 ))
@@ -369,7 +338,7 @@ shinyServer(function(input, output, session) {
 
   output$numEntries <- reactive( length(GetEntries()) )
 
-  ############ Dowload Data ###########
+  ############ Download Data ###########
   output$downloadData <- downloadHandler(
     filename = function() { "Entries.rds" },
     content = function(file) {
@@ -419,49 +388,153 @@ shinyServer(function(input, output, session) {
   ############ Score Updates ###########
   output$password <- renderPrint({input$password})
 
-  output$gameScoreSelector <- renderUI({
+  output$gameScoreSelectorM <- renderUI({
     games <- allGames(BracketM, GetGameScoresM())
-    selectInput("gameToScore", "Choose a Game", choices = games, selectize=FALSE)
+    selectInput("gameToScoreM", "Choose a Game", choices = games, selectize=FALSE)
   })
 
-  output$gameToScoreText <- renderText({
-    paste0("About to give score for game ", input$gameToScore, ": ",
-           awayTeam(as.numeric(input$gameToScore), BracketM, GetGameScoresM()), " vs. ",
-           homeTeam(as.numeric(input$gameToScore), BracketM, GetGameScoresM())
+  output$gameScoreSelectorW <- renderUI({
+    games <- allGames(BracketW, GetGameScoresW())
+    selectInput("gameToScoreW", "Choose a Game", choices = games, selectize=FALSE)
+  })
+
+  output$gameToScoreTextM <- renderText({
+    paste0("About to give score for game ", input$gameToScoreM, ": ",
+           awayTeam(as.numeric(input$gameToScoreM), BracketM, GetGameScoresM()), " vs. ",
+           homeTeam(as.numeric(input$gameToScoreM), BracketM, GetGameScoresM())
+    )
+  })
+  output$gameToScoreTextW <- renderText({
+    paste0("About to give score for game ", input$gameToScoreW, ": ",
+           awayTeam(as.numeric(input$gameToScoreW), BracketW, GetGameScoresW()), " vs. ",
+           homeTeam(as.numeric(input$gameToScoreW), BracketW, GetGameScoresW())
     )
   })
 
-  output$homeTeamScore <- renderUI({
-    numericInput("hscore", step=0,
-                 label = homeTeam(as.numeric(input$gameToScore), BracketM, GetGameScoresM()),
-                 value = homeScore(as.numeric(input$gameToScore), BracketM, GetGameScoresM()))
+  output$homeTeamScoreM <- renderUI({
+    numericInput("hscoreM", step=0,
+                 label = homeTeam(as.numeric(input$gameToScoreM), BracketM, GetGameScoresM()),
+                 value = homeScore(as.numeric(input$gameToScoreM), BracketM, GetGameScoresM()))
+  })
+  output$homeTeamScoreW <- renderUI({
+    numericInput("hscoreW", step=0,
+                 label = homeTeam(as.numeric(input$gameToScoreW), BracketW, GetGameScoresW()),
+                 value = homeScore(as.numeric(input$gameToScoreW), BracketW, GetGameScoresW()))
   })
 
-  output$awayTeamScore <- renderUI({
-    numericInput("ascore", step=0,
-                 label = awayTeam(as.numeric(input$gameToScore), BracketM, GetGameScoresM()),
-                 value = awayScore(as.numeric(input$gameToScore), BracketM, GetGameScoresM()))
+  output$awayTeamScoreM <- renderUI({
+    numericInput("ascoreM", step=0,
+                 label = awayTeam(as.numeric(input$gameToScoreM), BracketM, GetGameScoresM()),
+                 value = awayScore(as.numeric(input$gameToScoreM), BracketM, GetGameScoresM()))
+  })
+  output$awayTeamScoreW <- renderUI({
+    numericInput("ascoreW", step=0,
+                 label = awayTeam(as.numeric(input$gameToScoreW), BracketW, GetGameScoresW()),
+                 value = awayScore(as.numeric(input$gameToScoreW), BracketW, GetGameScoresW()))
   })
 
-  output$scoreSavedText <- renderText({
+  output$scoreSavedTextM <- renderText({
     # don't react to these until the button is pushed
     if(TRUE) {
-      input$saveScoreButton
-      isolate(gts <- as.numeric(input$gameToScore))
-      isolate(hs <- as.numeric(input$hscore))
-      isolate(as <- as.numeric(input$ascore))
+      input$saveScoreButtonM
+      isolate(gts <- as.numeric(input$gameToScoreM))
+      isolate(hs <- as.numeric(input$hscoreM))
+      isolate(as <- as.numeric(input$ascoreM))
 
       home <- homeTeam(gts, BracketM, GetGameScoresM())
       away <- awayTeam(gts, BracketM, GetGameScoresM())
 
       # this will react each time the save score button is pressed.
-      if (input$saveScoreButton > 0)
+      if (input$saveScoreButtonM > 0)
         paste0("Score saved for game ", gts, ": ", away, " ", as, " - ", home, " ", hs )
       else "Select a game and enter scores above."
     } else {
       "sample text."
     }
   })
+  output$scoreSavedTextW <- renderText({
+    # don't react to these until the button is pushed
+    if(TRUE) {
+      input$saveScoreButtonW
+      isolate(gts <- as.numeric(input$gameToScoreW))
+      isolate(hs <- as.numeric(input$hscoreW))
+      isolate(as <- as.numeric(input$ascoreW))
+
+      home <- homeTeam(gts, BracketW, GetGameScoresW())
+      away <- awayTeam(gts, BracketW, GetGameScoresW())
+
+      # this will react each time the save score button is pressed.
+      if (input$saveScoreButtonW > 0)
+        paste0("Score saved for game ", gts, ": ", away, " ", as, " - ", home, " ", hs )
+      else "Select a game and enter scores above."
+    } else {
+      "sample text."
+    }
+  })
+
+
+  ########## Game Results ##########
+  # updates when a new score is saved (button)
+  observeEvent( input$saveScoreButtonM, {
+    if (as.numeric(input$saveScoreButtonM) > 0) {
+      gts <- as.numeric(input$gameToScoreM)
+      hs <- as.numeric(input$hscoreM)
+      as <- as.numeric(input$ascoreM)
+      home <- homeTeam(gts, BracketM, GetGameScoresM())
+      away <- awayTeam(gts, BracketM, GetGameScoresM())
+      createLogEntry(paste("Score enterred:", away, "vs.", home, as, "-", hs))
+      # Note for winner_01: 0 = home win; 1 = away win
+      write.csv(
+        tibble(game_number = gts, winner_01 = as.numeric(as > hs),
+               home = home, away = away, hscore = hs, ascore = as),
+        row.names = FALSE,
+        file = paste0("data/Scores/2022/Mens/M-",gsub("/"," or ", home),"-", gsub("/", " or ", away),
+                      "-", humanTime(), ".csv")
+      )
+    }
+  })
+  observeEvent( input$saveScoreButtonW, {
+    if (as.numeric(input$saveScoreButtonW) > 0) {
+      gts <- as.numeric(input$gameToScoreW)
+      hs <- as.numeric(input$hscoreW)
+      as <- as.numeric(input$ascoreW)
+      home <- homeTeam(gts, BracketW, GetGameScoresW())
+      away <- awayTeam(gts, BracketW, GetGameScoresW())
+      createLogEntry(paste("Women's Score enterred:", away, "vs.", home, as, "-", hs))
+      # Note for winner_01: 0 = home win; 1 = away win
+      write.csv(
+        tibble(game_number = gts, winner_01 = as.numeric(as > hs),
+               home = home, away = away, hscore = hs, ascore = as),
+        row.names = FALSE,
+        file = paste0("data/Scores/2022/Womens/W-",gsub("/"," or ", home),"-", gsub("/", " or ", away),
+                      "-", humanTime(), ".csv")
+      )
+    }
+  })
+
+  # observeEvent(input$MorW, {
+  #   updateTabsetPanel(session, "gameScores", selected = paste0("gameScores", input$MorW))
+  # })
+
+
+  GetCompletedGames <- reactive({
+    compGames <- completedGames(GetGameScoresM(), BracketM)
+    if (nrow(compGames) < 1) return(compGames)
+    compGames %>%
+      arrange(game) %>%
+      select(game, winner, loser, score)
+  })
+
+  ########## Bracket ###############
+
+  # updates when games scores change
+  GetBracketWithTeamStatusM <- reactive({
+    addTeamStatus(BracketM, scheduledGames(bracket=BracketM, results = GetGameScoresM()))
+  })
+  GetBracketWithTeamStatusW <- reactive({
+    addTeamStatus(BracketW, scheduledGames(bracket=BracketW, results = GetGameScoresW()))
+  })
+
 
   ############ Query Stuff #############
   output$queryText <- renderText({
