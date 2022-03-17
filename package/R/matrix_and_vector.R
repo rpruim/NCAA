@@ -123,11 +123,11 @@ contest_status <- function(tournament, entries, bracket) {
           apply(1, function(x) paste(sum(x), " = ", paste(x, collapse = " + "))),
       `guaranteed wins` =
         apply(entries, 1, function(x) {
-          sapply(PW, function(pw) { all(pw %in% which(as.logical(x))) }) |> sum()
+          purrr::map_int(PW, function(pw) { all(pw %in% which(as.logical(x))) }) |> sum()
         } ),
       `max possible` =
         apply(entries, 1, function(x) {
-          sapply(PW, function(pw) { any(pw %in% which(as.logical(x))) }) |> sum()
+          purrr::map_int(PW, function(pw) { any(pw %in% which(as.logical(x))) }) |> sum()
         } ),
       `teams remaining` =
         apply( entries, 1,
@@ -194,8 +194,8 @@ scores <- function(tournament, entries, dust = TRUE) {
 max_possible_scores <-
   function(tournament, entries, dust = TRUE) {
     pw <- possible_winners(tournament)
-    sapply(1:nrow(entries),
-           function(e) {sapply(pw, function(x) any(which(as.logical(entries[e,])) %in% x)) |> sum() }
+    purrr::map_int(1:nrow(entries),
+           function(e) {purrr::map_int(pw, function(x) any(which(as.logical(entries[e,])) %in% x)) |> sum() }
     ) |>
       as.vector() |>
       setNames(rownames(entries))
@@ -242,7 +242,7 @@ opponents <-
 #' @returns A matrix with a row for each entrant and a column for each round of the tournament.
 #'   Entries indicate the number of wins for each player in each of the rounds.
 #'
-#' @importFrom purrr map
+#' @importFrom purrr map map_int
 #' @export
 round_by_round <- function(tournament, entries) {
   W <- wins(tournament)
@@ -251,7 +251,7 @@ round_by_round <- function(tournament, entries) {
     1:nrow(entries),
     function(e) {
       w <- W[as.logical(entries[e, ])]
-      sapply(1:max(W, na.rm = TRUE), function(r) sum(w >= r, na.rm = TRUE))
+      purrr::map_int(1:max(W, na.rm = TRUE), function(r) sum(w >= r, na.rm = TRUE))
     }
   )
   do.call(rbind, res)
