@@ -12,7 +12,7 @@ seedCost    <- c(48,35,29,23, 17,15,13,11, 10,9,8,7, 4,3,1,1)
 #'
 #' @param rounds Number of rounds in a complete single elimination tournament
 #' @export
-initialize_tournament <-
+tournament_init <-
   function(names, seeds = NULL, label = "G") {
     rounds <- ceiling(log2(length(names)))
     res <- rep(NA, 2^rounds - 1)
@@ -98,6 +98,11 @@ all_games <- function(tournament, unplayed.only = FALSE, determined.only = FALSE
   res[(!unplayed.only | is.na(tournament[1:n])) & (!determined.only | !grepl("TBD", names))]
 }
 
+#' Tabular report of contest status
+
+#' Tabular report of contest status
+#'
+#' @inheritParams scores
 #' @export
 contest_status <- function(tournament, entries, bracket) {
   Bracket <- bracket |>
@@ -106,27 +111,26 @@ contest_status <- function(tournament, entries, bracket) {
       alive = alive(tournament)
     )
   PW <- possible_winners(tournament)
-    E <- entries
     Results <-
       dplyr::tibble(
-        email = attr(E, "email"),
-        name = attr(E, "name"),
-        dept = attr(E, "dept"),
+        email = attr(entries, "email"),
+        name = attr(entries, "name"),
+        dept = attr(entries, "dept"),
         score = scores(tournament, entries, dust = FALSE),
         dusty_score = scores(tournament, entries, dust = TRUE),
         `score details` =
           round_by_round(tournament, entries) |>
           apply(1, function(x) paste(sum(x), " = ", paste(x, collapse = " + "))),
       `guaranteed wins` =
-        apply(E, 1, function(x) {
+        apply(entries, 1, function(x) {
           sapply(PW, function(pw) { all(pw %in% which(as.logical(x))) }) |> sum()
         } ),
       `max possible` =
-        apply(E, 1, function(x) {
+        apply(entries, 1, function(x) {
           sapply(PW, function(pw) { any(pw %in% which(as.logical(x))) }) |> sum()
         } ),
       `teams remaining` =
-        apply( E, 1,
+        apply( entries, 1,
                 function(x) {
                   BracketLeft <- Bracket %>% filter(x & alive) %>% arrange(seed)
                   numberLeft <- sum( x * Bracket[['alive']] )
@@ -139,9 +143,9 @@ contest_status <- function(tournament, entries, bracket) {
                 }
         ),
       `points remaining` =
-         apply(E, 1, function(x) { sum(x * Bracket[['cost']] * Bracket[['alive']]) } ),
+         apply(entries, 1, function(x) { sum(x * Bracket[['cost']] * Bracket[['alive']]) } ),
       `teams lost` =
-        apply(E, 1,
+        apply(entries, 1,
               function(x) {
                 BracketLost <- Bracket %>% filter(x & !alive) %>% arrange(seed)
                 numberLost <- sum( x * (!Bracket[['alive']]) )
@@ -238,16 +242,19 @@ opponents <-
 #' @returns A matrix with a row for each entrant and a column for each round of the tournament.
 #'   Entries indicate the number of wins for each player in each of the rounds.
 #'
+#' @importFrom purrr map
 #' @export
 round_by_round <- function(tournament, entries) {
   W <- wins(tournament)
-  sapply(
+  res <-
+    purrr::map(
     1:nrow(entries),
     function(e) {
       w <- W[as.logical(entries[e, ])]
       sapply(1:max(W, na.rm = TRUE), function(r) sum(w >= r, na.rm = TRUE))
     }
-  ) |> t()
+  )
+  do.call(rbind, res)
 }
 
 #' Team Names
@@ -269,7 +276,7 @@ team_names <- function(tournament) {
 #' @param results a 0-1 vector of results for `games`. 0 indicates that the lower indexed team won.
 #'   1 indicates that the higher indexed team won.
 #' @export
-update_tournament <-
+tournament_update <-
   function(tournament, games, results) {
     # add team indices to end of tournament vector
     t <- c(tournament, 1L:(length(tournament) + 1))
@@ -360,12 +367,17 @@ winners_table <-
       )
   }
 
+#' Create scores table for a modeling competition
+#'
+#' Create scores table for a modeling competition.
+#'
+#' @export
 scores_table <- function(tournament, entries) {
   scores <- scores(tournament, entries, dust = FALSE)
   dusty_scores <- scores(tournament, entries, dust = TRUE)
   tibble(
     player = row.names(entries),
-    player_abbrv = abbreviate(row.names(entries, 6)),
+    player_abbrv = abbreviate(row.names(entries), 6),
     score = scores,
     dusty_score = dusty_scores
   )

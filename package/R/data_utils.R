@@ -1,15 +1,20 @@
 
-#' @export
-#' @examples
-#' EM <- build_entry_matrix(Ent, "M")
-#' EW <- build_entry_matrix(Ent, "W")
-
+#' Create Entry Matrix
+#'
+#' Convert a list of lists into a matrix representing each entrants selections.
+#' Attributes are used to store some additional information.
+#'
 #' @param E a list of lists. The nested lists should have slots for
 #'    "name", "email", "dept", "time", "time", "points", "teamsLogical", and "teamsLogicalW".
 #'    The latter two are logical vectors with as many values as teams in the tournament
 #' @param ext Either "M" or "W" indicating which tournament.
 #'
 #'
+#' @export
+#' @examples
+#' EM <- build_entry_matrix(Ent, "M")
+#' EW <- build_entry_matrix(Ent, "W")
+
 build_entry_matrix <- function(E, ext = c("M", "W")){
   ext <- match.arg(ext)
   if (ext == "M") ext <- ""

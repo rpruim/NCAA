@@ -2,14 +2,29 @@
 library(madness)
 library(ggformula)
 
-Ent <- readRDS('~/projects/github/NCAA/data/EntriesTemp.Rds')
-R <- 6
-T <-
-  initialize_tournament(names = Bracket2022M[['team']], seeds = Bracket2022M[['seed']], label = "M") |>
-  update_tournament(1:(2^R - 1), sample(0, 2^R -1, replace = TRUE))
+BracketM <<- LoadBracket('data/bracket2022.csv')
+BracketW <<- LoadBracket('data/bracket2022w.csv')
 
-T[1:15] <- NA
-T
+TMinit <<- tournament_init(names = BracketM[['team']], seeds = BracketM[['seed']], label = "M")
+TWinit <<- tournament_init(names = BracketW[['team']], seeds = BracketW[['seed']], label = "W")
+
+Entries <<- load_entries_from_files(TMinit, path = "data/Entries/2022/", year = 2022)
+
+EM <<- build_entry_matrix(Entries, ext = "M")
+EW <<- build_entry_matrix(Entries, ext = "W")
+
+ScoresM <- LoadGameScores()
+T <-
+  tournament_init(names = Bracket2022M[['team']], seeds = Bracket2022M[['seed']], label = "M") |>
+  tournament_update(ScoresM[['game_number']], ScoresM[['winner_01']])
+
+contest_status(T, EM, Bracket2022M)
+
+round_by_round(T, EM) |> str()
+purrr::map_int(round_by_round(T, EM), 1, sum)
+
+
+alive(T)
 
 home_team(T)
 away_team(T)
@@ -20,13 +35,9 @@ all_games(T, determined.only = TRUE)
 all_games(T, unplayed.only = TRUE)
 all_games(T, determined.only = TRUE, unplayed.only = TRUE)
 
-# T <-
-#   initialize_tournament(R) |>
-#   update_tournament(7, 1)
-
 # E <- (mosaic::do(25) * as.numeric(1:(2^R) %in% sample(1:(2^R), 2^R / 4))) |> as.matrix()
 E <- madness::build_entry_matrix(Ent, "M")
-EW <- madness::build_entry_matrix(Ent, "M")
+EW <- madness::build_entry_matrix(Ent, "W")
 
 rownames(E) |> abbreviate(4)
 
