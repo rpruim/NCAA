@@ -59,10 +59,10 @@ LoadEntries <-
     res
   }
 
-LoadGameScores <- function(path = "data/Scores/", year = 2022){
-  gfiles <- dir(path, pattern = paste0("Game.*", year, ".*csv"), full.names = TRUE)
+LoadGameScores <- function(path = "data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv") {
+  gfiles <- dir(path, pattern = pattern, full.names = TRUE)
   if (length(gfiles) < 1)
-    return(tibble(home = NA, away = NA, hscore = NA, ascore = NA) %>% head(0))
+    return(tibble(game_number = NA, winner_01 = NA, home = NA, away = NA, hscore = NA, ascore = NA) %>% head(0))
 
   res <- list()
   # read files in order; newer entries with same email will clobber older ones
