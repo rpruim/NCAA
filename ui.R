@@ -190,7 +190,7 @@ shinyUI(
           column(
             6,
             conditionalPanel(
-              condition = "output.showGameEntry",
+              condition = "output.showAdminTab",
               h3("Enter Game Results"),
               # radioButtons(
               #   "MorW", "Choose Tournament",
