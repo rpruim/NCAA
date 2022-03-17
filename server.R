@@ -127,34 +127,34 @@ shinyServer(function(input, output, session) {
   createLogEntry("New session started.")
 
 
-  LogEntries <-
-    reactiveFileReader(
-      2000, session = session,
-      filePath = "NCAA.log",
-      function(path) {
-        logData <- read.csv(path, as.is=TRUE)
-        names(logData) <- c("time", "event", "session")
-        logData[rev(seq_len(nrow(logData))), ]
-      }
-    )
+  # LogEntries <-
+  #   reactiveFileReader(
+  #     2000, session = session,
+  #     filePath = "NCAA.log",
+  #     function(path) {
+  #       logData <- read.csv(path, as.is=TRUE)
+  #       names(logData) <- c("time", "event", "session")
+  #       logData[rev(seq_len(nrow(logData))), ]
+  #     }
+  #   )
 
-  output$logTable <-
-  renderDataTable(
-    options=list(pageLength = 20,                     # initial number of records
-                 lengthMenu=c(10,20,50,100),          # records/page options
-                 lengthChange=1,                      # show/hide records per page dropdown
-                 searching=1,                         # global search box on/off
-                 info=1,                              # information on/off (how many records filtered, etc)
-                 ordering = TRUE,
-                 autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ),   {
-      # rValues$newLogEntries
-      # logData <- read.csv("NCAA.log", as.is=TRUE)
-      # names(logData) <- c("time", "event")
-      # logData[rev(seq_len(nrow(logData))), ]
-      LogEntries() %>%
-        mutate(time = lubridate::ymd_hms(time) - lubridate::hours(4))
-    })
+  # output$logTable <-
+  # renderDataTable(
+  #   options=list(pageLength = 20,                     # initial number of records
+  #                lengthMenu=c(10,20,50,100),          # records/page options
+  #                lengthChange=1,                      # show/hide records per page dropdown
+  #                searching=1,                         # global search box on/off
+  #                info=1,                              # information on/off (how many records filtered, etc)
+  #                ordering = TRUE,
+  #                autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
+  #   ),   {
+  #     # rValues$newLogEntries
+  #     # logData <- read.csv("NCAA.log", as.is=TRUE)
+  #     # names(logData) <- c("time", "event")
+  #     # logData[rev(seq_len(nrow(logData))), ]
+  #     LogEntries() %>%
+  #       mutate(time = lubridate::ymd_hms(time) - lubridate::hours(4))
+  #   })
 
   query <- reactive( parseQueryString(session$clientData$url_search) )
 
@@ -368,7 +368,7 @@ shinyServer(function(input, output, session) {
 
   output$acceptingEntries <- reactive({
     tolower(query()["admin"]) %in% c("yes","y") ||
-      (file.exists(bracketFile) &&
+      (file.exists(bracketFile) && 
          Sys.time() < lubridate::ymd_hm(deadline) + lubridate::hours(5) )
   })
   outputOptions(output, "acceptingEntries", suspendWhenHidden = FALSE)

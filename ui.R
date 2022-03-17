@@ -183,8 +183,8 @@ shinyUI(
                  conditionalPanel(
                    condition = "output.showAdminTab",
                    textInput("passwd", label = h3("Access Code"), value = ""),
-                   h3("System Log"),
-                   dataTableOutput("logTable")
+                   # h3("System Log"),
+                   # dataTableOutput("logTable")
                  ) # conditionalPanel
           ),  # column
           column(
