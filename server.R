@@ -5,16 +5,11 @@
 # http://www.rstudio.com/shiny/
 
 library(shiny)
-library(ggplot2)
 library(dplyr)
-library(dendextend)
-# library(dendextendRcpp)
-library(d3heatmap)
 library(madness)
 
-source("Tourny.R")
-source("Loaders.R")
-source("WhoCanWin.R")
+source("../Tourny.R")
+source("../Loaders.R")
 
 maxPoints <- 200
 
@@ -614,7 +609,7 @@ shinyServer(function(input, output, session) {
   })
   ResultsDFW <- reactive({
     # resultsTable(GetEntries(), GetBracketWithTeamStatusM(), possibleMatchups(BracketM))
-    contest_status(GetTW(), EM, BracketW)
+    contest_status(GetTW(), EW, BracketW)
   })
 
 
