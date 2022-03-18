@@ -8,8 +8,8 @@ library(shiny)
 library(dplyr)
 library(madness)
 
-source("../Tourny.R")
-source("../Loaders.R")
+source("Tourny.R")
+source("Loaders.R")
 
 maxPoints <- 200
 
