@@ -142,9 +142,11 @@ shinyUI(
 
       tabPanel(
         "Scores",
+        br(),
         tabsetPanel(
+          type = "pills",
           tabPanel(
-            "Women's",
+            "Women's Bracket",
             br(),br(),
             conditionalPanel(
               condition = '! output.showStandingsW',
@@ -156,7 +158,7 @@ shinyUI(
             )
           ),
           tabPanel(
-            "Men's",
+            "Men's Bracket",
             br(),br(),
             conditionalPanel(
               condition = '! output.showStandingsM',
@@ -172,7 +174,9 @@ shinyUI(
 
       tabPanel(
         "Standings",
+        br(),
         tabsetPanel(
+          type = "pills",
           tabPanel(
             "Women's Bracket",
             br(),br(),
