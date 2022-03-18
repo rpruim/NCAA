@@ -317,7 +317,7 @@ shinyServer(function(input, output, session) {
               teamsLogicalW = sapply(BracketW$team, function(x) x %in% TeamsW()),
               time = lastTimeStamp)
       )
-      saveRDS(NewEntry, file=paste0("data/Entries/Entry-",
+      saveRDS(NewEntry, file=paste0("data/Entries/2022/Entry-",
                                     humanTime(),
                                     "-",    # was missing when 2016 entries were posted.
                                     digest::digest(NewEntry),
@@ -368,7 +368,7 @@ shinyServer(function(input, output, session) {
 
   output$acceptingEntries <- reactive({
     tolower(query()["admin"]) %in% c("yes","y") ||
-      (file.exists(bracketFile) && 
+      (file.exists(bracketFile) &&
          Sys.time() < lubridate::ymd_hm(deadline) + lubridate::hours(5) )
   })
   outputOptions(output, "acceptingEntries", suspendWhenHidden = FALSE)
