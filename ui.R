@@ -151,7 +151,7 @@ shinyUI(
               helpText("Information will display here after the first tournament results are in.")
             ),
             conditionalPanel(
-              condition = 'true', # 'output.showStandingsW',
+              condition = 'output.showStandingsW',
               dataTableOutput("ScoresTableW")
             )
           ),
@@ -163,7 +163,7 @@ shinyUI(
               helpText("Information will display here after the first tournament results are in.")
             ),
             conditionalPanel(
-              condition = 'true', # 'output.showStandingsM',
+              condition = 'output.showStandingsM',
               dataTableOutput("ScoresTableM")
             )
           ) # tabPanel
