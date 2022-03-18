@@ -383,15 +383,23 @@ shinyServer(function(input, output, session) {
   })
   outputOptions(output, "showGameEntry", suspendWhenHidden = FALSE)
 
-  output$showStandings <- reactive({
-    nrow(GetCompletedGames()) > 0 && nrow(EM) > 0
+  output$showStandingsM <- reactive({
+    nrow(GetCompletedGamesM()) > 0 && nrow(EM) > 0
   } )
-  outputOptions(output, "showStandings", suspendWhenHidden = FALSE)
+  output$showStandingsW <- reactive({
+    nrow(GetCompletedGamesW()) > 0 && nrow(EM) > 0
+  } )
+  outputOptions(output, "showStandingsM", suspendWhenHidden = FALSE)
+  outputOptions(output, "showStandingsW", suspendWhenHidden = FALSE)
 
-  output$showScores <- reactive({
-    nrow(GetCompletedGames()) > 0
+  output$showScoresM <- reactive({
+    nrow(GetCompletedGamesM()) > 0
   } )
-  outputOptions(output, "showScores", suspendWhenHidden = FALSE)
+  output$showScoresW <- reactive({
+    nrow(GetCompletedGamesW()) > 0
+  } )
+  outputOptions(output, "showScoresM", suspendWhenHidden = FALSE)
+  outputOptions(output, "showScoresW", suspendWhenHidden = FALSE)
 
 
   ############ Score Updates ###########
@@ -526,8 +534,15 @@ shinyServer(function(input, output, session) {
   # })
 
 
-  GetCompletedGames <- reactive({
+  GetCompletedGamesM <- reactive({
     compGames <- completedGames(GetGameScoresM(), BracketM)
+    if (nrow(compGames) < 1) return(compGames)
+    compGames %>%
+      arrange(game) %>%
+      select(game, winner, loser, score)
+  })
+  GetCompletedGamesW <- reactive({
+    compGames <- completedGames(GetGameScoresW(), BracketW)
     if (nrow(compGames) < 1) return(compGames)
     compGames %>%
       arrange(game) %>%
@@ -536,12 +551,16 @@ shinyServer(function(input, output, session) {
 
   GetTM <- reactive({
     Scores <- GetGameScoresM()
-    TMinit |> tournament_update(games = Scores[['game_number']], results = Scores[['winner_01']])
+    if (nrow(Scores) > 0) {
+      TMinit |> tournament_update(games = Scores[['game_number']], results = Scores[['winner_01']])
+    }
   })
 
   GetTW <- reactive({
     Scores <- GetGameScoresW()
-    TMinit |> tournament_update(TWinit, games = Scores[['game_number']], results = Scores[['winner_01']])
+    if (nrow(Scores) > 0) {
+      TMinit |> tournament_update( games = Scores[['game_number']], results = Scores[['winner_01']])
+    }
   })
 
   ########## Bracket ###############
@@ -565,7 +584,7 @@ shinyServer(function(input, output, session) {
 
   ############# Game Scores Table #####################
 
-  output$ScoresTable <- renderDataTable(
+  output$ScoresTableM <- renderDataTable(
     options=list(pageLength = 63,                     # initial number of records
                  lengthMenu=c(5,10,25,50),            # records/page options
                  lengthChange=0,                      # show/hide records per page dropdown
@@ -574,7 +593,18 @@ shinyServer(function(input, output, session) {
                  ordering = FALSE,
                  autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
     ),  {
-      GetCompletedGames()
+      GetCompletedGamesM()
+    })
+  output$ScoresTableW <- renderDataTable(
+    options=list(pageLength = 63,                     # initial number of records
+                 lengthMenu=c(5,10,25,50),            # records/page options
+                 lengthChange=0,                      # show/hide records per page dropdown
+                 searching=1,                         # global search box on/off
+                 info=1,                              # information on/off (how many records filtered, etc)
+                 ordering = FALSE,
+                 autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ),  {
+      GetCompletedGamesW()
     })
 
   ############# Results Table #####################
@@ -582,8 +612,13 @@ shinyServer(function(input, output, session) {
     # resultsTable(GetEntries(), GetBracketWithTeamStatusM(), possibleMatchups(BracketM))
     contest_status(GetTM(), EM, BracketM)
   })
+  ResultsDFW <- reactive({
+    # resultsTable(GetEntries(), GetBracketWithTeamStatusM(), possibleMatchups(BracketM))
+    contest_status(GetTW(), EM, BracketW)
+  })
 
-  output$ResultsTable <- renderDataTable(
+
+  output$ResultsTableM <- renderDataTable(
     options=list(pageLength = 35,                     # initial number of records
                  lengthMenu=c(5,10,25,50),            # records/page options
                  lengthChange=0,                      # show/hide records per page dropdown
@@ -591,15 +626,28 @@ shinyServer(function(input, output, session) {
                  info=1,                              # information on/off (how many records filtered, etc)
                  autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
     ), {
-#      GetGameScoresM()
-#      resultsTable(GetEntries(), GetBracketWithTeamStatus(), possibleMatchups(Bracket))
       ResultsDFM()
     })
 
+  output$ResultsTableW <- renderDataTable(
+    options=list(pageLength = 35,                     # initial number of records
+                 lengthMenu=c(5,10,25,50),            # records/page options
+                 lengthChange=0,                      # show/hide records per page dropdown
+                 searching=1,                         # global search box on/off
+                 info=1,                              # information on/off (how many records filtered, etc)
+                 autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ), {
+      ResultsDFW()
+    })
+
   ######### reactive text messages #########
-  output$tournyStatus <- renderText({
-    games <- nrow(GetCompletedGames()) # sum(GetBracketWithTeamStatus()$wins, na.rm=TRUE)
+  output$tournyStatusM <- renderText({
+    games <- nrow(GetCompletedGamesM()) # sum(GetBracketWithTeamStatus()$wins, na.rm=TRUE)
     paste0("Data based on ", nrow(EM), " contestants and ", games, " games.")
+  })
+  output$tournyStatusW <- renderText({
+    games <- nrow(GetCompletedGamesW()) # sum(GetBracketWithTeamStatus()$wins, na.rm=TRUE)
+    paste0("Data based on ", nrow(EW), " contestants and ", games, " games.")
   })
 
   ######### (basketball) team data table #########
@@ -649,48 +697,48 @@ shinyServer(function(input, output, session) {
   })
 
 
-  H2H <- reactive({
-    E <- GetEntries()
-    G <- GetGameScoresM()
-    B <- GetBracketWithTeamStatusM()
-    head2head_byindex <-
-      Vectorize( function(i, j) head2head(E[[i]]$teams, E[[j]]$teams, BracketM, G) )
-    n <- length(E)
-    best <- t(outer(input$oneEntrant, 1:n, head2head_byindex))
-    bestText <- ifelse(best > 0, paste("win by", best), ifelse (best == 0, "tie", paste("lose by", -best)))
-    worst <- outer(1:n, input$oneEntrant, head2head_byindex)
-    worstText <- ifelse(worst > 0, paste("lose by", worst), ifelse (worst == 0, "tie", paste("win by" , -worst)))
-    tibble(
-      `other player` = sapply(E, function(x) x$name),
-      `best head-to-head result` = as.vector(bestText),
-      `worst head-to-head result` = as.vector(worstText),
-      `plus teams`  = sapply(E, function(x)
-          intersect( B[B$alive, "team"], setdiff(E[[input$oneEntrant]]$teams, x$teams))
-        ),
-        `minus teams` = sapply(E, function(x)
-            intersect( B[B$alive, "team"], setdiff(x$teams, E[[input$oneEntrant]]$teams))
-        ),
-        `common teams` = sapply(E, function(x)
-            intersect( B[B$alive, "team"], intersect(x$teams, E[[input$oneEntrant]]$teams))
-        )
-    ) %>%
-      cbind( ResultsDF() ) %>%
-      arrange(- score) %>%
-      select(1:6, `current score of other player` = score)
-  })
-
-  output$H2HTable <- renderDataTable(
-    options=list(pageLength = 100,                    # initial number of records
-                 lengthMenu=c(25,50,100),             # records/page options
-                 lengthChange=0,                      # show/hide records per page dropdown
-                 searching=1,                         # global search box on/off
-                 info=1,                              # information on/off (how many records filtered, etc)
-                 ordering = TRUE,
-                 autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ),
-    {
-    H2H()
-  })
+  # H2H <- reactive({
+  #   E <- GetEntries()
+  #   G <- GetGameScoresM()
+  #   B <- GetBracketWithTeamStatusM()
+  #   head2head_byindex <-
+  #     Vectorize( function(i, j) head2head(E[[i]]$teams, E[[j]]$teams, BracketM, G) )
+  #   n <- length(E)
+  #   best <- t(outer(input$oneEntrant, 1:n, head2head_byindex))
+  #   bestText <- ifelse(best > 0, paste("win by", best), ifelse (best == 0, "tie", paste("lose by", -best)))
+  #   worst <- outer(1:n, input$oneEntrant, head2head_byindex)
+  #   worstText <- ifelse(worst > 0, paste("lose by", worst), ifelse (worst == 0, "tie", paste("win by" , -worst)))
+  #   tibble(
+  #     `other player` = sapply(E, function(x) x$name),
+  #     `best head-to-head result` = as.vector(bestText),
+  #     `worst head-to-head result` = as.vector(worstText),
+  #     `plus teams`  = sapply(E, function(x)
+  #         intersect( B[B$alive, "team"], setdiff(E[[input$oneEntrant]]$teams, x$teams))
+  #       ),
+  #       `minus teams` = sapply(E, function(x)
+  #           intersect( B[B$alive, "team"], setdiff(x$teams, E[[input$oneEntrant]]$teams))
+  #       ),
+  #       `common teams` = sapply(E, function(x)
+  #           intersect( B[B$alive, "team"], intersect(x$teams, E[[input$oneEntrant]]$teams))
+  #       )
+  #   ) %>%
+  #     cbind( ResultsDF() ) %>%
+  #     arrange(- score) %>%
+  #     select(1:6, `current score of other player` = score)
+  # })
+  #
+  # output$H2HTable <- renderDataTable(
+  #   options=list(pageLength = 100,                    # initial number of records
+  #                lengthMenu=c(25,50,100),             # records/page options
+  #                lengthChange=0,                      # show/hide records per page dropdown
+  #                searching=1,                         # global search box on/off
+  #                info=1,                              # information on/off (how many records filtered, etc)
+  #                ordering = TRUE,
+  #                autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
+  #   ),
+  #   {
+  #   H2H()
+  # })
 
   # Sweet16M <-
   #   reactiveFileReader(

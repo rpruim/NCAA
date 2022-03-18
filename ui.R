@@ -142,29 +142,64 @@ shinyUI(
 
       tabPanel(
         "Scores",
-        br(),br(),
-        conditionalPanel(
-          condition = '! output.showStandings',
-          helpText("Information will display here after the first tournament results are in.")
-        ),
-        conditionalPanel(
-          condition = 'true', # 'output.showStandings',
-          dataTableOutput("ScoresTable")
-        )
+        tabsetPanel(
+          tabPanel(
+            "Women's",
+            br(),br(),
+            conditionalPanel(
+              condition = '! output.showStandingsW',
+              helpText("Information will display here after the first tournament results are in.")
+            ),
+            conditionalPanel(
+              condition = 'true', # 'output.showStandingsW',
+              dataTableOutput("ScoresTableW")
+            )
+          ),
+          tabPanel(
+            "Men's",
+            br(),br(),
+            conditionalPanel(
+              condition = '! output.showStandingsM',
+              helpText("Information will display here after the first tournament results are in.")
+            ),
+            conditionalPanel(
+              condition = 'true', # 'output.showStandingsM',
+              dataTableOutput("ScoresTableM")
+            )
+          ) # tabPanel
+        ) # tabsetPanel
       ), # tabPanel Scores
 
       tabPanel(
-        "Standings (Men's)",
-        br(),br(),
-        conditionalPanel(
-          condition = '! output.showStandings',
-          helpText("Standings will be displayed after the first tournament results are in.")
+        "Standings",
+        tabsetPanel(
+          tabPanel(
+            "Women's Bracket",
+            br(),br(),
+            conditionalPanel(
+              condition = '! output.showStandingsW',
+              helpText("Standings will be displayed after the first tournament results are in.")
+            ),
+            conditionalPanel(
+              condition = 'output.showStandingsW',
+              strong(textOutput("tournyStatusW")),
+              dataTableOutput("ResultsTableW")
+            )
+          ),
+          tabPanel(
+            "Men's Bracket",
+            br(),br(),
+            conditionalPanel(
+              condition = '! output.showStandingsM',
+              helpText("Standings will be displayed after the first tournament results are in.")
+            ),
+            conditionalPanel(
+              condition = 'output.showStandingsM',
+              strong(textOutput("tournyStatusM")),
+              dataTableOutput("ResultsTableM")
+            )
+          )
         ),
-        conditionalPanel(
-          condition = 'output.showStandings',
-          strong(textOutput("tournyStatus")),
-          dataTableOutput("ResultsTable")
-        )
       ),
 
       tabPanel(
