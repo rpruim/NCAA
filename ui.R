@@ -8,6 +8,7 @@
 library(shiny)
 library(d3heatmap)
 library(shinycssloaders)
+library(waiter)
 
 options(spinner.type = 5, spinner.color = "#0dc5c1", spinner.size = 1.5)
 
