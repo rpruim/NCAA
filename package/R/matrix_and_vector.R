@@ -98,13 +98,13 @@ all_games <- function(tournament, unplayed.only = FALSE, determined.only = FALSE
   res[(!unplayed.only | is.na(tournament[1:n])) & (!determined.only | !grepl("TBD", names))]
 }
 
-#' Tabular report of contest status
+#' Tabular report of contest standings
 
-#' Tabular report of contest status
+#' Tabular report of contest standings
 #'
 #' @inheritParams scores
 #' @export
-contest_status <- function(tournament, entries, bracket) {
+contest_standings <- function(tournament, entries, bracket) {
   if (sum(wins(tournament), na.rm = TRUE) < 1) {
     return(
       dplyr::tibble(
