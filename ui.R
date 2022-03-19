@@ -13,6 +13,8 @@ options(spinner.type = 5, spinner.color = "#0dc5c1", spinner.size = 1.5)
 
 shinyUI(
   fluidPage(
+    useWaiter(),
+    waiterShowOnLoad(),
     titlePanel("NCAA Modeling Contest"),
     tabsetPanel(
       id = "Tabset",
@@ -153,10 +155,10 @@ shinyUI(
             br(),br(),
             conditionalPanel(
               condition = '! output.showStandingsW',
-              helpText("Information will display here after the first tournament results are in.")
+              helpText("Information will display here after the first tournament results are in and loaded.")
             ),
             conditionalPanel(
-              condition = 'output.showStandingsW',
+              condition = 'true || output.showStandingsW',
               dataTableOutput("ScoresTableW") |> withSpinner()
             )
           ),
@@ -165,10 +167,10 @@ shinyUI(
             br(),br(),
             conditionalPanel(
               condition = '! output.showStandingsM',
-              helpText("Information will display here after the first tournament results are in.")
+              helpText("Information will display here after the first tournament results are in and loaded.")
             ),
             conditionalPanel(
-              condition = 'output.showStandingsM',
+              condition = 'true || output.showStandingsM',
               dataTableOutput("ScoresTableM") |> withSpinner()
             )
           ) # tabPanel
@@ -185,28 +187,44 @@ shinyUI(
             br(),br(),
             conditionalPanel(
               condition = '! output.showStandingsW',
-              helpText("Standings will be displayed after the first tournament results are in.")
+              helpText("Standings will be displayed after the first tournament results are in and loaded.")
             ),
             conditionalPanel(
               condition = 'output.showStandingsW',
               strong(textOutput("tournyStatusW")),
-              dataTableOutput("ResultsTableW") |> withSpinner()
+              dataTableOutput("standingsTableW") |> withSpinner()
             )
           ),
           tabPanel(
             "Men's Bracket",
             br(),br(),
             conditionalPanel(
-              condition = '! output.showStandingsM',
-              helpText("Standings will be displayed after the first tournament results are in.")
+              condition = 'true', # 'output.contestStandingsReady',
+              conditionalPanel(
+                condition = '! output.showStandingsM',
+                helpText("Standings will be displayed after the first tournament results are in and loaded.")
+              ),
+              conditionalPanel(
+                condition = 'output.showStandingsM',
+                strong(textOutput("tournyStatusM")),
+                dataTableOutput("standingsTableM") |> withSpinner()
+              )
+            )
+          ),
+          tabPanel(
+            "Combined",
+            br(),br(),
+            conditionalPanel(
+              condition = '! output.showStandingsW || ! output.showStandingsM',
+              helpText("Standings will be displayed after the first tournament results are in and loaded.")
             ),
             conditionalPanel(
-              condition = 'output.showStandingsM',
-              strong(textOutput("tournyStatusM")),
-              dataTableOutput("ResultsTableM") |> withSpinner()
+              condition = 'output.showStandingsW && output.showStandingsM',
+              # strong(textOutput("tournyStatusW")),
+              dataTableOutput("standingsTableAll") |> withSpinner()
             )
           )
-        ),
+        )
       ),
 
       tabPanel(

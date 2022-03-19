@@ -7,6 +7,7 @@
 library(shiny)
 library(dplyr)
 library(madness)
+library(waiter)
 # library(reactlog)
 # reactlog_enable()
 
@@ -61,6 +62,8 @@ regionChoices <- function(region, bracket) {
 
 shinyServer(function(input, output, session) {
 
+
+
   query <- reactive( parseQueryString(session$clientData$url_search) )
 
   ##############################
@@ -73,7 +76,7 @@ shinyServer(function(input, output, session) {
   #     2000, session = session,
   #     filePath = "NCAA.log",
   #     function(path) {
-  #       logData <- read.csv(path, as.is=TRUE)
+  #       logData <- readr::read_csv(path, as.is=TRUE)
   #       names(logData) <- c("time", "event", "session")
   #       logData[rev(seq_len(nrow(logData))), ] |>
   #         mutate(time = lubridate::ymd_hms(time) - lubridate::hours(4))
@@ -111,17 +114,17 @@ shinyServer(function(input, output, session) {
   # BracketM <- reactiveVal(LoadBracket('data/bracket2022.csv'))
   # BracketW <- reactiveVal(LoadBracket('data/bracket2022w.csv'))
 
-  BracketM <- reactivePoll(
+  BracketM <- reactiveFileReader(
       500,
       session = session,
-      function() file.mtime("data/bracket2022.csv"),
-      function() {LoadBracket("data/bracket2022.csv")}
+      "data/bracket2022.csv",
+      LoadBracket
     )
-  BracketW <- reactivePoll(
+  BracketW <- reactiveFileReader(
       500,
       session = session,
-      function() file.mtime("data/bracket2022w.csv"),
-      function() {LoadBracket("data/bracket2022w.csv")}
+      "data/bracket2022w.csv",
+      LoadBracket
     )
 
   GameScoresM <-
@@ -187,13 +190,30 @@ shinyServer(function(input, output, session) {
       select(game, winner, loser, score)
   })
 
-  ContestStatusM <- reactive({
-    contest_status(TM(), EM(), BracketM())
+  ContestStandingsM <- reactive({
+    contest_standings(TM(), EM(), BracketM())
   })
-  ContestStatusW <- reactive({
-    contest_status(TW(), EW(), BracketW())
+  ContestStandingsW <- reactive({
+    contest_standings(TW(), EW(), BracketW())
+  })
+  ContestStandingsAll <- reactive({
+    CSM <- ContestStandingsM()
+    CSW <- ContestStandingsW()
+    CS <- CSM |> dplyr::full_join(CSW, by = c('email' = 'email'), suffix = c('_M', '_W')) |>
+      filter(score_M > 0 & score_W > 0)
+    CS |>
+      mutate(
+        score = score_M + score_W,
+        name = name_M,
+        `guaranteed wins` = `guaranteed wins_M` + `guaranteed wins_W`,
+        `max possible` = `max possible_M` + `max possible_W`
+      ) |>
+      arrange(desc(score)) |>
+      select(name, score, `guaranteed wins`, `max possible`)
   })
 
+
+  waiter::waiter_hide()
 
   ############ Select Teams ###########
 
@@ -378,12 +398,17 @@ shinyServer(function(input, output, session) {
   })
   outputOptions(output, "showGameEntry", suspendWhenHidden = FALSE)
 
+  ## Not working.. always yield FALSE?
+  output$contestStandingsReady <- reactive({
+    nrow(ContestStandingsM()) >= 0 && nrow(ContestStandingsW()) >= 0
+  })
   output$showStandingsM <- reactive({
     nrow(CompletedGamesM()) > 0 && nrow(EM()) > 0
-  } )
+  })
   output$showStandingsW <- reactive({
     nrow(CompletedGamesW()) > 0 && nrow(EM()) > 0
-  } )
+  })
+
   outputOptions(output, "showStandingsM", suspendWhenHidden = FALSE)
   outputOptions(output, "showStandingsW", suspendWhenHidden = FALSE)
 
@@ -585,7 +610,7 @@ shinyServer(function(input, output, session) {
                  paging=FALSE,
                  autoWidth=TRUE                       # automatic column width calculation, disable if passing column width via aoColumnDefs
     ),  {
-    History <- read.csv("data/historical-winners.csv", header=TRUE)
+    History <- readr::read_csv("data/historical-winners.csv") # , header=TRUE)
     History %>% arrange(year, winner)
   })
 
@@ -614,9 +639,9 @@ shinyServer(function(input, output, session) {
       CompletedGamesW()
     })
 
-  ############# Results Table #####################
+  ############# Standings Table #####################
 
-  output$ResultsTableM <- renderDataTable(
+  output$standingsTableM <- renderDataTable(
     options=list(pageLength = 35,                     # initial number of records
                  lengthMenu=c(5,10,25,50),            # records/page options
                  lengthChange=0,                      # show/hide records per page dropdown
@@ -624,10 +649,10 @@ shinyServer(function(input, output, session) {
                  info=1,                              # information on/off (how many records filtered, etc)
                  autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
     ), {
-      ContestStatusM()
+      ContestStandingsM()
     })
 
-  output$ResultsTableW <- renderDataTable(
+  output$standingsTableW <- renderDataTable(
     options=list(pageLength = 35,                     # initial number of records
                  lengthMenu=c(5,10,25,50),            # records/page options
                  lengthChange=0,                      # show/hide records per page dropdown
@@ -635,7 +660,18 @@ shinyServer(function(input, output, session) {
                  info=1,                              # information on/off (how many records filtered, etc)
                  autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
     ), {
-      ContestStatusW()
+      ContestStandingsW()
+    })
+
+  output$standingsTableAll <- renderDataTable(
+    options=list(pageLength = 35,                     # initial number of records
+                 lengthMenu=c(5,10,25,50),            # records/page options
+                 lengthChange=0,                      # show/hide records per page dropdown
+                 searching=1,                         # global search box on/off
+                 info=1,                              # information on/off (how many records filtered, etc)
+                 autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ), {
+      ContestStandingsAll()
     })
 
   ######### reactive text messages #########
@@ -688,10 +724,10 @@ shinyServer(function(input, output, session) {
       paste0(
         sapply(Entries(), function(x) x$name),
         " [",
-        ContestStatus()$score,
+        ContestStandings()$score,
         "]"
       )
-    selectInput("oneEntrant", "Select a player", choices = entrants[order(- ContestStatus()$score)], selectize=FALSE)
+    selectInput("oneEntrant", "Select a player", choices = entrants[order(- ContestStandings()$score)], selectize=FALSE)
   })
 
 
@@ -720,7 +756,7 @@ shinyServer(function(input, output, session) {
   #           intersect( B[B$alive, "team"], intersect(x$teams, E[[input$oneEntrant]]$teams))
   #       )
   #   ) %>%
-  #     cbind( ContestStatus() ) %>%
+  #     cbind( ContestStandings() ) %>%
   #     arrange(- score) %>%
   #     select(1:6, `current score of other player` = score)
   # })
@@ -766,7 +802,7 @@ shinyServer(function(input, output, session) {
   #     M = Sweet16M(), Sweet16Standings(),
   #     results = (TeamData() %>% filter(Team %in% rownames(Sweet16M())))$Wins - 2
   #     ) %>%
-  #     merge(ContestStatusM(), by = "name") %>%
+  #     merge(ContestStandingsM(), by = "name") %>%
   #     select(name, `winning scenarios`, `win percent`,
   #            score, `guaranteed wins`, `max possible`,
   #            `losing scenarios`, `lose percent`)
