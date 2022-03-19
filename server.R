@@ -7,6 +7,8 @@
 library(shiny)
 library(dplyr)
 library(madness)
+library(reactlog)
+reactlog_enable()
 
 source("Tourny.R")
 source("Loaders.R")
@@ -26,19 +28,6 @@ defaultYear <- 2022
 
 humanTime <- function() format(Sys.time(), "%Y%m%d-%H%M%OS")
 
-### Read in some data
-
-BracketM <<- LoadBracket('data/bracket2022.csv')
-BracketW <<- LoadBracket('data/bracket2022w.csv')
-
-TMinit <<- tournament_init(names = BracketM[['team']], seeds = BracketM[['seed']], label = "M")
-TWinit <<- tournament_init(names = BracketW[['team']], seeds = BracketW[['seed']], label = "W")
-
-Entries <<- load_entries_from_files(TMinit, path = "data/Entries/2022/", year = 2022)
-
-EM <<- build_entry_matrix(Entries, ext = "M")
-EW <<- build_entry_matrix(Entries, ext = "W")
-
 
 ### Some utility functions
 
@@ -57,7 +46,7 @@ the_year <- function() {
   }
 }
 
-regionChoices <- function(region, bracket=BracketM) {
+regionChoices <- function(region, bracket) {
   Region <- bracket %>%
     rename(regn = region) %>%
     filter(regn == region) %>%
@@ -70,57 +59,14 @@ regionChoices <- function(region, bracket=BracketM) {
   res
 }
 
-# head2head_byindex <- Vectorize( function(i, j) head2head(F[[i]]$teams, F[[j]]$teams, BracketM, Games) )
-
-
 shinyServer(function(input, output, session) {
 
+  query <- reactive( parseQueryString(session$clientData$url_search) )
+
+  ##############################
+  # logging
+
   rValues <- reactiveValues(newLogEntries = 0)
-
-  GetEntries <-
-    reactivePoll(
-      3000,
-      session = session,
-      function() file.mtime("data/Entries/"),
-      function() {
-        load_entries_from_files(   # was LoadEntries
-          path = "data/Entries/",
-          year = the_year()
-          )
-      }
-    )
-
-
-  GetGameScoresM <-
-    reactivePoll(
-      1000,
-      session = session,
-      function() file.mtime("data/Scores/Mens"),
-      function() {LoadGameScores("data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv")}
-    )
-
-  GetGameScoresW <-
-    reactivePoll(
-      1000,
-      session = session,
-      function() file.mtime("data/Scores/Womens"),
-      function() {LoadGameScores("data/Scores/2022/Womens/", pattern = "W-.*2022.*\\.csv")}
-    )
-
-
-  createLogEntry <- function(text) {
-    isolate( rValues$newLogEntries <- rValues$newLogEntries + 1 )
-    write(paste0(Sys.time(), ',"', text, '",', sessionID(session)),
-          append=TRUE, file="NCAA.log")
-    output$statusMessage <- renderText({ paste(Sys.time(), text, sep=": ") })
-  }
-
-  session$onSessionEnded(function() {
-    createLogEntry("Sesssion ended.")
-  })
-
-  createLogEntry("New session started.")
-
 
   # LogEntries <-
   #   reactiveFileReader(
@@ -129,121 +75,174 @@ shinyServer(function(input, output, session) {
   #     function(path) {
   #       logData <- read.csv(path, as.is=TRUE)
   #       names(logData) <- c("time", "event", "session")
-  #       logData[rev(seq_len(nrow(logData))), ]
+  #       logData[rev(seq_len(nrow(logData))), ] |>
+  #         mutate(time = lubridate::ymd_hms(time) - lubridate::hours(4))
   #     }
   #   )
+  #
+  # createLogEntry <- function(text) {
+  #   isolate( rValues$newLogEntries <- rValues$newLogEntries + 1 )
+  #   write(paste0(Sys.time(), ',"', text, '",', sessionID(session)),
+  #         append=TRUE, file="NCAA.log")
+  #   output$statusMessage <- renderText({ paste(Sys.time(), text, sep=": ") })
+  # }
+  #
+  # session$onSessionEnded(function() {
+  #   createLogEntry("Sesssion ended.")
+  # })
+  #
+  # createLogEntry("New session started.")
 
-  # output$logTable <-
-  # renderDataTable(
-  #   options=list(pageLength = 20,                     # initial number of records
-  #                lengthMenu=c(10,20,50,100),          # records/page options
-  #                lengthChange=1,                      # show/hide records per page dropdown
-  #                searching=1,                         # global search box on/off
-  #                info=1,                              # information on/off (how many records filtered, etc)
-  #                ordering = TRUE,
-  #                autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
-  #   ),   {
-  #     # rValues$newLogEntries
-  #     # logData <- read.csv("NCAA.log", as.is=TRUE)
-  #     # names(logData) <- c("time", "event")
-  #     # logData[rev(seq_len(nrow(logData))), ]
-  #     LogEntries() %>%
-  #       mutate(time = lubridate::ymd_hms(time) - lubridate::hours(4))
-  #   })
+  ##############################
+  # watch files and load data
 
-  query <- reactive( parseQueryString(session$clientData$url_search) )
+  Entries <-
+    reactivePoll(
+      5000,
+      session = session,
+      function() file.mtime("data/Entries/"),
+      function() {
+        load_entries_from_files(
+          TMinit(),
+          path = "data/Entries/2022"
+          )
+      }
+    )
+  # BracketM <- reactiveVal(LoadBracket('data/bracket2022.csv'))
+  # BracketW <- reactiveVal(LoadBracket('data/bracket2022w.csv'))
 
-  ########## Instructions/Background Info
+  BracketM <- reactivePoll(
+      5000,
+      session = session,
+      function() file.mtime("data/bracket2022.csv"),
+      function() {LoadBracket("data/bracket2022.csv")}
+    )
+  BracketW <- reactivePoll(
+      5000,
+      session = session,
+      function() file.mtime("data/bracket2022w.csv"),
+      function() {LoadBracket("data/bracket2022w.csv")}
+    )
 
-  output$CostTable1 <- renderDataTable(
-    options=list(lengthChange=0,                      # show/hide records per page dropdown
-                 searching=0,                         # global search box on/off
-                 info=0,                              # information on/off (how many records filtered, etc)
-                 paging=FALSE,
-                 ordering = FALSE,
-                 autoWidth=TRUE                       # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ),  {
-    SeedTable <-
-      BracketM %>% group_by(seed) %>%
-      summarise(cost = max(cost), `pre-2019 cost` = max(cost.old)) %>%
-      arrange(seed)
-    SeedTable %>% head(nrow(SeedTable) / 2)
+  GameScoresM <-
+    reactivePoll(
+      500,
+      session = session,
+      function() file.mtime("data/Scores/Mens"),
+      function() {LoadGameScores("data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv")}
+    )
+
+  GameScoresW <-
+    reactivePoll(
+      500,
+      session = session,
+      function() file.mtime("data/Scores/Womens"),
+      function() {LoadGameScores("data/Scores/2022/Womens/", pattern = "W-.*2022.*\\.csv")}
+    )
+
+  ##############################
+  # entry matrices
+
+  EM <- reactive({build_entry_matrix(Entries(), ext = "M")})
+  EW <- reactive({build_entry_matrix(Entries(), ext = "W")})
+
+  ##############################
+  # Brackets and tournament
+
+  TMinit <- reactive({tournament_init(names = BracketM()[['team']], seeds = BracketM()[['seed']], label = "M")})
+  TWinit <- reactive({tournament_init(names = BracketW()[['team']], seeds = BracketW()[['seed']], label = "W")})
+
+  TM <- reactive({
+    Scores <- GameScoresM()
+    if (nrow(Scores) > 0) {
+      TMinit() |> tournament_update(games = Scores[['game_number']], results = Scores[['winner_01']])
+    } else {
+      TMinit()
+    }
   })
 
-  output$CostTable2 <- renderDataTable(
-    options=list(lengthChange=0,                      # show/hide records per page dropdown
-                 searching=0,                         # global search box on/off
-                 info=0,                              # information on/off (how many records filtered, etc)
-                 paging=FALSE,
-                 ordering = FALSE,
-                 autoWidth=TRUE                       # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ),  {
-    SeedTable <-
-      BracketM %>% group_by(seed) %>%
-      summarise(cost = max(cost), `pre-2019 cost` = max(cost.old)) %>%
-      arrange(seed)
-    SeedTable %>% tail(-nrow(SeedTable) / 2)
+  TW <- reactive({
+    Scores <- GameScoresW()
+    if (nrow(Scores) > 0) {
+      TWinit() |> tournament_update( games = Scores[['game_number']], results = Scores[['winner_01']])
+    } else {
+      TWinit()
+    }
   })
 
-  output$PastWinners <- renderDataTable(
-    options=list(lengthChange=0,                      # show/hide records per page dropdown
-                 searching=0,                         # global search box on/off
-                 info=0,                              # information on/off (how many records filtered, etc)
-                 ordering = FALSE,
-                 paging=FALSE,
-                 autoWidth=TRUE                       # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ),  {
-    History <- read.csv("data/historical-winners.csv", header=TRUE)
-    History %>% arrange(year, winner)
+  ### ****** -> madness?
+
+  CompletedGamesM <- reactive({
+    compGames <- completedGames(GameScoresM(), BracketM())
+    if (nrow(compGames) < 1) return(compGames)
+    compGames %>%
+      arrange(game) %>%
+      select(game, winner, loser, score)
+  })
+  CompletedGamesW <- reactive({
+    compGames <- completedGames(GameScoresW(), BracketW())
+    if (nrow(compGames) < 1) return(compGames)
+    compGames %>%
+      arrange(game) %>%
+      select(game, winner, loser, score)
   })
 
-  ############ Select Teams and Store Entry ###########
+  ContestStatusM <- reactive({
+    contest_status(TM(), EM(), BracketM())
+  })
+  ContestStatusW <- reactive({
+    contest_status(TW(), EW(), BracketW())
+  })
+
+
+  ############ Select Teams ###########
+
   TeamsM <- reactive(c( input$regionM1, input$regionM2, input$regionM3, input$regionM4 ))
   TeamsW <- reactive(c( input$regionW1, input$regionW2, input$regionW3, input$regionW4 ))
 
-  regionsM <- unique(BracketM$region)
-  regionsW <- unique(BracketW$region)
+  regionsM <- reactive({unique(BracketM()$region)})
+  regionsW <- reactive({unique(BracketW()$region)})
 
-  output$RegionNameM1 <- renderText({regionsM[1]})
-  output$RegionNameM2 <- renderText({regionsM[2]})
-  output$RegionNameM3 <- renderText({regionsM[3]})
-  output$RegionNameM4 <- renderText({regionsM[4]})
+  output$RegionNameM1 <- renderText({regionsM()[1]})
+  output$RegionNameM2 <- renderText({regionsM()[2]})
+  output$RegionNameM3 <- renderText({regionsM()[3]})
+  output$RegionNameM4 <- renderText({regionsM()[4]})
 
-  output$RegionNameW1 <- renderText({regionsW[1]})
-  output$RegionNameW2 <- renderText({regionsW[2]})
-  output$RegionNameW3 <- renderText({regionsW[3]})
-  output$RegionNameW4 <- renderText({regionsW[4]})
+  output$RegionNameW1 <- renderText({regionsW()[1]})
+  output$RegionNameW2 <- renderText({regionsW()[2]})
+  output$RegionNameW3 <- renderText({regionsW()[3]})
+  output$RegionNameW4 <- renderText({regionsW()[4]})
 
   output$TeamsSelectorM1 <- renderUI({
-    checkboxGroupInput("regionM1","",regionChoices(regionsM[1], BracketM))
+    checkboxGroupInput("regionM1","",regionChoices(regionsM()[1], BracketM()))
   })
 
   output$TeamsSelectorM2 <- renderUI({
-    checkboxGroupInput("regionM2","",regionChoices(regionsM[2], BracketM))
+    checkboxGroupInput("regionM2","",regionChoices(regionsM()[2], BracketM()))
   })
 
   output$TeamsSelectorM3 <- renderUI({
-    checkboxGroupInput("regionM3","",regionChoices(regionsM[3], BracketM))
+    checkboxGroupInput("regionM3","",regionChoices(regionsM()[3], BracketM()))
   })
 
   output$TeamsSelectorM4 <- renderUI({
-    checkboxGroupInput("regionM4","",regionChoices(regionsM[4], BracketM))
+    checkboxGroupInput("regionM4","",regionChoices(regionsM()[4], BracketM()))
   })
 
   output$TeamsSelectorW1 <- renderUI({
-    checkboxGroupInput("regionW1","",regionChoices(regionsW[1], BracketW))
+    checkboxGroupInput("regionW1","",regionChoices(regionsW()[1], BracketW()))
   })
 
   output$TeamsSelectorW2 <- renderUI({
-    checkboxGroupInput("regionW2","",regionChoices(regionsW[2], BracketW))
+    checkboxGroupInput("regionW2","",regionChoices(regionsW()[2], BracketW()))
   })
 
   output$TeamsSelectorW3 <- renderUI({
-    checkboxGroupInput("regionW3","",regionChoices(regionsW[3], BracketW))
+    checkboxGroupInput("regionW3","",regionChoices(regionsW()[3], BracketW()))
   })
 
   output$TeamsSelectorW4 <- renderUI({
-    checkboxGroupInput("regionW4","",regionChoices(regionsW[4], BracketW))
+    checkboxGroupInput("regionW4","",regionChoices(regionsW()[4], BracketW()))
   })
 
   # timeOfLastEntry <- reactive( lastTimeStamp )
@@ -255,8 +254,8 @@ shinyServer(function(input, output, session) {
   output$totalTeamsM <- renderText(paste("Number of Teams:",totalTeamsM()))
   output$totalTeamsW <- renderText(paste("Number of Teams:",totalTeamsW()))
 
-  pointsSpentM <- reactive( sum( filter(BracketM, team %in% TeamsM())$cost ) )
-  pointsSpentW <- reactive( sum( filter(BracketW, team %in% TeamsW())$cost ) )
+  pointsSpentM <- reactive( sum( filter(BracketM(), team %in% TeamsM())$cost ) )
+  pointsSpentW <- reactive( sum( filter(BracketW(), team %in% TeamsW())$cost ) )
 
   output$pointsSpentM <- reactive(pointsSpentM())
   output$pointsSpentW <- reactive(pointsSpentW())
@@ -308,8 +307,8 @@ shinyServer(function(input, output, session) {
               pointsW = pointsSpentW(),
               teams = TeamsM(),
               teamsW = TeamsW(),
-              teamsLogical = sapply(BracketM$team, function(x) x %in% TeamsM()),
-              teamsLogicalW = sapply(BracketW$team, function(x) x %in% TeamsW()),
+              teamsLogical = sapply(BracketM()$team, function(x) x %in% TeamsM()),
+              teamsLogicalW = sapply(BracketW()$team, function(x) x %in% TeamsW()),
               time = lastTimeStamp)
       )
       saveRDS(NewEntry, file=paste0("data/Entries/2022/Entry-",
@@ -340,17 +339,18 @@ shinyServer(function(input, output, session) {
   }
   )
 
-  output$numEntries <- reactive( length(GetEntries()) )
+  output$numEntries <- reactive( length(Entries()) )
 
   ############ Download Data ###########
   output$downloadData <- downloadHandler(
     filename = function() { "Entries.rds" },
     content = function(file) {
-      saveRDS(GetEntries(), file)
+      saveRDS(Entries(), file)
     }
   )
 
   ########### Turn Controls on and off ############
+
   output$showDownloadButton <- reactive({
     "download" %in% names(query())
   } )
@@ -379,70 +379,71 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "showGameEntry", suspendWhenHidden = FALSE)
 
   output$showStandingsM <- reactive({
-    nrow(GetCompletedGamesM()) > 0 && nrow(EM) > 0
+    nrow(CompletedGamesM()) > 0 && nrow(EM()) > 0
   } )
   output$showStandingsW <- reactive({
-    nrow(GetCompletedGamesW()) > 0 && nrow(EM) > 0
+    nrow(CompletedGamesW()) > 0 && nrow(EM()) > 0
   } )
   outputOptions(output, "showStandingsM", suspendWhenHidden = FALSE)
   outputOptions(output, "showStandingsW", suspendWhenHidden = FALSE)
 
   output$showScoresM <- reactive({
-    nrow(GetCompletedGamesM()) > 0
+    nrow(CompletedGamesM()) > 0
   } )
   output$showScoresW <- reactive({
-    nrow(GetCompletedGamesW()) > 0
+    nrow(CompletedGamesW()) > 0
   } )
   outputOptions(output, "showScoresM", suspendWhenHidden = FALSE)
   outputOptions(output, "showScoresW", suspendWhenHidden = FALSE)
 
 
-  ############ Score Updates ###########
+  ############ Score Updates #############
+
   output$password <- renderPrint({input$password})
 
   output$gameScoreSelectorM <- renderUI({
-    games <- allGames(BracketM, GetGameScoresM())
+    games <- allGames(BracketM(), GameScoresM())
     selectInput("gameToScoreM", "Choose a Game", choices = games, selectize=FALSE)
   })
 
   output$gameScoreSelectorW <- renderUI({
-    games <- allGames(BracketW, GetGameScoresW())
+    games <- allGames(BracketW(), GameScoresW())
     selectInput("gameToScoreW", "Choose a Game", choices = games, selectize=FALSE)
   })
 
   output$gameToScoreTextM <- renderText({
     paste0("About to give score for game ", input$gameToScoreM, ": ",
-           awayTeam(as.numeric(input$gameToScoreM), BracketM, GetGameScoresM()), " vs. ",
-           homeTeam(as.numeric(input$gameToScoreM), BracketM, GetGameScoresM())
+           awayTeam(as.numeric(input$gameToScoreM), BracketM(), GameScoresM()), " vs. ",
+           homeTeam(as.numeric(input$gameToScoreM), BracketM(), GameScoresM())
     )
   })
   output$gameToScoreTextW <- renderText({
     paste0("About to give score for game ", input$gameToScoreW, ": ",
-           awayTeam(as.numeric(input$gameToScoreW), BracketW, GetGameScoresW()), " vs. ",
-           homeTeam(as.numeric(input$gameToScoreW), BracketW, GetGameScoresW())
+           awayTeam(as.numeric(input$gameToScoreW), BracketW(), GameScoresW()), " vs. ",
+           homeTeam(as.numeric(input$gameToScoreW), BracketW(), GameScoresW())
     )
   })
 
   output$homeTeamScoreM <- renderUI({
     numericInput("hscoreM", step=0,
-                 label = homeTeam(as.numeric(input$gameToScoreM), BracketM, GetGameScoresM()),
-                 value = homeScore(as.numeric(input$gameToScoreM), BracketM, GetGameScoresM()))
+                 label = homeTeam(as.numeric(input$gameToScoreM), BracketM(), GameScoresM()),
+                 value = homeScore(as.numeric(input$gameToScoreM), BracketM(), GameScoresM()))
   })
   output$homeTeamScoreW <- renderUI({
     numericInput("hscoreW", step=0,
-                 label = homeTeam(as.numeric(input$gameToScoreW), BracketW, GetGameScoresW()),
-                 value = homeScore(as.numeric(input$gameToScoreW), BracketW, GetGameScoresW()))
+                 label = homeTeam(as.numeric(input$gameToScoreW), BracketW(), GameScoresW()),
+                 value = homeScore(as.numeric(input$gameToScoreW), BracketW(), GameScoresW()))
   })
 
   output$awayTeamScoreM <- renderUI({
     numericInput("ascoreM", step=0,
-                 label = awayTeam(as.numeric(input$gameToScoreM), BracketM, GetGameScoresM()),
-                 value = awayScore(as.numeric(input$gameToScoreM), BracketM, GetGameScoresM()))
+                 label = awayTeam(as.numeric(input$gameToScoreM), BracketM(), GameScoresM()),
+                 value = awayScore(as.numeric(input$gameToScoreM), BracketM(), GameScoresM()))
   })
   output$awayTeamScoreW <- renderUI({
     numericInput("ascoreW", step=0,
-                 label = awayTeam(as.numeric(input$gameToScoreW), BracketW, GetGameScoresW()),
-                 value = awayScore(as.numeric(input$gameToScoreW), BracketW, GetGameScoresW()))
+                 label = awayTeam(as.numeric(input$gameToScoreW), BracketW(), GameScoresW()),
+                 value = awayScore(as.numeric(input$gameToScoreW), BracketW(), GameScoresW()))
   })
 
   output$scoreSavedTextM <- renderText({
@@ -453,8 +454,8 @@ shinyServer(function(input, output, session) {
       isolate(hs <- as.numeric(input$hscoreM))
       isolate(as <- as.numeric(input$ascoreM))
 
-      home <- homeTeam(gts, BracketM, GetGameScoresM())
-      away <- awayTeam(gts, BracketM, GetGameScoresM())
+      home <- homeTeam(gts, BracketM(), GameScoresM())
+      away <- awayTeam(gts, BracketM(), GameScoresM())
 
       # this will react each time the save score button is pressed.
       if (input$saveScoreButtonM > 0)
@@ -472,8 +473,8 @@ shinyServer(function(input, output, session) {
       isolate(hs <- as.numeric(input$hscoreW))
       isolate(as <- as.numeric(input$ascoreW))
 
-      home <- homeTeam(gts, BracketW, GetGameScoresW())
-      away <- awayTeam(gts, BracketW, GetGameScoresW())
+      home <- homeTeam(gts, BracketW(), GameScoresW())
+      away <- awayTeam(gts, BracketW(), GameScoresW())
 
       # this will react each time the save score button is pressed.
       if (input$saveScoreButtonW > 0)
@@ -484,22 +485,20 @@ shinyServer(function(input, output, session) {
     }
   })
 
-
-  ########## Game Results ##########
   # updates when a new score is saved (button)
   observeEvent( input$saveScoreButtonM, {
     if (as.numeric(input$saveScoreButtonM) > 0) {
       gts <- as.numeric(input$gameToScoreM)
       hs <- as.numeric(input$hscoreM)
       as <- as.numeric(input$ascoreM)
-      home <- homeTeam(gts, BracketM, GetGameScoresM())
-      away <- awayTeam(gts, BracketM, GetGameScoresM())
+      home <- homeTeam(gts, BracketM(), GameScoresM())
+      away <- awayTeam(gts, BracketM(), GameScoresM())
       createLogEntry(paste("Score enterred:", away, "vs.", home, as, "-", hs))
       # Note for winner_01: 0 = home win; 1 = away win
-      write.csv(
+      readr::write_csv(
         tibble(game_number = gts, winner_01 = as.numeric(as > hs),
                home = home, away = away, hscore = hs, ascore = as),
-        row.names = FALSE,
+        # row.names = FALSE,
         file = paste0("data/Scores/2022/Mens/M-",gsub("/"," or ", home),"-", gsub("/", " or ", away),
                       "-", humanTime(), ".csv")
       )
@@ -510,62 +509,29 @@ shinyServer(function(input, output, session) {
       gts <- as.numeric(input$gameToScoreW)
       hs <- as.numeric(input$hscoreW)
       as <- as.numeric(input$ascoreW)
-      home <- homeTeam(gts, BracketW, GetGameScoresW())
-      away <- awayTeam(gts, BracketW, GetGameScoresW())
+      home <- homeTeam(gts, BracketW(), GameScoresW())
+      away <- awayTeam(gts, BracketW(), GameScoresW())
       createLogEntry(paste("Women's Score enterred:", away, "vs.", home, as, "-", hs))
       # Note for winner_01: 0 = home win; 1 = away win
-      write.csv(
+      readr::write_csv(
         tibble(game_number = gts, winner_01 = as.numeric(as > hs),
                home = home, away = away, hscore = hs, ascore = as),
-        row.names = FALSE,
+        # row.names = FALSE,
         file = paste0("data/Scores/2022/Womens/W-",gsub("/"," or ", home),"-", gsub("/", " or ", away),
                       "-", humanTime(), ".csv")
       )
     }
   })
 
-  # observeEvent(input$MorW, {
-  #   updateTabsetPanel(session, "gameScores", selected = paste0("gameScores", input$MorW))
-  # })
-
-
-  GetCompletedGamesM <- reactive({
-    compGames <- completedGames(GetGameScoresM(), BracketM)
-    if (nrow(compGames) < 1) return(compGames)
-    compGames %>%
-      arrange(game) %>%
-      select(game, winner, loser, score)
-  })
-  GetCompletedGamesW <- reactive({
-    compGames <- completedGames(GetGameScoresW(), BracketW)
-    if (nrow(compGames) < 1) return(compGames)
-    compGames %>%
-      arrange(game) %>%
-      select(game, winner, loser, score)
-  })
-
-  GetTM <- reactive({
-    Scores <- GetGameScoresM()
-    if (nrow(Scores) > 0) {
-      TMinit |> tournament_update(games = Scores[['game_number']], results = Scores[['winner_01']])
-    }
-  })
-
-  GetTW <- reactive({
-    Scores <- GetGameScoresW()
-    if (nrow(Scores) > 0) {
-      TMinit |> tournament_update( games = Scores[['game_number']], results = Scores[['winner_01']])
-    }
-  })
 
   ########## Bracket ###############
 
   # updates when games scores change
-  GetBracketWithTeamStatusM <- reactive({
-    addTeamStatus(BracketM, scheduledGames(bracket=BracketM, results = GetGameScoresM()))
+  BracketWithTeamStatusM <- reactive({
+    addTeamStatus(BracketM(), scheduledGames(bracket=BracketM(), results = GameScoresM()))
   })
-  GetBracketWithTeamStatusW <- reactive({
-    addTeamStatus(BracketW, scheduledGames(bracket=BracketW, results = GetGameScoresW()))
+  BracketWithTeamStatusW <- reactive({
+    addTeamStatus(BracketW(), scheduledGames(bracket=BracketW(), results = GameScoresW()))
   })
 
 
@@ -575,7 +541,53 @@ shinyServer(function(input, output, session) {
     paste(names(query()), query(), sep = "=", collapse=", ")
   })
 
+  ########################################
+  # Outputs
+  ########################################
 
+  ########## Instructions/Background Info
+
+  output$CostTable1 <- renderDataTable(
+    options=list(lengthChange=0,                      # show/hide records per page dropdown
+                 searching=0,                         # global search box on/off
+                 info=0,                              # information on/off (how many records filtered, etc)
+                 paging=FALSE,
+                 ordering = FALSE,
+                 autoWidth=TRUE                       # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ),  {
+    SeedTable <-
+      BracketM() %>% group_by(seed) %>%
+      summarise(cost = max(cost), `pre-2019 cost` = max(cost.old)) %>%
+      arrange(seed)
+    SeedTable %>% head(nrow(SeedTable) / 2)
+  })
+
+  output$CostTable2 <- renderDataTable(
+    options=list(lengthChange=0,                      # show/hide records per page dropdown
+                 searching=0,                         # global search box on/off
+                 info=0,                              # information on/off (how many records filtered, etc)
+                 paging=FALSE,
+                 ordering = FALSE,
+                 autoWidth=TRUE                       # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ),  {
+    SeedTable <-
+      BracketM() %>% group_by(seed) %>%
+      summarise(cost = max(cost), `pre-2019 cost` = max(cost.old)) %>%
+      arrange(seed)
+    SeedTable %>% tail(-nrow(SeedTable) / 2)
+  })
+
+  output$PastWinners <- renderDataTable(
+    options=list(lengthChange=0,                      # show/hide records per page dropdown
+                 searching=0,                         # global search box on/off
+                 info=0,                              # information on/off (how many records filtered, etc)
+                 ordering = FALSE,
+                 paging=FALSE,
+                 autoWidth=TRUE                       # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ),  {
+    History <- read.csv("data/historical-winners.csv", header=TRUE)
+    History %>% arrange(year, winner)
+  })
 
   ############# Game Scores Table #####################
 
@@ -588,7 +600,7 @@ shinyServer(function(input, output, session) {
                  ordering = FALSE,
                  autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
     ),  {
-      GetCompletedGamesM()
+      CompletedGamesM()
     })
   output$ScoresTableW <- renderDataTable(
     options=list(pageLength = 63,                     # initial number of records
@@ -599,19 +611,10 @@ shinyServer(function(input, output, session) {
                  ordering = FALSE,
                  autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
     ),  {
-      GetCompletedGamesW()
+      CompletedGamesW()
     })
 
   ############# Results Table #####################
-  ResultsDFM <- reactive({
-    # resultsTable(GetEntries(), GetBracketWithTeamStatusM(), possibleMatchups(BracketM))
-    contest_status(GetTM(), EM, BracketM)
-  })
-  ResultsDFW <- reactive({
-    # resultsTable(GetEntries(), GetBracketWithTeamStatusM(), possibleMatchups(BracketM))
-    contest_status(GetTW(), EW, BracketW)
-  })
-
 
   output$ResultsTableM <- renderDataTable(
     options=list(pageLength = 35,                     # initial number of records
@@ -621,7 +624,7 @@ shinyServer(function(input, output, session) {
                  info=1,                              # information on/off (how many records filtered, etc)
                  autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
     ), {
-      ResultsDFM()
+      ContestStatusM()
     })
 
   output$ResultsTableW <- renderDataTable(
@@ -632,27 +635,27 @@ shinyServer(function(input, output, session) {
                  info=1,                              # information on/off (how many records filtered, etc)
                  autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
     ), {
-      ResultsDFW()
+      ContestStatusW()
     })
 
   ######### reactive text messages #########
   output$tournyStatusM <- renderText({
-    games <- nrow(GetCompletedGamesM()) # sum(GetBracketWithTeamStatus()$wins, na.rm=TRUE)
-    paste0("Data based on ", nrow(EM), " contestants and ", games, " games.")
+    games <- nrow(CompletedGamesM()) # sum(BracketWithTeamStatus()$wins, na.rm=TRUE)
+    paste0("Data based on ", nrow(EM()), " contestants and ", games, " games.")
   })
   output$tournyStatusW <- renderText({
-    games <- nrow(GetCompletedGamesW()) # sum(GetBracketWithTeamStatus()$wins, na.rm=TRUE)
-    paste0("Data based on ", nrow(EW), " contestants and ", games, " games.")
+    games <- nrow(CompletedGamesW()) # sum(BracketWithTeamStatus()$wins, na.rm=TRUE)
+    paste0("Data based on ", nrow(EW()), " contestants and ", games, " games.")
   })
 
   ######### (basketball) team data table #########
 
-  GetTeamDataM <- reactive({
-    teamData(GetEntries(), GetBracketWithTeamStatusM())
+  TeamDataM <- reactive({
+    teamData(Entries(), BracketWithTeamStatusM())
   })
 
-  GetTeamDataW <- reactive({
-    teamData(GetEntries(), GetBracketWithTeamStatusW())
+  TeamDataW <- reactive({
+    teamData(Entries(), BracketWithTeamStatusW())
   })
 
   output$teamData <- renderDataTable(
@@ -664,11 +667,11 @@ shinyServer(function(input, output, session) {
                  autoWidth = 1                # automatic column width calculation, disable if passing column width via aoColumnDefs
                  #aoColumnDefs = list(list(sWidth="300px", aTargets=c(list(0),list(1))))    # custom column size
     ),
-    GetTeamDataM()
+    TeamDataM()
   )
-      # E <- GetEntries()
+      # E <- Entries()
       # M <- do.call(rbind, lapply( E, function(x) x$teamsLogical ) )
-      # B <- GetBracketWithTeamStatus()
+      # B <- BracketWithTeamStatus()
       # if (length(E) > 0) {
       #   row.names(M) <- sapply( E, function(x) x$name)
       # }
@@ -680,24 +683,24 @@ shinyServer(function(input, output, session) {
       #            Wins = B$wins)
 
   output$entrantSelector <- renderUI({
-    entrants <- sapply(GetEntries(), function(x) x$email)
+    entrants <- sapply(Entries(), function(x) x$email)
     names(entrants) <-
       paste0(
-        sapply(GetEntries(), function(x) x$name),
+        sapply(Entries(), function(x) x$name),
         " [",
-        ResultsDF()$score,
+        ContestStatus()$score,
         "]"
       )
-    selectInput("oneEntrant", "Select a player", choices = entrants[order(- ResultsDF()$score)], selectize=FALSE)
+    selectInput("oneEntrant", "Select a player", choices = entrants[order(- ContestStatus()$score)], selectize=FALSE)
   })
 
 
   # H2H <- reactive({
-  #   E <- GetEntries()
-  #   G <- GetGameScoresM()
-  #   B <- GetBracketWithTeamStatusM()
+  #   E <- Entries()
+  #   G <- GameScoresM()
+  #   B <- BracketWithTeamStatusM()
   #   head2head_byindex <-
-  #     Vectorize( function(i, j) head2head(E[[i]]$teams, E[[j]]$teams, BracketM, G) )
+  #     Vectorize( function(i, j) head2head(E[[i]]$teams, E[[j]]$teams, BracketM(), G) )
   #   n <- length(E)
   #   best <- t(outer(input$oneEntrant, 1:n, head2head_byindex))
   #   bestText <- ifelse(best > 0, paste("win by", best), ifelse (best == 0, "tie", paste("lose by", -best)))
@@ -717,7 +720,7 @@ shinyServer(function(input, output, session) {
   #           intersect( B[B$alive, "team"], intersect(x$teams, E[[input$oneEntrant]]$teams))
   #       )
   #   ) %>%
-  #     cbind( ResultsDF() ) %>%
+  #     cbind( ContestStatus() ) %>%
   #     arrange(- score) %>%
   #     select(1:6, `current score of other player` = score)
   # })
@@ -759,18 +762,18 @@ shinyServer(function(input, output, session) {
   #                autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
   #   ),
   #   WhoCanWin(
-  #     GetEntries(),
+  #     Entries(),
   #     M = Sweet16M(), Sweet16Standings(),
-  #     results = (GetTeamData() %>% filter(Team %in% rownames(Sweet16M())))$Wins - 2
+  #     results = (TeamData() %>% filter(Team %in% rownames(Sweet16M())))$Wins - 2
   #     ) %>%
-  #     merge(ResultsDF(), by = "name") %>%
+  #     merge(ContestStatusM(), by = "name") %>%
   #     select(name, `winning scenarios`, `win percent`,
   #            score, `guaranteed wins`, `max possible`,
   #            `losing scenarios`, `lose percent`)
   # )
 
   # output$dendroPlot <- renderD3heatmap({
-  #   E <- GetEntries()
+  #   E <- Entries()
   #   M <- do.call(rbind, lapply(E, function(x) x$teamsLogical))
   #   rownames(M) <- sapply(E, function(x) x$name)
   #   D <- as.data.frame(M)

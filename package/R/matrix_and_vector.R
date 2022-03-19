@@ -105,22 +105,39 @@ all_games <- function(tournament, unplayed.only = FALSE, determined.only = FALSE
 #' @inheritParams scores
 #' @export
 contest_status <- function(tournament, entries, bracket) {
+  if (sum(wins(tournament), na.rm = TRUE) < 1) {
+    return(
+      dplyr::tibble(
+        email = attr(entries, "email"),
+        name = attr(entries, "name"),
+        dept = attr(entries, "dept"),
+        score = NA,
+        dusty_score = NA,
+        `score details` = NA,
+        `guaranteed wins` = NA,
+        `max possible` = NA,
+        `teams remaining` = NA,
+        `points remaining` = NA,
+        `teams lost` = NA,
+      )
+    )
+  }
   Bracket <- bracket |>
     mutate(
       cost = seedCost[seed],
       alive = alive(tournament)
     )
   PW <- possible_winners(tournament)
-    Results <-
-      dplyr::tibble(
-        email = attr(entries, "email"),
-        name = attr(entries, "name"),
-        dept = attr(entries, "dept"),
-        score = scores(tournament, entries, dust = FALSE),
-        dusty_score = scores(tournament, entries, dust = TRUE),
-        `score details` =
-          round_by_round(tournament, entries) |>
-          apply(1, function(x) paste(sum(x), " = ", paste(x, collapse = " + "))),
+  Results <-
+    dplyr::tibble(
+      email = attr(entries, "email"),
+      name = attr(entries, "name"),
+      dept = attr(entries, "dept"),
+      score = scores(tournament, entries, dust = FALSE),
+      dusty_score = scores(tournament, entries, dust = TRUE),
+      `score details` =
+        round_by_round(tournament, entries) |>
+        apply(1, function(x) paste(sum(x), " = ", paste(x, collapse = " + "))),
       `guaranteed wins` =
         apply(entries, 1, function(x) {
           purrr::map_int(PW, function(pw) { all(pw %in% which(as.logical(x))) }) |> sum()
@@ -131,19 +148,19 @@ contest_status <- function(tournament, entries, bracket) {
         } ),
       `teams remaining` =
         apply( entries, 1,
-                function(x) {
-                  BracketLeft <- Bracket %>% filter(x & alive) %>% arrange(seed)
-                  numberLeft <- sum( x * Bracket[['alive']] )
-                  paste(
-                    sprintf("%02d", numberLeft), ": ",
-                    paste(BracketLeft[['team']], " (", BracketLeft[['seed']], ")",
-                          sep="",
-                          collapse=", "),
-                    collapse="")
-                }
+               function(x) {
+                 BracketLeft <- Bracket %>% filter(x & alive) %>% arrange(seed)
+                 numberLeft <- sum( x * Bracket[['alive']] )
+                 paste(
+                   sprintf("%02d", numberLeft), ": ",
+                   paste(BracketLeft[['team']], " (", BracketLeft[['seed']], ")",
+                         sep="",
+                         collapse=", "),
+                   collapse="")
+               }
         ),
       `points remaining` =
-         apply(entries, 1, function(x) { sum(x * Bracket[['cost']] * Bracket[['alive']]) } ),
+        apply(entries, 1, function(x) { sum(x * Bracket[['cost']] * Bracket[['alive']]) } ),
       `teams lost` =
         apply(entries, 1,
               function(x) {
@@ -158,9 +175,9 @@ contest_status <- function(tournament, entries, bracket) {
               }
         )
     )
-    Results <- Results %>% arrange(desc(dusty_score))
-    # rownames(Results) <- Results[['email']]
-    Results %>% select(-dusty_score)
+  Results <- Results %>% arrange(desc(dusty_score))
+  # rownames(Results) <- Results[['email']]
+  Results %>% select(-dusty_score)
 }
 # Store tournament with 2^n teams as vector of length 2^n - 1
 #   * initialize as rep(NA,2^n - 1)
@@ -182,8 +199,9 @@ contest_status <- function(tournament, entries, bracket) {
 scores <- function(tournament, entries, dust = TRUE) {
   W <- wins(tournament)
   if (dust) {
-    eps = rev(1 / cumprod(5 * c(1, 2, 5, 10, 20, 100)))
-    W <- W + eps[W]
+    # 7 dust amounts for wins 0 through 6
+    eps = c(0, rev(1 / cumprod(5 * c(1, 2, 5, 10, 20, 100))))
+    W <- W + eps[1 + W]
   }
   entries %*% W |>
     as.vector() |>
