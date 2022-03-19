@@ -7,8 +7,8 @@
 library(shiny)
 library(dplyr)
 library(madness)
-library(reactlog)
-reactlog_enable()
+# library(reactlog)
+# reactlog_enable()
 
 source("Tourny.R")
 source("Loaders.R")
@@ -98,7 +98,7 @@ shinyServer(function(input, output, session) {
 
   Entries <-
     reactivePoll(
-      5000,
+      500,
       session = session,
       function() file.mtime("data/Entries/"),
       function() {
@@ -112,13 +112,13 @@ shinyServer(function(input, output, session) {
   # BracketW <- reactiveVal(LoadBracket('data/bracket2022w.csv'))
 
   BracketM <- reactivePoll(
-      5000,
+      500,
       session = session,
       function() file.mtime("data/bracket2022.csv"),
       function() {LoadBracket("data/bracket2022.csv")}
     )
   BracketW <- reactivePoll(
-      5000,
+      500,
       session = session,
       function() file.mtime("data/bracket2022w.csv"),
       function() {LoadBracket("data/bracket2022w.csv")}

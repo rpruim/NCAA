@@ -7,6 +7,9 @@
 
 library(shiny)
 library(d3heatmap)
+library(shinycssloaders)
+
+options(spinner.type = 5, spinner.color = "#0dc5c1", spinner.size = 1.5)
 
 shinyUI(
   fluidPage(
@@ -42,15 +45,15 @@ shinyUI(
         ),
         fluidRow(
           column(1),
-          column(4,  dataTableOutput("CostTable1")),
+          column(4,  dataTableOutput("CostTable1")) |> withSpinner(),
           column(2),
-          column(4,  dataTableOutput("CostTable2")),
+          column(4,  dataTableOutput("CostTable2")) |> withSpinner(),
           column(1)
         ),
         h2("Past Winners"),
         fluidRow(
           column(3),
-          column(6,  dataTableOutput("PastWinners")),
+          column(6,  dataTableOutput("PastWinners")) |> withSpinner(),
           column(3)
         )
       ),
@@ -154,7 +157,7 @@ shinyUI(
             ),
             conditionalPanel(
               condition = 'output.showStandingsW',
-              dataTableOutput("ScoresTableW")
+              dataTableOutput("ScoresTableW") |> withSpinner()
             )
           ),
           tabPanel(
@@ -166,7 +169,7 @@ shinyUI(
             ),
             conditionalPanel(
               condition = 'output.showStandingsM',
-              dataTableOutput("ScoresTableM")
+              dataTableOutput("ScoresTableM") |> withSpinner()
             )
           ) # tabPanel
         ) # tabsetPanel
@@ -187,7 +190,7 @@ shinyUI(
             conditionalPanel(
               condition = 'output.showStandingsW',
               strong(textOutput("tournyStatusW")),
-              dataTableOutput("ResultsTableW")
+              dataTableOutput("ResultsTableW") |> withSpinner()
             )
           ),
           tabPanel(
@@ -200,7 +203,7 @@ shinyUI(
             conditionalPanel(
               condition = 'output.showStandingsM',
               strong(textOutput("tournyStatusM")),
-              dataTableOutput("ResultsTableM")
+              dataTableOutput("ResultsTableM") |> withSpinner()
             )
           )
         ),
@@ -223,7 +226,7 @@ shinyUI(
                    condition = "output.showAdminTab",
                    textInput("passwd", label = h3("Access Code"), value = ""),
                    # h3("System Log"),
-                   # dataTableOutput("logTable")
+                   # dataTableOutput("logTable") |> withSpinner()
                  ) # conditionalPanel
           ),  # column
           column(
