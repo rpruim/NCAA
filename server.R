@@ -483,7 +483,7 @@ shinyServer(function(input, output, session) {
       away <- awayTeam(gts, BracketM(), GameScoresM())
 
       # this will react each time the save score button is pressed.
-      if (input$saveScoreButtonM > 0)
+      if (as.numeric(input$saveScoreButtonM) > 0)
         paste0("Score saved for game ", gts, ": ", away, " ", as, " - ", home, " ", hs )
       else "Select a game and enter scores above."
     } else {
@@ -502,7 +502,7 @@ shinyServer(function(input, output, session) {
       away <- awayTeam(gts, BracketW(), GameScoresW())
 
       # this will react each time the save score button is pressed.
-      if (input$saveScoreButtonW > 0)
+      if (as.numeric(input$saveScoreButtonW) > 0)
         paste0("Score saved for game ", gts, ": ", away, " ", as, " - ", home, " ", hs )
       else "Select a game and enter scores above."
     } else {
