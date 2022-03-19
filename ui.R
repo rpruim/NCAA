@@ -251,13 +251,8 @@ shinyUI(
           column(
             6,
             conditionalPanel(
-              condition = "output.showAdminTab",
+              condition = "output.showGameEntry",
               h3("Enter Game Results"),
-              # radioButtons(
-              #   "MorW", "Choose Tournament",
-              #   choiceNames = c("Women's", "Men's"),
-              #   choiceValues = c("W", "M")
-              # ),
               tabsetPanel(
                 id = "gameScores",
                 type = "tabs",
