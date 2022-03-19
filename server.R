@@ -191,10 +191,10 @@ shinyServer(function(input, output, session) {
   })
 
   ContestStandingsM <- reactive({
-    contest_standings(TM(), EM(), BracketM())
+    madness::contest_standings(TM(), EM(), BracketM())
   })
   ContestStandingsW <- reactive({
-    contest_standings(TW(), EW(), BracketW())
+    madness::contest_standings(TW(), EW(), BracketW())
   })
   ContestStandingsAll <- reactive({
     CSM <- ContestStandingsM()
@@ -336,7 +336,7 @@ shinyServer(function(input, output, session) {
                                     "-",    # was missing when 2016 entries were posted.
                                     digest::digest(NewEntry),
                                     ".rds"))
-      createLogEntry(paste("Entry submitted for", isolate(input$email)))
+      # createLogEntry(paste("Entry submitted for", isolate(input$email)))
 #      Entries <<- LoadEntries()
     }
 
@@ -518,7 +518,7 @@ shinyServer(function(input, output, session) {
       as <- as.numeric(input$ascoreM)
       home <- homeTeam(gts, BracketM(), GameScoresM())
       away <- awayTeam(gts, BracketM(), GameScoresM())
-      createLogEntry(paste("Score enterred:", away, "vs.", home, as, "-", hs))
+      # createLogEntry(paste("Score enterred:", away, "vs.", home, as, "-", hs))
       # Note for winner_01: 0 = home win; 1 = away win
       readr::write_csv(
         tibble(game_number = gts, winner_01 = as.numeric(as > hs),
@@ -536,7 +536,7 @@ shinyServer(function(input, output, session) {
       as <- as.numeric(input$ascoreW)
       home <- homeTeam(gts, BracketW(), GameScoresW())
       away <- awayTeam(gts, BracketW(), GameScoresW())
-      createLogEntry(paste("Women's Score enterred:", away, "vs.", home, as, "-", hs))
+      # createLogEntry(paste("Women's Score enterred:", away, "vs.", home, as, "-", hs))
       # Note for winner_01: 0 = home win; 1 = away win
       readr::write_csv(
         tibble(game_number = gts, winner_01 = as.numeric(as > hs),
