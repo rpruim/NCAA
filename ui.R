@@ -10,7 +10,7 @@ library(d3heatmap)
 library(shinycssloaders)
 library(waiter)
 
-options(spinner.type = 5, spinner.color = "#0dc5c1", spinner.size = 1.5)
+options(spinner.type = 5, spinner.color = "navy", spinner.size = 1.5)
 
 shinyUI(
   fluidPage(
@@ -264,7 +264,7 @@ shinyUI(
                 tabPanel(
                   "Women's",
                   id = "gameScoresW",
-                  uiOutput("gameScoreSelectorW"),
+                  uiOutput("gameScoreSelectorW") |> withSpinner(),
                   uiOutput("awayTeamScoreW"),
                   uiOutput("homeTeamScoreW"),
                    actionButton("saveScoreButtonW", "Submit Score"),
@@ -273,7 +273,7 @@ shinyUI(
                 tabPanel(
                   "Men's",
                   id = "gameScoresM",
-                  uiOutput("gameScoreSelectorM"),
+                  uiOutput("gameScoreSelectorM") |> withSpinner(),
                   uiOutput("awayTeamScoreM"),
                   uiOutput("homeTeamScoreM"),
                   actionButton("saveScoreButtonM", "Submit Score"),
