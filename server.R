@@ -203,13 +203,14 @@ shinyServer(function(input, output, session) {
       filter(score_M > 0 & score_W > 0)
     CS |>
       mutate(
-        score = score_M + score_W,
+        total = score_M + score_W,
         name = name_M,
         `guaranteed wins` = `guaranteed wins_M` + `guaranteed wins_W`,
         `max possible` = `max possible_M` + `max possible_W`
       ) |>
-      arrange(desc(score)) |>
-      select(name, score, `guaranteed wins`, `max possible`)
+      arrange(desc(total)) |>
+      rename(`men's wins` = score_M, `women's wins` = score_W) |>
+      select(name, `men's wins`, `women's wins`, total, `guaranteed wins`, `max possible`)
   })
 
 
