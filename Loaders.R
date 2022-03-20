@@ -67,7 +67,7 @@ LoadGameScores <- function(path = "data/Scores/2022/Mens/", pattern = "M-.*2022.
   res <- list()
   # read files in order; newer entries with same email will clobber older ones
   for (f in sort(gfiles)) {
-    g <- read.csv(f, stringsAsFactors = FALSE)
+    g <- readr::read_csv(f)
     res[[paste0(g$home, "-", g$away)]] <- g
   }
   bind_rows(res) %>% addWL()
