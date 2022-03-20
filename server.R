@@ -103,7 +103,7 @@ shinyServer(function(input, output, session) {
     reactivePoll(
       500,
       session = session,
-      function() file.mtime("data/Entries/"),
+      function() dir("data/Entries/", full.names = TRUE) |> file.mtime() |> max(),
       function() {
         load_entries_from_files(
           TMinit(),
