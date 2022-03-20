@@ -131,7 +131,7 @@ shinyServer(function(input, output, session) {
     reactivePoll(
       500,
       session = session,
-      function() max(file.mtime(dir("data/Scores/Mens"))),
+      function() max(file.mtime(dir("data/Scores/2022/Mens", full.names = TRUE))),
       function() {LoadGameScores("data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv")}
     )
 
@@ -139,7 +139,7 @@ shinyServer(function(input, output, session) {
     reactivePoll(
       500,
       session = session,
-      function() max(file.mtime(dir("data/Scores/Womens"))),
+      function() max(file.mtime(dir("data/Scores/2022/Womens", full.names = TRUE))),
       function() {LoadGameScores("data/Scores/2022/Womens/", pattern = "W-.*2022.*\\.csv")}
     )
 
