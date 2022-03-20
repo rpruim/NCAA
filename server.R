@@ -552,7 +552,7 @@ shinyServer(function(input, output, session) {
       readr::write_csv(
         tibble(game_number = gts, winner_01 = as.numeric(as > hs),
                home = home, away = away, hscore = hs, ascore = as),
-        file = "data/Scores/2022/Mens/scores-2022-M.csv", append = TRUE)
+        file = "data/Scores/2022/Womens/scores-2022-W.csv", append = TRUE)
     }
   })
 
