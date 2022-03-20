@@ -523,10 +523,13 @@ shinyServer(function(input, output, session) {
       readr::write_csv(
         tibble(game_number = gts, winner_01 = as.numeric(as > hs),
                home = home, away = away, hscore = hs, ascore = as),
-        # row.names = FALSE,
         file = paste0("data/Scores/2022/Mens/M-",gsub("/"," or ", home),"-", gsub("/", " or ", away),
                       "-", humanTime(), ".csv")
       )
+      readr::write_csv(
+        tibble(game_number = gts, winner_01 = as.numeric(as > hs),
+               home = home, away = away, hscore = hs, ascore = as),
+        file = "data/Scores/2022/Mens/scores-2022-M.csv", append = TRUE)
     }
   })
   observeEvent( input$saveScoreButtonW, {
@@ -545,6 +548,10 @@ shinyServer(function(input, output, session) {
         file = paste0("data/Scores/2022/Womens/W-",gsub("/"," or ", home),"-", gsub("/", " or ", away),
                       "-", humanTime(), ".csv")
       )
+      readr::write_csv(
+        tibble(game_number = gts, winner_01 = as.numeric(as > hs),
+               home = home, away = away, hscore = hs, ascore = as),
+        file = "data/Scores/2022/Mens/scores-2022-M.csv", append = TRUE)
     }
   })
 
