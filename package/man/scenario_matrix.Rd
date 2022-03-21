@@ -4,12 +4,12 @@
 \alias{scenario_matrix}
 \title{Create Scenario Matrix}
 \usage{
-scenario_matrix(n_games = 15, safe = TRUE)
+scenario_matrix(n_games = 15, max_games_remaining = 15)
 }
 \arguments{
 \item{n_games}{number of games with undetermined outcome}
 
-\item{safe}{a logical indicating whether use should be blocked when \code{n_games} is large.}
+\item{max_games_remaining}{maximum number of games remaining (to avoid long computation time)}
 }
 \description{
 Create a bit matrix of possible outcomes of unknown games.

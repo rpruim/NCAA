@@ -6,13 +6,16 @@
 #'
 #' @importFrom bitops bitAnd
 #' @param n_games number of games with undetermined outcome
-#' @param safe a logical indicating whether use should be blocked when `n_games` is large.
+#' @param max_games_remaining maximum number of games remaining (to avoid long computation time)
 #' @examples
 #' scenario_matrix(5)
 #' @export
 
-scenario_matrix <- function(n_games = 15, safe = TRUE) {
-  if (n_games > 15 && safe) stop ("Set safe = FALSE to create such a large matrix.")
+scenario_matrix <- function(n_games = 15, max_games_remaining = 15) {
+  if (n_games > max_games_remaining) {
+    warning ("Increase max_games_remaining to create such a large matrix.")
+    return(matrix(nrow = n_games, ncol = 0))
+  }
 
   if (n_games < 1) return(matrix(nrow = 0, ncol = 0))
 
@@ -31,15 +34,16 @@ bits <- Vectorize(bits0, "x")
 #' Compute a matrix in which each column is one of the possible ways the tournament could end.
 #'
 #' @inheritParams scores
-#' @returns a matrix with one column for each possible way the tournament could end.
+#' @returns a matrix with one column for each possible way the tournament could end and one row
+#'   for each team.  Values indicate number of wins for a team in one of the outcomes.
 #'
 #' @export
-tournament_completions <- function(tournament, safe = TRUE) {
+tournament_completions <- function(tournament, max_games_remaining = 15) {
   na_idx <- which(is.na(tournament))
 
   # nothing to do here; but return tournament as 1-col matrix
   if (length(na_idx) < 1) return(matrix(tournament, ncol = 1))
 
-  M <- scenario_matrix(length(na_idx), safe = safe)
-  apply(M, 2, function(x, t = tournament) { t |> update_tournament(na_idx, x) })
+  M <- scenario_matrix(length(na_idx), max_games_remaining = max_games_remaining)
+  apply(M, 2, function(x, t = tournament) { t |> tournament_update(na_idx, x) })
 }

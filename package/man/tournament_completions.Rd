@@ -4,14 +4,15 @@
 \alias{tournament_completions}
 \title{All Possible Tournament Completions}
 \usage{
-tournament_completions(tournament, safe = TRUE)
+tournament_completions(tournament, max_games_remaining = 15)
 }
 \arguments{
 \item{tournament}{a 0-1 vector of tournament game outcomes. Games are played from high index to
 low index. Game g pairs the winners of games \code{2*g} and \code{2*g + 1}.}
 }
 \value{
-a matrix with one column for each possible way the tournament could end.
+a matrix with one column for each possible way the tournament could end and one row
+for each team.  Values indicate number of wins for a team in one of the outcomes.
 }
 \description{
 Compute a matrix in which each column is one of the possible ways the tournament could end.

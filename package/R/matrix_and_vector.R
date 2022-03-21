@@ -27,14 +27,23 @@ tournament_init <-
   }
 
 #' @export
+#' @inheritParams contest_standings
 n_games <- function(tournament) {
   length(tournament)
 }
 
 #' @export
+#' @inheritParams ngames
 n_teams <- function(tournament) {
   1 + length(tournament)
 }
+
+#' @export
+#' @inheritParams ngames
+n_games_remaining <-
+  function(tournament) {
+    sum(is.na(tournament))
+  }
 
 #' @export
 winner <- function(tournament, game = 1L:n_games(tournament)) {
@@ -334,10 +343,10 @@ teams_idx <- function(tournament) {
 #' @export
 head2head <-
   function(tournament, entries,
-           TC = tournament_completions(tournament, safe = safe),
+           TC = tournament_completions(tournament, max_games_remaining = max_games_remaining),
            ScoresM =  TC |> apply(2, function(x, e = E) {scores(x, e)}),
            names = dimnames(ScoresM)[[1]],
-           safe = TRUE) {
+           max_games_remaining = 15) {
   n_e <- nrow(ScoresM)
   ordered_names <- names[rev(order(apply(ScoresM, 1, mean)))]
   res <-
@@ -367,9 +376,9 @@ head2head <-
 winners_table <-
   function(
     tournament, entries,
-    TC = tournament_completions(tournament, safe = safe),
+    TC = tournament_completions(tournament, max_games_remaining = max_games_remaining),
     ScoresM =  TC |> apply(2, function(x, e = E) {scores(x, e)}),
-    safe = TRUE)
+    max_games_remaining = 15)
   {
     ScoresM |>
       apply(2, which.max) %>%

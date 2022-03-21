@@ -2,78 +2,77 @@
 library(madness)
 library(ggformula)
 
-BracketM <<- LoadBracket('data/bracket2022.csv')
-BracketW <<- LoadBracket('data/bracket2022w.csv')
+BracketM <- LoadBracket('data/bracket2022.csv')
+BracketW <- LoadBracket('data/bracket2022w.csv')
 
-TMinit <<- tournament_init(names = BracketM[['team']], seeds = BracketM[['seed']], label = "M")
-TWinit <<- tournament_init(names = BracketW[['team']], seeds = BracketW[['seed']], label = "W")
+TMinit <- tournament_init(names = BracketM[['team']], seeds = BracketM[['seed']], label = "M")
+TWinit <- tournament_init(names = BracketW[['team']], seeds = BracketW[['seed']], label = "W")
 
-Entries <<- load_entries_from_files(TMinit, path = "data/Entries/2022/", year = 2022)
-Entries0 <<- load_entries_from_files(TMinit, path = "data/Entries/2022/", year = 2022, keep.all = TRUE)
+Entries <- load_entries_from_files(TMinit, path = "data/Entries/2022/", year = 2022)
+Entries0 <- load_entries_from_files(TMinit, path = "data/Entries/2022/", year = 2022, keep.all = TRUE)
 
-EM <<- build_entry_matrix(Entries, ext = "M")
-EW <<- build_entry_matrix(Entries, ext = "W")
+EM <- build_entry_matrix(Entries, ext = "M")
+EW <- build_entry_matrix(Entries, ext = "W")
 
 ScoresM <- LoadGameScores()
-T <-
+
+ScoreM <- read.csv('data/Scores/2022/Mens/scores-2022-M.csv')
+TM <-
   tournament_init(names = Bracket2022M[['team']], seeds = Bracket2022M[['seed']], label = "M") |>
   tournament_update(ScoresM[['game_number']], ScoresM[['winner_01']])
 
-contest_status(T, EM, Bracket2022M)
+contest_standings(TM, EM, Bracket2022M)
 
-round_by_round(T, EM) |> str()
-purrr::map_int(round_by_round(T, EM), 1, sum)
-
-
-alive(T)
-
-home_team(T)
-away_team(T)
-winner(T)
-loser(T)
-all_games(T)
-all_games(T, determined.only = TRUE)
-all_games(T, unplayed.only = TRUE)
-all_games(T, determined.only = TRUE, unplayed.only = TRUE)
-
-# E <- (mosaic::do(25) * as.numeric(1:(2^R) %in% sample(1:(2^R), 2^R / 4))) |> as.matrix()
-E <- madness::build_entry_matrix(Ent, "M")
-EW <- madness::build_entry_matrix(Ent, "W")
-
-rownames(E) |> abbreviate(4)
-
-# rownames(E) <- LETTERS[1:nrow(E)]
-
-W <- wins(T); W
-
-T |> scores(E)
-T |> scores(E, dust = FALSE)
+round_by_round(TM, EM) |> str()
+purrr::map_int(round_by_round(TM, EM), 1, sum)
 
 
-round_by_round(T, E) |> apply(1, function(x) paste(paste(x, collapse = " + "), " = ", sum(x)))
+alive(TM)
 
-possible_winners(T)
-opponents(T)
+n_games_remaining(TM)
+home_team(TM)
+away_team(TM)
+madness::winner(TM)
+madness::loser(TM)
+all_games(TM)
+all_games(TM, determined.only = TRUE)
+all_games(TM, unplayed.only = TRUE)
+all_games(TM, determined.only = TRUE, unplayed.only = TRUE)
+
+
+rownames(EM) |> abbreviate(4)
+
+
+W <- wins(TM); W
+
+TM |> scores(EM)
+TM |> scores(EM, dust = FALSE)
+
+
+round_by_round(TM, EM) |> apply(1, function(x) paste(paste(x, collapse = " + "), " = ", sum(x)))
+
+possible_winners(TM)
+opponents(TM)
 
 # debugonce(max_possible_scores)
-max_possible_scores(T, E)
-scores(T, E, dust = FALSE)
+max_possible_scores(TM, EM)
+scores(TM, EM, dust = FALSE)
 
-TC <-
-  T |> tournament_completions()
+TCM <-
+  TM |> tournament_completions(max = 19)
 
-ScoresM <-
-  TC |>
-  apply(2, function(x, e = E) {scores(x, e)})
+PossibleScoresM <-
+  TCM |>
+  apply(2, function(x, e = EM) {scores(x, e)})
 
-WinnersTable <-
+WinnersTableM <-
   ScoresM |>
   apply(2, which.max) %>%
   tibble(winner = .) |>
   group_by(winner) |>
   summarise(scenarios = n()) |>
   mutate(
-    winner = rownames(E)[winner],
+    winner = rownames(EM)[winner],
     p = scenarios / sum(scenarios)
   ) |>
   mutate(
@@ -82,20 +81,20 @@ WinnersTable <-
 
 
 
-  WinnersTable |> gf_col(winner ~ p) |>
+  WinnersTableM |> gf_col(winner ~ p) |>
     gf_labs(x = "percent of scenarios that win") |>
     gf_refine(scale_x_continuous(labels = scales::label_percent()))
 
-WinningScore <-
+WinningScoreM <-
   ScoresM |>
   round() |>
   apply(2, max) %>%
   tibble(score = .)
 
-WinningScore |>
+WinningScoreM |>
   gf_histogram(~ score, binwidth = 1)
 
-dim(TC)
+dim(TCM)
 dim(ScoresM)
 
 # H2H <-
@@ -110,17 +109,17 @@ dim(ScoresM)
 #       factor( levels = ScoresM |> apply(1, mean) |> sort() |> rev() |> names() )
 #   )
 
-H2H <-
+H2HM <-
   head2head(ScoresM = ScoresM)
 
-H2H |>
+H2HM |>
   gf_tile(scenarios ~ loser_abbrv + winner_abbrv) |>
   gf_labs(fill = "wins - losses") |>
   gf_refine(
     scale_fill_gradient2(low = "red", high = "steelblue", mid = "gray90")
   )
 
-H2H |>
+H2HM |>
   gf_tile(scenarios ~ loser_name + winner_name) |>
   gf_labs(fill = "wins - losses") |>
   gf_refine(

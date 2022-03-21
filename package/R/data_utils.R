@@ -74,3 +74,21 @@ load_entries_from_files <-
     res
   }
 
+#' Load Scores
+#'
+#' Load game scores from a CSV file.
+#'
+#' @export
+#' @param file The file name of a csv with columms `game_number`, `winner_01`, (0 if "home" wins, 1 if "away" wins),
+#'   `home`, `away`, `hscore`, and `ascore`
+#' @returns a data frame containing information about each game. `winner` and `loser` columns are computed from
+#'   the scores and `home` and `away`.
+
+load_scores_file <- function(file) {
+  scores <- readr::read_csv(file, col_types = "iiccii")
+  scores |>
+    mutate(
+      winner = ifelse(hscore > ascore, home, away),
+      loser = ifelse(hscore < ascore, home, away)
+    )
+}
