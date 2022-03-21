@@ -236,8 +236,6 @@ shinyServer(function(input, output, session) {
   })
 
 
-  waiter::waiter_hide()
-
   ############ Select Teams ###########
 
   TeamsM <- reactive(c( input$regionM1, input$regionM2, input$regionM3, input$regionM4 ))
@@ -860,5 +858,14 @@ shinyServer(function(input, output, session) {
   #     ladderize()
   #   d3heatmap(D, Rowv = Rowv, Colv = Colv, color="Blues")
   # })
+
+  outputOptions(output, "ScoresTableM", suspendWhenHidden = FALSE)
+  outputOptions(output, "ScoresTableW", suspendWhenHidden = FALSE)
+  outputOptions(output, "standingsTableM", suspendWhenHidden = FALSE, priority = 100)
+  outputOptions(output, "standingsTableW", suspendWhenHidden = FALSE, priority = 101)
+  outputOptions(output, "standingsTableAll", suspendWhenHidden = FALSE, priority = 90)
+
+  Sys.sleep(1)
+  waiter::waiter_hide()
 
 })
