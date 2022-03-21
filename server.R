@@ -127,21 +127,35 @@ shinyServer(function(input, output, session) {
       LoadBracket
     )
 
-  GameScoresM <-
-    reactivePoll(
+  GameScoresM <- reactiveFileReader(
       500,
       session = session,
-      function() max(file.mtime(dir("data/Scores/2022/Mens", full.names = TRUE))),
-      function() {LoadGameScores("data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv")}
+      'data/Scores/2022/Mens/scores-2022-M.csv',
+      madness::load_scores_file
     )
 
-  GameScoresW <-
-    reactivePoll(
+  GameScoresW <- reactiveFileReader(
       500,
       session = session,
-      function() max(file.mtime(dir("data/Scores/2022/Womens", full.names = TRUE))),
-      function() {LoadGameScores("data/Scores/2022/Womens/", pattern = "W-.*2022.*\\.csv")}
+      'data/Scores/2022/Womens/scores-2022-W.csv',
+      madness::load_scores_file
     )
+
+  # GameScoresM <-
+  #   reactivePoll(
+  #     500,
+  #     session = session,
+  #     function() max(file.mtime(dir("data/Scores/2022/Mens", full.names = TRUE))),
+  #     function() {LoadGameScores("data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv")}
+  #   )
+  #
+  # GameScoresW <-
+  #   reactivePoll(
+  #     500,
+  #     session = session,
+  #     function() max(file.mtime(dir("data/Scores/2022/Womens", full.names = TRUE))),
+  #     function() {LoadGameScores("data/Scores/2022/Womens/", pattern = "W-.*2022.*\\.csv")}
+  #   )
 
   ##############################
   # entry matrices
@@ -211,6 +225,14 @@ shinyServer(function(input, output, session) {
       arrange(desc(total)) |>
       rename(`men's wins` = score_M, `women's wins` = score_W) |>
       select(name, `men's wins`, `women's wins`, total, `guaranteed wins`, `max possible`)
+  })
+
+  TCM <- reactive({
+    madness::tournament_completions(TM(), max_games_reamining = 19)
+  })
+
+  H2HM <- reactive({
+    madness::head2head(TM(), EM(), TCM())
   })
 
 
@@ -371,6 +393,13 @@ shinyServer(function(input, output, session) {
   )
 
   ########### Turn Controls on and off ############
+
+  output$showHead2HeadM <- reactive({
+    n_teams_remaining(TM()) < 21
+  })
+  output$showHead2HeadW <- reactive({
+    n_teams_remaining(TW()) < 21
+  })
 
   output$showDownloadButton <- reactive({
     "download" %in% names(query())
