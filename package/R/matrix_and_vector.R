@@ -344,7 +344,7 @@ teams_idx <- function(tournament) {
 head2head <-
   function(tournament, entries,
            TC = tournament_completions(tournament, max_games_remaining = max_games_remaining),
-           ScoresM =  TC |> apply(2, function(x, e = E) {scores(x, e)}),
+           ScoresM =  TC |> apply(2, function(x, e = entries) {scores(x, e)}),
            names = dimnames(ScoresM)[[1]],
            max_games_remaining = 15) {
   n_e <- nrow(ScoresM)
@@ -377,7 +377,7 @@ winners_table <-
   function(
     tournament, entries,
     TC = tournament_completions(tournament, max_games_remaining = max_games_remaining),
-    ScoresM =  TC |> apply(2, function(x, e = E) {scores(x, e)}),
+    ScoresM =  TC |> apply(2, function(x, e = entries) {scores(x, e)}),
     max_games_remaining = 15)
   {
     ScoresM |>
@@ -386,7 +386,7 @@ winners_table <-
       group_by(winner) |>
       summarise(scenarios = n()) |>
       mutate(
-        winner = rownames(E)[winner],
+        winner = rownames(entries)[winner],
         p = scenarios / sum(scenarios)
       ) |>
       mutate(
