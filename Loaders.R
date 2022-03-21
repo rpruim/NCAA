@@ -102,8 +102,8 @@ completedGames <- function(scores, bracket) {
   scores %>%
     scheduledGames(bracket) %>%
     filter(!is.na(hscore) & !is.na(ascore)) %>%
-    mutate(wscore = ifelse(winner == home, hscore, ascore),
-           lscore = ifelse(winner == home, ascore, hscore),
+    mutate(wscore = ifelse(hscore > ascore, hscore, ascore),
+           lscore = ifelse(hscore < ascore, hscore, ascore),
            score = paste(wscore, "-", lscore),
            result = paste(winner, wscore, "over", loser, lscore)
     ) %>%
