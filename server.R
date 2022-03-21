@@ -227,13 +227,13 @@ shinyServer(function(input, output, session) {
       select(name, `men's wins`, `women's wins`, total, `guaranteed wins`, `max possible`)
   })
 
-  TCM <- reactive({
-    madness::tournament_completions(TM(), max_games_reamining = 19)
-  })
-
-  H2HM <- reactive({
-    madness::head2head(TM(), EM(), TCM())
-  })
+  # TCM <- reactive({
+  #   madness::tournament_completions(TM(), max_games_remaining = 19)
+  # })
+  #
+  # H2HM <- reactive({
+  #   madness::head2head(TM(), EM(), TCM())
+  # })
 
 
   ############ Select Teams ###########

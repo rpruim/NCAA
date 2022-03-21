@@ -1,77 +1,77 @@
-if (! "seedCost" %in% ls()) {
-  source("Tourny.R")
-}
-
-# hard-coded version
-bracketFile <- "data/bracket2017.csv"
-testBracketFile <- "data/bracket2016.csv"
-entryPattern <- "Entry-.*rds"
-
-# adaptable version
+# if (! "seedCost" %in% ls()) {
+#   source("Tourny.R")
+# }
+#
+# # hard-coded version
+# bracketFile <- "data/bracket2017.csv"
+# testBracketFile <- "data/bracket2016.csv"
+# entryPattern <- "Entry-.*rds"
+#
+# # adaptable version
 year <- 2022
 bracketFile <- paste0("data/bracket", year, ".csv")
 testBracketFile <- paste0("data/bracket", year - 1, ".csv")
 entryPattern <- paste0("Entry-",year,".*rds")
-
-# Player entries
-
-update_teams <- function(teams, canonical_teams) {
-  team_split <-
-    cbind(
-      teams,
-      stringr::str_split_fixed(teams, "/", n = 2)
-    )
-  ifelse(
-    team_split[,3] %in% canonical_teams,
-    team_split[,3],
-    ifelse(
-      team_split[,2] %in% canonical_teams,
-      team_split[,2],
-      team_split[,1])
-  )
-}
-
-LoadEntries <-
-  function(
-    path = "data/Entries/", year = 2022)
-  {
-    # rdsFile <- paste0(path, "Entries.rds")
-    # if (file.exists(rdsFile)) {
-    #   return(readRDS(rdsFile))
-    # }
-
-    entryPattern <- paste0("Entry-",year,".*rds")
-    efiles <- dir(path, pattern = entryPattern, full.names = TRUE)
-    res <- list()
-    # read files in order; newer entries with same email will clobber older ones
-    for (f in sort(efiles)) {
-      e <- readRDS(f)
-
-      # update based on the play-in game winners
-        e$teams <- update_teams(e$teams, Bracket$team) # gsub(names(playin)[i], playin[i], e$teams)
-        names(e$teamsLogical) <- update_teams(names(e$teamsLogical), Bracket$team) # gsub(names(playin[i]), playin[i], names(e$teamsLogical))
-
-      # ensure the order is the same for all the logical vectors and matches the bracket order
-      e$teamsLogical <- e$teamsLogical[Bracket$team]
-
-      res[[e$email]] <- e
-    }
-    res
-  }
-
-LoadGameScores <- function(path = "data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv") {
-  gfiles <- dir(path, pattern = pattern, full.names = TRUE)
-  if (length(gfiles) < 1)
-    return(tibble(game_number = NA, winner_01 = NA, home = NA, away = NA, hscore = NA, ascore = NA) %>% head(0))
-
-  res <- list()
-  # read files in order; newer entries with same email will clobber older ones
-  for (f in sort(gfiles)) {
-    g <- readr::read_csv(f)
-    res[[paste0(g$home, "-", g$away)]] <- g
-  }
-  bind_rows(res) %>% addWL()
-}
+#
+# # Player entries
+#
+# update_teams <- function(teams, canonical_teams) {
+#   team_split <-
+#     cbind(
+#       teams,
+#       stringr::str_split_fixed(teams, "/", n = 2)
+#     )
+#   ifelse(
+#     team_split[,3] %in% canonical_teams,
+#     team_split[,3],
+#     ifelse(
+#       team_split[,2] %in% canonical_teams,
+#       team_split[,2],
+#       team_split[,1])
+#   )
+# }
+#
+# LoadEntries <-
+#   function(
+#     path = "data/Entries/", year = 2022)
+#   {
+#     # rdsFile <- paste0(path, "Entries.rds")
+#     # if (file.exists(rdsFile)) {
+#     #   return(readRDS(rdsFile))
+#     # }
+#
+#     entryPattern <- paste0("Entry-",year,".*rds")
+#     efiles <- dir(path, pattern = entryPattern, full.names = TRUE)
+#     res <- list()
+#     # read files in order; newer entries with same email will clobber older ones
+#     for (f in sort(efiles)) {
+#       e <- readRDS(f)
+#
+#       # update based on the play-in game winners
+#         e$teams <- update_teams(e$teams, Bracket$team) # gsub(names(playin)[i], playin[i], e$teams)
+#         names(e$teamsLogical) <- update_teams(names(e$teamsLogical), Bracket$team) # gsub(names(playin[i]), playin[i], names(e$teamsLogical))
+#
+#       # ensure the order is the same for all the logical vectors and matches the bracket order
+#       e$teamsLogical <- e$teamsLogical[Bracket$team]
+#
+#       res[[e$email]] <- e
+#     }
+#     res
+#   }
+#
+# LoadGameScores <- function(path = "data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv") {
+#   gfiles <- dir(path, pattern = pattern, full.names = TRUE)
+#   if (length(gfiles) < 1)
+#     return(tibble(game_number = NA, winner_01 = NA, home = NA, away = NA, hscore = NA, ascore = NA) %>% head(0))
+#
+#   res <- list()
+#   # read files in order; newer entries with same email will clobber older ones
+#   for (f in sort(gfiles)) {
+#     g <- readr::read_csv(f)
+#     res[[paste0(g$home, "-", g$away)]] <- g
+#   }
+#   bind_rows(res) %>% addWL()
+# }
 
 ### Read in bracket data
 LoadBracket <- function(file = NULL) {
