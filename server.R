@@ -141,21 +141,21 @@ shinyServer(function(input, output, session) {
       madness::load_scores_file
     )
 
-  # GameScoresM <-
-  #   reactivePoll(
-  #     500,
-  #     session = session,
-  #     function() max(file.mtime(dir("data/Scores/2022/Mens", full.names = TRUE))),
-  #     function() {LoadGameScores("data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv")}
-  #   )
-  #
-  # GameScoresW <-
-  #   reactivePoll(
-  #     500,
-  #     session = session,
-  #     function() max(file.mtime(dir("data/Scores/2022/Womens", full.names = TRUE))),
-  #     function() {LoadGameScores("data/Scores/2022/Womens/", pattern = "W-.*2022.*\\.csv")}
-  #   )
+  GameScoresM <-
+    reactivePoll(
+      500,
+      session = session,
+      function() max(file.mtime(dir("data/Scores/2022/Mens", full.names = TRUE))),
+      function() {LoadGameScores("data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv")}
+    )
+
+  GameScoresW <-
+    reactivePoll(
+      500,
+      session = session,
+      function() max(file.mtime(dir("data/Scores/2022/Womens", full.names = TRUE))),
+      function() {LoadGameScores("data/Scores/2022/Womens/", pattern = "W-.*2022.*\\.csv")}
+    )
 
   ##############################
   # entry matrices

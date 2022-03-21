@@ -128,212 +128,212 @@ gameIndex <- function( round, game, num_teams=64) {
   num_teams - (games_played + game)
 }
 
-# possibleMatchups <- function( B ) {
-#   B$team <- as.character(B$team)
-#   size <- nrow(B)
-#   total_rounds <- log2(size)
-#   res <- list()
-#
-#   for (r in 1:total_rounds) {
-#     for (g in 1:(size/(2^r))) {
-#       # print(c(r,g,gameIndex(r, g)) )
-#       home <- if (r>1) res[[gameIndex(r-1, 2*g-1)]]$teams else B$team[2*g-1]
-#       away <- if (r>1) res[[gameIndex(r-1, 2*g)]]$teams else B$team[2*g]
-#       res[[gameIndex(r,g)]] <- list(round = r, game=g, index = gameIndex(r,g),
-#                                     home = home, away=away,  teams = c( home, away)
-#       )
-#     }
-#   }
-#   res
-# }
-#
-# # Given a set of teams, produce a list.  Each element of the list represents
-# # a tournament game and contains a vectors of teams that could win that game
-# # (they must be alive, be among the teams provided, and have a chance to play in
-# # the specified game or have already won the game)
-#
-#
-# chancesToWin <- function( teams, bracket, games, matchups = possibleMatchups(bracket)) {
-#   bracket <- addTeamStatus(bracket, games)
-#   lapply( matchups, function(x) {
-#     teams_with_possible_win <- subset(bracket, alive | (wins >= x$round))$team
-#     intersect( intersect(x$teams, teams_with_possible_win), teams )
-#   } )
-# }
-#
-# chancesToLose <- function( teams, bracket, games, matchups = possibleMatchups(bracket)) {
-#   bracket <- addTeamStatus(bracket, games)
-#   lapply( matchups, function(x) {
-#     teams_with_possible_win <- subset(bracket, alive | (wins >= x$round))$team
-#     setdiff( intersect(x$teams, teams_with_possible_win), teams )
-#   } )
-# }
-#
-#
-# mightWin <- function(teams, bracket, games, matchups = possibleMatchups(bracket)) {
-#   sapply(chancesToWin(teams, bracket, games, matchups), function(x) as.numeric(length(x) > 0))
-# }
-#
-# goingToWin <- function(teams, bracket, games, matchups = possibleMatchups(bracket)) {
-#   1 - sapply(chancesToLose(teams, bracket, games, matchups), function(x) as.numeric(length(x) > 0))
-# }
-#
-# maxPossible <- function( teams, bracket, games, matchups = possibleMatchups(bracket)) {
-#   sum( mightWin(teams, bracket, games, matchups) )
-# }
-#
-#
-# minGuaranteed <- function( teams, bracket, games, matchups = possibleMatchups(bracket)) {
-#   sum( goingToWin(teams, bracket, games, matchups) )
-# }
-#
-#
-# head2head <- function(teams1, teams2, bracket, games, matchups = possibleMatchups(bracket)) {
-#   c(
-#     sum( mightWin(setdiff(teams1, teams2), bracket, games, matchups) ) -
-#       sum( goingToWin(setdiff(teams2, teams1), bracket, games, matchups) )
-#   )
-# }
-#
-#
-#
-# guaranteedWins <- function( teams, bracket, games, matchups = possibleMatchups(bracket)) {
-#   bracket <- addTeamStatus(bracket, games)
-#   guaranteed_win <- sapply( matchups, function(x) {
-#     teams_with_possible_win_this_round <- subset(bracket, alive | (wins >= x$round))$team
-#     possible_winners <- intersect( x$teams, teams_with_possible_win_this_round)   # in game but have not lost earlier
-#     length( intersect( possible_winners, teams) ) == length(possible_winners)
-#   } )
-#   sum( guaranteed_win )
-# }
-#
-# winsByRound <- function( teams, bracket, games, as.character = TRUE ) {
-#   # games <- addWL(games)
-#   bracket <- addTeamStatus(bracket, games)
-#   wins <- filter(bracket, team %in% teams)$wins
-#   rounds <- max(bracket$wins)
-#   cwins <- colSums( outer(wins, 1:rounds, function(x,y) x >= y) )
-#   if (! as.character ) return(cwins)
-#   # cwins <- rev( cumsum( rev(table(wins[wins>0])) ) )
-#   # paste0(sprintf("%02d",sum(wins)), " = ", paste(cwins, collapse = " + ") )
-#   paste(cwins, collapse = " + ")
-# }
-#
-# addTeamStatus <- function(bracket, games) {
-#   if (all(c("alive", "wins", "cost") %in% names(bracket))) return(bracket)
-#   if (! all(c("winner", "loser") %in% names(games)) ) games <- addWL(games)
-#   bracket$alive <- ! sapply(as.character(bracket$team), function(t) t %in% as.character(games$loser))
-#   bracket$wins <- sapply(as.character(bracket$team), function(t) sum( as.character(games$winner) == t, na.rm=TRUE ) )
-#   bracket$cost <- seedCost[bracket$seed]
-#   bracket$cost.old <- seedCostOld[bracket$seed]
-#   bracket
-# }
-#
-# addWL <- function(games) {
-#   if (all(c("winner", "loser") %in% names(games))) return(games)
-#   if (! all(c("home", "away", "hscore", "ascore") %in% names(games)) )
-#     stop("The games data frame should have home, away, hscore, and ascore columns, but it does not.")
-#
-#   mutate(
-#     games,
-#     winner = ifelse( hscore > ascore, as.character(home), as.character(away)),
-#     loser = ifelse( hscore < ascore, as.character(home), as.character(away))
-#   )
-# }
-#
-# resultsTable <- function(entries, bracket, games, matchups = possibleMatchups(bracket)) {
-#   E <- entries
-#   Bracket <- addTeamStatus(bracket, games)
-#   MatchUps <- matchups
-#
-#   Results <- data.frame(
-#     check.names=FALSE,
-#     email = sapply( E, function(x) x$email ),
-#     name  = sapply( E, function(x) x$name ),
-#     dept  = sapply( E, function(x) x$dept),
-#     score = sapply( E, function(x) sum( x$teamsLogical * Bracket$wins ) ),
-#     `score details` =  sapply( E, function(x) winsByRound(x$teams, Bracket)),
-#     "guaranteed wins" = sapply(E,
-#                                function(x)
-#                                  guaranteedWins( x$teams, bracket = Bracket, matchups = MatchUps ) ),
-#     "max possible" =
-#       sapply(E,
-#              function(x)
-#                maxPossible( x$teams, bracket = Bracket, games = games, matchups = MatchUps )
-#              ),
-#     "teams remaining" =
-#       sapply( E,
-#               function(x) {
-#                 BracketLeft <- Bracket %>% filter(x$teamsLogical & alive) %>% arrange(seed)
-#                 numberLeft <- sum( x$teamsLogical * Bracket$alive )
-#                 paste(
-#                   sprintf("%02d", numberLeft), ": ",
-#                   paste(BracketLeft$team, " (", BracketLeft$seed, ")",
-#                         sep="",
-#                         collapse=", "),
-#                   collapse="")
-#               }
-#       ),
-#     "points remaining" =
-#       sapply( E,
-#               function(x) {
-#                 pointsLeft <- sum(x$teamsLogical * Bracket$cost * Bracket$alive)
-#                 pointsLeft
-#               }
-#       ),
-#     "teams lost" =
-#       sapply( E,
-#               function(x) {
-#                 BracketLost <- Bracket %>% filter(x$teamsLogical & !alive) %>% arrange(seed)
-#                 numberLost <- sum( x$teamsLogical * (!Bracket$alive) )
-#                 paste(
-#                   sprintf("%02d", numberLost), ": ",
-#                   paste(BracketLost$team, " (", BracketLost$seed, ")",
-#                         sep="",
-#                         collapse=", "),
-#                   collapse="")
-#               }
-#       )
-#   )
-#   Results <- Results %>% arrange(desc(score))
-#   rownames(Results) <- Results$email
-#   Results %>% select(-email)
-# }
-#
-# if (FALSE) {
-#   Bracket <- read.file("data/bracket2014.csv", as.is=TRUE)
-#   # Below orders things properly IF regions are in correct order
-#   # Else need to reorder regions first
-#   # Bracket %>% sample() %>% arrange(region, order(seedOrder)[seed])
-#   Results <- read.file("data/Results.csv", as.is=TRUE)
-#
-#   nRounds(Bracket)
-#   homeTeam( 63, Bracket, Results)
-#   awayTeam( 63, Bracket, Results)
-#   winner( 63, Bracket, Results)
-#   homeTeam( 31, Bracket, Results)
-#   awayTeam( 31, Bracket, Results)
-#   winner( 31, Bracket, Results)
-#   Results %>% tail(4)
-#   allGames( Bracket, Results %>% head(30), TBA = FALSE)
-# }
-#
-# updateGameScores <- function(GS, home, away, hscore, ascore) {
-#   plyr::rbind.fill(
-#     GS[!(GS$home == home & GS$away == away), ],   # remove previous score if it exists
-#     addWL(dplyr::tibble(home=home, away=away, hscore=hscore, ascore=ascore))
-#   )
-# }
-#
-# teamData <- function(E = LoadEntries(), B = LoadBracket() %>% addTeamStatus(LoadGameScores())) {
-#   M <- do.call(rbind, lapply( E, function(x) x$teamsLogical ) )
-#   if (length(E) > 0) {
-#     row.names(M) <- sapply( E, function(x) x$name)
-#   }
-#
-#   data.frame(check.names=FALSE,
-#              Team = colnames(M),
-#              Seed = B$seed, Region = B$region,
-#              "Number of players selecting" = apply(M,2,sum),
-#              Wins = B$wins)
-# }
+possibleMatchups <- function( B ) {
+  B$team <- as.character(B$team)
+  size <- nrow(B)
+  total_rounds <- log2(size)
+  res <- list()
+
+  for (r in 1:total_rounds) {
+    for (g in 1:(size/(2^r))) {
+      # print(c(r,g,gameIndex(r, g)) )
+      home <- if (r>1) res[[gameIndex(r-1, 2*g-1)]]$teams else B$team[2*g-1]
+      away <- if (r>1) res[[gameIndex(r-1, 2*g)]]$teams else B$team[2*g]
+      res[[gameIndex(r,g)]] <- list(round = r, game=g, index = gameIndex(r,g),
+                                    home = home, away=away,  teams = c( home, away)
+      )
+    }
+  }
+  res
+}
+
+# Given a set of teams, produce a list.  Each element of the list represents
+# a tournament game and contains a vectors of teams that could win that game
+# (they must be alive, be among the teams provided, and have a chance to play in
+# the specified game or have already won the game)
+
+
+chancesToWin <- function( teams, bracket, games, matchups = possibleMatchups(bracket)) {
+  bracket <- addTeamStatus(bracket, games)
+  lapply( matchups, function(x) {
+    teams_with_possible_win <- subset(bracket, alive | (wins >= x$round))$team
+    intersect( intersect(x$teams, teams_with_possible_win), teams )
+  } )
+}
+
+chancesToLose <- function( teams, bracket, games, matchups = possibleMatchups(bracket)) {
+  bracket <- addTeamStatus(bracket, games)
+  lapply( matchups, function(x) {
+    teams_with_possible_win <- subset(bracket, alive | (wins >= x$round))$team
+    setdiff( intersect(x$teams, teams_with_possible_win), teams )
+  } )
+}
+
+
+mightWin <- function(teams, bracket, games, matchups = possibleMatchups(bracket)) {
+  sapply(chancesToWin(teams, bracket, games, matchups), function(x) as.numeric(length(x) > 0))
+}
+
+goingToWin <- function(teams, bracket, games, matchups = possibleMatchups(bracket)) {
+  1 - sapply(chancesToLose(teams, bracket, games, matchups), function(x) as.numeric(length(x) > 0))
+}
+
+maxPossible <- function( teams, bracket, games, matchups = possibleMatchups(bracket)) {
+  sum( mightWin(teams, bracket, games, matchups) )
+}
+
+
+minGuaranteed <- function( teams, bracket, games, matchups = possibleMatchups(bracket)) {
+  sum( goingToWin(teams, bracket, games, matchups) )
+}
+
+
+head2head <- function(teams1, teams2, bracket, games, matchups = possibleMatchups(bracket)) {
+  c(
+    sum( mightWin(setdiff(teams1, teams2), bracket, games, matchups) ) -
+      sum( goingToWin(setdiff(teams2, teams1), bracket, games, matchups) )
+  )
+}
+
+
+
+guaranteedWins <- function( teams, bracket, games, matchups = possibleMatchups(bracket)) {
+  bracket <- addTeamStatus(bracket, games)
+  guaranteed_win <- sapply( matchups, function(x) {
+    teams_with_possible_win_this_round <- subset(bracket, alive | (wins >= x$round))$team
+    possible_winners <- intersect( x$teams, teams_with_possible_win_this_round)   # in game but have not lost earlier
+    length( intersect( possible_winners, teams) ) == length(possible_winners)
+  } )
+  sum( guaranteed_win )
+}
+
+winsByRound <- function( teams, bracket, games, as.character = TRUE ) {
+  # games <- addWL(games)
+  bracket <- addTeamStatus(bracket, games)
+  wins <- filter(bracket, team %in% teams)$wins
+  rounds <- max(bracket$wins)
+  cwins <- colSums( outer(wins, 1:rounds, function(x,y) x >= y) )
+  if (! as.character ) return(cwins)
+  # cwins <- rev( cumsum( rev(table(wins[wins>0])) ) )
+  # paste0(sprintf("%02d",sum(wins)), " = ", paste(cwins, collapse = " + ") )
+  paste(cwins, collapse = " + ")
+}
+
+addTeamStatus <- function(bracket, games) {
+  if (all(c("alive", "wins", "cost") %in% names(bracket))) return(bracket)
+  if (! all(c("winner", "loser") %in% names(games)) ) games <- addWL(games)
+  bracket$alive <- ! sapply(as.character(bracket$team), function(t) t %in% as.character(games$loser))
+  bracket$wins <- sapply(as.character(bracket$team), function(t) sum( as.character(games$winner) == t, na.rm=TRUE ) )
+  bracket$cost <- seedCost[bracket$seed]
+  bracket$cost.old <- seedCostOld[bracket$seed]
+  bracket
+}
+
+addWL <- function(games) {
+  if (all(c("winner", "loser") %in% names(games))) return(games)
+  if (! all(c("home", "away", "hscore", "ascore") %in% names(games)) )
+    stop("The games data frame should have home, away, hscore, and ascore columns, but it does not.")
+
+  mutate(
+    games,
+    winner = ifelse( hscore > ascore, as.character(home), as.character(away)),
+    loser = ifelse( hscore < ascore, as.character(home), as.character(away))
+  )
+}
+
+resultsTable <- function(entries, bracket, games, matchups = possibleMatchups(bracket)) {
+  E <- entries
+  Bracket <- addTeamStatus(bracket, games)
+  MatchUps <- matchups
+
+  Results <- data.frame(
+    check.names=FALSE,
+    email = sapply( E, function(x) x$email ),
+    name  = sapply( E, function(x) x$name ),
+    dept  = sapply( E, function(x) x$dept),
+    score = sapply( E, function(x) sum( x$teamsLogical * Bracket$wins ) ),
+    `score details` =  sapply( E, function(x) winsByRound(x$teams, Bracket)),
+    "guaranteed wins" = sapply(E,
+                               function(x)
+                                 guaranteedWins( x$teams, bracket = Bracket, matchups = MatchUps ) ),
+    "max possible" =
+      sapply(E,
+             function(x)
+               maxPossible( x$teams, bracket = Bracket, games = games, matchups = MatchUps )
+             ),
+    "teams remaining" =
+      sapply( E,
+              function(x) {
+                BracketLeft <- Bracket %>% filter(x$teamsLogical & alive) %>% arrange(seed)
+                numberLeft <- sum( x$teamsLogical * Bracket$alive )
+                paste(
+                  sprintf("%02d", numberLeft), ": ",
+                  paste(BracketLeft$team, " (", BracketLeft$seed, ")",
+                        sep="",
+                        collapse=", "),
+                  collapse="")
+              }
+      ),
+    "points remaining" =
+      sapply( E,
+              function(x) {
+                pointsLeft <- sum(x$teamsLogical * Bracket$cost * Bracket$alive)
+                pointsLeft
+              }
+      ),
+    "teams lost" =
+      sapply( E,
+              function(x) {
+                BracketLost <- Bracket %>% filter(x$teamsLogical & !alive) %>% arrange(seed)
+                numberLost <- sum( x$teamsLogical * (!Bracket$alive) )
+                paste(
+                  sprintf("%02d", numberLost), ": ",
+                  paste(BracketLost$team, " (", BracketLost$seed, ")",
+                        sep="",
+                        collapse=", "),
+                  collapse="")
+              }
+      )
+  )
+  Results <- Results %>% arrange(desc(score))
+  rownames(Results) <- Results$email
+  Results %>% select(-email)
+}
+
+if (FALSE) {
+  Bracket <- read.file("data/bracket2014.csv", as.is=TRUE)
+  # Below orders things properly IF regions are in correct order
+  # Else need to reorder regions first
+  # Bracket %>% sample() %>% arrange(region, order(seedOrder)[seed])
+  Results <- read.file("data/Results.csv", as.is=TRUE)
+
+  nRounds(Bracket)
+  homeTeam( 63, Bracket, Results)
+  awayTeam( 63, Bracket, Results)
+  winner( 63, Bracket, Results)
+  homeTeam( 31, Bracket, Results)
+  awayTeam( 31, Bracket, Results)
+  winner( 31, Bracket, Results)
+  Results %>% tail(4)
+  allGames( Bracket, Results %>% head(30), TBA = FALSE)
+}
+
+updateGameScores <- function(GS, home, away, hscore, ascore) {
+  plyr::rbind.fill(
+    GS[!(GS$home == home & GS$away == away), ],   # remove previous score if it exists
+    addWL(dplyr::tibble(home=home, away=away, hscore=hscore, ascore=ascore))
+  )
+}
+
+teamData <- function(E = LoadEntries(), B = LoadBracket() %>% addTeamStatus(LoadGameScores())) {
+  M <- do.call(rbind, lapply( E, function(x) x$teamsLogical ) )
+  if (length(E) > 0) {
+    row.names(M) <- sapply( E, function(x) x$name)
+  }
+
+  data.frame(check.names=FALSE,
+             Team = colnames(M),
+             Seed = B$seed, Region = B$region,
+             "Number of players selecting" = apply(M,2,sum),
+             Wins = B$wins)
+}
