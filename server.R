@@ -1101,6 +1101,12 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "standingsTableAll", suspendWhenHidden = FALSE, priority = 90)
   outputOptions(output, "WhoCanWinPlotM", suspendWhenHidden = FALSE, priority = 80)
   outputOptions(output, "ScoreHistogramsM", suspendWhenHidden = FALSE, priority = 80)
+  outputOptions(output, "WhoCanWinPlotM", suspendWhenHidden = FALSE, priority = 50)
+  outputOptions(output, "WhoCanWinPlotW", suspendWhenHidden = FALSE, priority = 50)
+  outputOptions(output, "H2HPlotM", suspendWhenHidden = FALSE, priority = 40)
+  outputOptions(output, "H2HPlotW", suspendWhenHidden = FALSE, priority = 40)
+  outputOptions(output, "ScoreHistogramsM", suspendWhenHidden = FALSE, priority = 30)
+  outputOptions(output, "ScoreHistogramsW", suspendWhenHidden = FALSE, priority = 30)
 
   Sys.sleep(1)
   waiter::waiter_hide()

@@ -72,7 +72,7 @@ shinyUI(
             "not yet been posted or because the tournament has begun."))
         ),
         conditionalPanel(
-          condition = "output.showEntryForm && output.acceptingEntries",
+          condition = 'output.showEntryForm && output.acceptingEntries',
           span(paste("Welcome to the NCAA modeling competition.",
                      "Please enter your name, email address, and department, and then",
                      "select at most 200 points worth of teams in each bracket.")),
@@ -89,7 +89,7 @@ shinyUI(
             column(3,
                    h3(""),
                    conditionalPanel(
-                     condition = "output.pointsSpentM <= 200 && output.pointsSpentW <= 200 && input.name.length > 2 && input.email.length > 2",
+                     condition = 'output.pointsSpentM <= 200 && output.pointsSpentW <= 200 && input.name.length > 2 && input.email.length > 2',
                      column(3, actionButton("submitButton", "Submit Teams"))
                    )
             )
@@ -232,7 +232,7 @@ shinyUI(
       tabPanel(
         "Crystal Ball",
         conditionalPanel(
-          condition = 'showCrystalBallM',
+          condition = 'output.showCrystalBallM',
           tabsetPanel(
             type = "pills",
             tabPanel(
@@ -270,7 +270,7 @@ shinyUI(
         fluidRow(
           column(6,
                  conditionalPanel(
-                   condition = "!output.showAdminTab",
+                   condition = '!output.showAdminTab',
                    helpText("If you have administrative access, you should know how to unlock the door."),
                    helpText("If not, this tab will be pretty boring."),
                    br(), br(),
@@ -279,7 +279,7 @@ shinyUI(
                    strong("Honorary Commissioner & Historian:"), span("M Stob"), br()
                  ),
                  conditionalPanel(
-                   condition = "output.showAdminTab",
+                   condition = 'output.showAdminTab',
                    textInput("passwd", label = h3("Access Code"), value = ""),
                    # h3("System Log"),
                    # dataTableOutput("logTable") |> withSpinner()
@@ -288,8 +288,8 @@ shinyUI(
           column(
             6,
             conditionalPanel(
-              condition = "output.showGameEntry",
-              h3("Enter Game Results"),
+              condition = 'output.showGameEntry',
+              h3("Enter Game Results !!!"),
               tabsetPanel(
                 id = "gameScores",
                 type = "tabs",
