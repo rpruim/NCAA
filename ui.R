@@ -232,7 +232,7 @@ shinyUI(
       tabPanel(
         "Crystal Ball",
         conditionalPanel(
-          condition = 'output.showCrystalBallM',
+          condition = 'true',
           tabsetPanel(
             type = "pills",
             tabPanel(
