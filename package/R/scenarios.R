@@ -33,7 +33,7 @@ bits <- Vectorize(bits0, "x")
 #'
 #' Compute a matrix in which each column is one of the possible ways the tournament could end.
 #'
-#' @inheritParams scores
+#' @inheritParams contest_scores
 #' @returns a matrix with one column for each possible way the tournament could end and one row
 #'   for each team.  Values indicate number of wins for a team in one of the outcomes.
 #'

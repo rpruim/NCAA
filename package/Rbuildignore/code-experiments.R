@@ -16,7 +16,7 @@ EW <- build_entry_matrix(Entries, ext = "W")
 
 ScoresM <- LoadGameScores()
 
-ScoreM <- read.csv('data/Scores/2022/Mens/scores-2022-M.csv')
+ScoresM <- load_scores_file('data/Scores/2022/Mens/scores-2022-M.csv')
 TM <-
   tournament_init(names = Bracket2022M[['team']], seeds = Bracket2022M[['seed']], label = "M") |>
   tournament_update(ScoresM[['game_number']], ScoresM[['winner_01']])
@@ -58,15 +58,15 @@ opponents(TM)
 max_possible_scores(TM, EM)
 scores(TM, EM, dust = FALSE)
 
-TCM <-
+tcm <-
   TM |> tournament_completions(max = 19)
 
 PossibleScoresM <-
-  TCM |>
+  tcm |>
   apply(2, function(x, e = EM) {scores(x, e)})
 
 WinnersTableM <-
-  ScoresM |>
+  PossibleScoresM |>
   apply(2, which.max) %>%
   tibble(winner = .) |>
   group_by(winner) |>
@@ -86,7 +86,7 @@ WinnersTableM <-
     gf_refine(scale_x_continuous(labels = scales::label_percent()))
 
 WinningScoreM <-
-  ScoresM |>
+  PossibleScoresM |>
   round() |>
   apply(2, max) %>%
   tibble(score = .)
@@ -95,7 +95,7 @@ WinningScoreM |>
   gf_histogram(~ score, binwidth = 1)
 
 dim(TCM)
-dim(ScoresM)
+dim(PossibleScoresM)
 
 # H2H <-
 #   outer(1:nrow(E), 1:nrow(E), Vectorize(function(x,y) sum(ScoresM[x, ] > ScoresM[y, ]) - sum(ScoresM[x,] < ScoresM[y,]))) |>
@@ -109,15 +109,17 @@ dim(ScoresM)
 #       factor( levels = ScoresM |> apply(1, mean) |> sort() |> rev() |> names() )
 #   )
 
-H2HM <-
-  head2head(ScoresM = ScoresM)
+h2hm <-
+  head2head(ScoresM = PossibleScoresM)
 
-H2HM |>
+# H2HM |>
+h2hm |>
   gf_tile(scenarios ~ loser_abbrv + winner_abbrv) |>
   gf_labs(fill = "wins - losses") |>
   gf_refine(
     scale_fill_gradient2(low = "red", high = "steelblue", mid = "gray90")
-  )
+  ) |>
+  plotly::ggplotly()
 
 H2HM |>
   gf_tile(scenarios ~ loser_name + winner_name) |>

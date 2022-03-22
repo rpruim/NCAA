@@ -30,7 +30,7 @@ build_entry_matrix <- function(E, ext = c("M", "W")){
 #'
 #' Load entries from files in a directory that match a specified pattern.
 #'
-#' @inheritParams scores
+#' @inheritParams contest_scores
 #' @param path directory in which entry files are located.
 #' @param pattern regex pattern.
 #' @param year used to create the default value of pattern.

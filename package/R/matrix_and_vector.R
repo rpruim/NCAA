@@ -111,7 +111,7 @@ all_games <- function(tournament, unplayed.only = FALSE, determined.only = FALSE
 
 #' Tabular report of contest standings
 #'
-#' @inheritParams scores
+#' @inheritParams contest_scores
 #' @export
 contest_standings <- function(tournament, entries, bracket) {
   if (sum(wins(tournament), na.rm = TRUE) < 1) {
@@ -142,8 +142,8 @@ contest_standings <- function(tournament, entries, bracket) {
       email = attr(entries, "email"),
       name = attr(entries, "name"),
       dept = attr(entries, "dept"),
-      score = scores(tournament, entries, dust = FALSE),
-      dusty_score = scores(tournament, entries, dust = TRUE),
+      score = contest_scores(tournament, entries, dust = FALSE),
+      dusty_score = contest_scores(tournament, entries, dust = TRUE),
       `score details` =
         round_by_round(tournament, entries) |>
         apply(1, function(x) paste(sum(x), " = ", paste(x, collapse = " + "))),
@@ -193,7 +193,7 @@ contest_standings <- function(tournament, entries, bracket) {
 #   * game g pairs winners of games 2*g and 2*g + 1
 #   * consider initials teams as winners of games 2^n:(2^(n+1) - 1)
 
-#' Compute Scores
+#' Compute Contest Scores
 #'
 #' Compute scores for each entrant. Each entrant receives one point for each win by one of the
 #'   entrants selected teams.
@@ -205,7 +205,7 @@ contest_standings <- function(tournament, entries, bracket) {
 #' @param dust a logical indicating whether tie breaking dust should be added to the scores.
 #'
 #' @export
-scores <- function(tournament, entries, dust = TRUE) {
+contest_scores <- function(tournament, entries, dust = TRUE) {
   W <- wins(tournament)
   if (dust) {
     # 7 dust amounts for wins 0 through 6
@@ -265,7 +265,7 @@ opponents <-
 #'
 #' Compute an entrant-by-round matrix of round scores for each entrant.
 #'
-#' @inheritParams scores
+#' @inheritParams contest_scores
 #' @returns A matrix with a row for each entrant and a column for each round of the tournament.
 #'   Entries indicate the number of wins for each player in each of the rounds.
 #'
@@ -288,7 +288,7 @@ round_by_round <- function(tournament, entries) {
 #'
 #' Get team names from a tournament object.
 #'
-#' @inheritParams scores
+#' @inheritParams contest_scores
 #' @export
 team_names <- function(tournament) {
   attr(tournament, "team_names")
@@ -298,7 +298,7 @@ team_names <- function(tournament) {
 #'
 #' Update tournament based on game outcomes
 #'
-#' @inherit scores
+#' @inheritParams contest_scores
 #' @param games a vector of game indices
 #' @param results a 0-1 vector of results for `games`. 0 indicates that the lower indexed team won.
 #'   1 indicates that the higher indexed team won.
@@ -344,14 +344,14 @@ teams_idx <- function(tournament) {
 head2head <-
   function(tournament, entries,
            TC = tournament_completions(tournament, max_games_remaining = max_games_remaining),
-           ScoresM =  TC |> apply(2, function(x, e = entries) {scores(x, e)}),
-           names = dimnames(ScoresM)[[1]],
+           ScoresM =  TC |> apply(2, function(x, e = entries) {contest_scores(x, e)}),
+           team_names = dimnames(ScoresM)[[1]],
            max_games_remaining = 15) {
   n_e <- nrow(ScoresM)
-  ordered_names <- names[rev(order(apply(ScoresM, 1, mean)))]
+  ordered_names <- team_names[order(apply(ScoresM, 1, mean))]
   res <-
     outer(1:n_e, 1:n_e,  # columns, rows
-          Vectorize(function(x,y) ifelse(x < y, sum(ScoresM[x, ] < ScoresM[y, ]), -sum(ScoresM[x,] > ScoresM[y,])))) |>
+          Vectorize(function(x,y) sum(ScoresM[x, ] > ScoresM[y, ]))) |>
     as.table()
 
   rownames(res) <- 1:n_e
@@ -359,15 +359,15 @@ head2head <-
 
   res |>
     as.data.frame() |>
-    setNames(c("winner", "loser", "scenarios")) |>
+    setNames(c("key", "other", "scenarios")) |>
     mutate(
-      winner_name = names[winner] |>
+      key_name = team_names[key] |>
         factor( levels = ordered_names ), # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() ),
-      loser_name = names[loser] |>
+      other_name = team_names[other] |>
         factor( levels = ordered_names ), # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() ),
-      winner_abbrv = winner_name |> abbreviate(6) |>
+      key_abbrv = key_name |> abbreviate(6) |>
         factor( levels = ordered_names |> abbreviate(6)), # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() |> abbreviate(6) ),
-      loser_abbrv = loser_name |> abbreviate(6) |>
+      other_abbrv = other_name |> abbreviate(6) |>
         factor( levels = ordered_names |> abbreviate(6))  # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() |> abbreviate(6) )
     )
   }
@@ -377,7 +377,7 @@ winners_table <-
   function(
     tournament, entries,
     TC = tournament_completions(tournament, max_games_remaining = max_games_remaining),
-    ScoresM =  TC |> apply(2, function(x, e = entries) {scores(x, e)}),
+    ScoresM =  TC |> apply(2, function(x, e = entries) {contest_scores(x, e)}),
     max_games_remaining = 15)
   {
     ScoresM |>
@@ -400,8 +400,8 @@ winners_table <-
 #'
 #' @export
 scores_table <- function(tournament, entries) {
-  scores <- scores(tournament, entries, dust = FALSE)
-  dusty_scores <- scores(tournament, entries, dust = TRUE)
+  scores <- contest_scores(tournament, entries, dust = FALSE)
+  dusty_scores <- contest_scores(tournament, entries, dust = TRUE)
   tibble(
     player = row.names(entries),
     player_abbrv = abbreviate(row.names(entries), 6),
