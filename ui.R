@@ -85,7 +85,7 @@ shinyUI(
                    p("One entry per email address.")
             ),
             column(3, selectInput("dept", "Department:",
-                                  c("Select a department","Admin","Bio","Chem","CS","Engr","GEO","Math/Stat","Nursing","Phys/Ast","Psych","Other"))),
+                                  c("Select a department","Admin","Bio","Chem/BioCh","CS","Engr","GEO","Math/Stat","Nursing","Phys/Ast","Psych","Other"))),
             column(3,
                    h3(""),
                    conditionalPanel(

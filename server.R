@@ -163,8 +163,21 @@ shinyServer(function(input, output, session) {
   ##############################
   # entry matrices
 
-  EM <- reactive({build_entry_matrix(Entries(), ext = "M")})
-  EW <- reactive({build_entry_matrix(Entries(), ext = "W")})
+  # 2022 hack to change Chem dept name
+  EM <- reactive({
+    res <- build_entry_matrix(Entries(), ext = "M")
+    d <- attr(res, "dept")
+    d[d == "Chem"] <- "Chem/BioCh"
+    attr(res, "dept") <- d
+    res
+    })
+  EW <- reactive({
+    res <- build_entry_matrix(Entries(), ext = "W")
+    d <- attr(res, "dept")
+    d[d == "Chem"] <- "Chem/BioCh"
+    attr(res, "dept") <- d
+    res
+  })
 
   ##############################
   # Brackets and tournament
