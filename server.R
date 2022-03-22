@@ -8,6 +8,9 @@ library(shiny)
 library(dplyr)
 library(madness)
 library(waiter)
+library(ggformula)
+library(plotly)
+theme_set(theme_bw())
 # library(reactlog)
 # reactlog_enable()
 
@@ -227,13 +230,168 @@ shinyServer(function(input, output, session) {
       select(name, `men's wins`, `women's wins`, total, `guaranteed wins`, `max possible`)
   })
 
-  # TCM <- reactive({
-  #   madness::tournament_completions(TM(), max_games_remaining = 19)
-  # })
-  #
-  # H2HM <- reactive({
-  #   madness::head2head(TM(), EM(), TCM())
-  # })
+  observeEvent(
+    TM(),
+    {
+      if (tolower(query()["admin"]) %in% c("yes","y")) {
+        madness::tournament_completions(TM(), max_games_remaining = 15) |>
+          saveRDS('data/2022/TCM.Rds')
+      }
+    })
+
+  TCM <-
+    reactiveFileReader(
+      1000, session,
+      'data/2022/TCM.Rds',
+      readRDS
+    )
+
+  observeEvent(
+    TCM(),
+    {
+      if (tolower(query()["admin"]) %in% c("yes","y")) {
+        madness::head2head(TM(), EM(), TCM()) |>
+          saveRDS('data/2022/H2HM.Rds')
+      }
+    })
+
+  H2HM <- reactiveFileReader(
+    1000, session,
+    'data/2022/H2HM.Rds',
+    readRDS
+  )
+
+  PossibleScoresM <- reactiveFileReader(
+    1000, session,
+    'data/2022/PossibleScoresM.Rds',
+    readRDS
+  )
+
+  observeEvent(
+    TCM(),
+    {
+      if (tolower(query()["admin"]) %in% c("yes","y")) {
+        TCM() |>
+          apply(2, function(x, e = EM()) { contest_scores(x, e)} ) |>
+          saveRDS('data/2022/PossibleScoresM.Rds')
+      }
+    })
+
+  WinnersTableM <- reactiveFileReader(
+    1000, session,
+    'data/2022/WinnersTableM.Rds',
+    readRDS)
+
+  observeEvent(
+    PossibleScoresM(),
+    {
+      if (tolower(query()["admin"]) %in% c("yes","y")) {
+        PossibleScoresM() |>
+          apply(2, which.max) %>%
+          tibble(winner = .) |>
+          group_by(winner) |>
+          summarise(scenarios = n()) |>
+          mutate(
+            winner = rownames(EM())[winner],
+            p = scenarios / sum(scenarios)
+          ) |>
+          mutate(
+            winner = reorder(winner, scenarios)
+          ) |>
+          saveRDS('data/2022/WinnersTableM.Rds')
+      }
+    })
+
+  PossibleScoresTableM <- reactive({
+    PossibleScoresM() |>
+      as.table() |>
+      as.data.frame() |>
+      setNames(c('name', 'sceneario', 'score')) |>
+      group_by(name, score) |>
+      tally()
+  })
+
+  observeEvent(
+    TW(),
+    {
+      if (tolower(query()["admin"]) %in% c("yes","y")) {
+        madness::tournament_completions(TW(), max_games_remaining = 15) |>
+          saveRDS('data/2022/TCW.Rds')
+      }
+    })
+
+  TCW <-
+    reactiveFileReader(
+      1000, session,
+      'data/2022/TCW.Rds',
+      readRDS
+    )
+
+  observeEvent(
+    TCW(),
+    {
+      if (tolower(query()["admin"]) %in% c("yes","y")) {
+        madness::head2head(TW(), EW(), TCW()) |>
+          saveRDS('data/2022/H2HW.Rds')
+      }
+    })
+
+  H2HW <- reactiveFileReader(
+    1000, session,
+    'data/2022/H2HW.Rds',
+    readRDS
+  )
+
+  PossibleScoresW <- reactiveFileReader(
+    1000, session,
+    'data/2022/PossibleScoresW.Rds',
+    readRDS
+  )
+
+  observeEvent(
+    TCW(),
+    {
+      if (tolower(query()["admin"]) %in% c("yes","y")) {
+        TCW() |>
+          apply(2, function(x, e = EW()) { contest_scores(x, e)} ) |>
+          saveRDS('data/2022/PossibleScoresW.Rds')
+      }
+    })
+
+  WinnersTableW <- reactiveFileReader(
+    1000, session,
+    'data/2022/WinnersTableW.Rds',
+    readRDS)
+
+  observeEvent(
+    PossibleScoresW(),
+    {
+      if (tolower(query()["admin"]) %in% c("yes","y")) {
+        PossibleScoresW() |>
+          apply(2, which.max) %>%
+          tibble(winner = .) |>
+          group_by(winner) |>
+          summarise(scenarios = n()) |>
+          mutate(
+            winner = rownames(EW())[winner],
+            p = scenarios / sum(scenarios)
+          ) |>
+          mutate(
+            winner = reorder(winner, scenarios)
+          ) |>
+          saveRDS('data/2022/WinnersTableW.Rds')
+      }
+    })
+
+  PossibleScoresTableW <- reactive({
+    PossibleScoresW() |>
+      as.table() |>
+      as.data.frame() |>
+      setNames(c('name', 'sceneario', 'score')) |>
+      group_by(name, score) |>
+      tally()
+  })
+
 
 
   ############ Select Teams ###########
@@ -392,11 +550,11 @@ shinyServer(function(input, output, session) {
 
   ########### Turn Controls on and off ############
 
-  output$showHead2HeadM <- reactive({
-    n_teams_remaining(TM()) < 21
+  output$showCrystalBallM <- reactive({
+    n_teams_remaining(TM()) <= 16
   })
-  output$showHead2HeadW <- reactive({
-    n_teams_remaining(TW()) < 21
+  output$showCrystalBallW <- reactive({
+    n_teams_remaining(TW()) <= 16
   })
 
   output$showDownloadButton <- reactive({
@@ -823,6 +981,83 @@ shinyServer(function(input, output, session) {
   #     readRDS
   #   )
 
+  output$WhoCanWinPlotM <- renderPlot({
+    WinnersTableM() |>
+      gf_col(winner ~ p, fill = "steelblue") |>
+      gf_labs(x = "percent of scenarios that win") |>
+      gf_refine(scale_x_continuous(labels = scales::label_percent()))
+  })
+
+  output$ScoreHistogramsM <-
+    renderPlot(height = 600,
+      {
+      PossibleScoresTableM() |>
+        gf_col(n ~ round(score) | reorder(name, score, function(x) - mean (x)),
+               binwidth = 1, fill = "steelblue") |>
+          gf_labs(x = "score")
+    })
+
+  output$H2HPlotM <- renderPlotly({
+    H2HM() |>
+      mutate(
+        perc = round(100 * scenarios / 2^n_games_remaining(TW()), 2),
+        hovertext =
+          glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
+      ) |>
+      # mutate(scenarios = ifelse(scenarios <= 0, NA, scenarios)) |>
+      gf_tile(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
+              text = ~hovertext) |>
+      gf_labs(title = "Head to head winning scenarios",
+              subtitle = "Read across rows for wins against the other player",
+              x = "", y = "", fill = "winning\nscenarios" ) |>
+      gf_refine(
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12)
+      ) |>
+      gf_theme(
+        axis.text.x = element_text(angle = 45, hjust = 1)
+      ) |>
+      plotly::ggplotly(tooltip = "text")
+  })
+
+  output$WhoCanWinPlotW <- renderPlot({
+    WinnersTableW() |>
+      gf_col(winner ~ p, fill = "steelblue") |>
+      gf_labs(x = "percent of scenarios that win") |>
+      gf_refine(scale_x_continuous(labels = scales::label_percent()))
+  })
+
+  output$ScoreHistogramsW <-
+    renderPlot(height = 600,
+               {
+                 PossibleScoresTableW() |>
+                   gf_col(n ~ round(score) | reorder(name, score, function(x) - mean (x)),
+                          binwidth = 1, fill = "steelblue") |>
+                   gf_labs(x = "score")
+               })
+
+  output$H2HPlotW <- renderPlotly({
+    H2HW() |>
+      mutate(
+        perc = round(100 * scenarios / 2^n_games_remaining(TW()), 2),
+        hovertext =
+          glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
+      ) |>
+      # mutate(scenarios = ifelse(scenarios <= 0, NA, scenarios)) |>
+      gf_tile(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
+              text = ~hovertext) |>
+      gf_labs(title = "Head to head winning scenarios",
+              subtitle = "Read across rows for wins against the other player",
+              x = "", y = "", fill = "winning\nscenarios" ) |>
+      gf_refine(
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12)
+      ) |>
+      gf_theme(
+        axis.text.x = element_text(angle = 45, hjust = 1)
+      ) |>
+      plotly::ggplotly(tooltip = "text")
+  })
+
+
   # output$WhoCanWinTable <- renderDataTable(
   #   options=list(pageLength = 100,                    # initial number of records
   #                lengthMenu=c(25,50,100),             # records/page options
@@ -864,6 +1099,8 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "standingsTableM", suspendWhenHidden = FALSE, priority = 100)
   outputOptions(output, "standingsTableW", suspendWhenHidden = FALSE, priority = 101)
   outputOptions(output, "standingsTableAll", suspendWhenHidden = FALSE, priority = 90)
+  outputOptions(output, "WhoCanWinPlotM", suspendWhenHidden = FALSE, priority = 80)
+  outputOptions(output, "ScoreHistogramsM", suspendWhenHidden = FALSE, priority = 80)
 
   Sys.sleep(1)
   waiter::waiter_hide()

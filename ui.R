@@ -9,8 +9,9 @@ library(shiny)
 library(d3heatmap)
 library(shinycssloaders)
 library(waiter)
+library(plotly)
 
-options(spinner.type = 5, spinner.color = "navy", spinner.size = 1.5)
+options(spinner.type = 5, spinner.color = "steelblue", spinner.size = 1.5)
 
 shinyUI(
   fluidPage(
@@ -227,6 +228,42 @@ shinyUI(
           )
         )
       ),
+
+      tabPanel(
+        "Crystal Ball",
+        conditionalPanel(
+          condition = 'showCrystalBallM',
+          tabsetPanel(
+            type = "pills",
+            tabPanel(
+              "Women's Bracket",
+              h3("Who can win?"),
+              plotOutput('WhoCanWinPlotW') |> withSpinner(),
+              br(),
+              h3('Head to Head'),
+              p('Read across rows for wins. Read up columns for losses.'),
+              plotlyOutput('H2HPlotW', height = "600px") |> withSpinner(),
+              br(),
+              h3('Score Histograms'),
+              plotOutput('ScoreHistogramsW') |> withSpinner(),
+              br()
+            ),
+            tabPanel(
+              "Men's Bracket",
+              h3("Who can win?"),
+              plotOutput('WhoCanWinPlotM') |> withSpinner(),
+              br(),
+              h3('Head to Head'),
+              p('Read across rows for wins. Read up columns for losses.'),
+              plotlyOutput('H2HPlotM', height = "600px") |> withSpinner(),
+              br(),
+              h3('Score Histograms'),
+              plotOutput('ScoreHistogramsM') |> withSpinner(),
+              br()
+            )
+          )
+        )
+      ), # crystal ball panel,
 
       tabPanel(
         "Admin",
