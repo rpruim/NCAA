@@ -309,8 +309,13 @@ shinyUI(
                   uiOutput("awayTeamScoreM"),
                   uiOutput("homeTeamScoreM"),
                   actionButton("saveScoreButtonM", "Submit Score"),
-                  textOutput("scoreSavedTextM")
-                ) # tabPanel
+                ), # tabPanel
+                tabPanel(
+                  "Other stuff",
+                  id = 'otherStuff',
+                  br(), br(),
+                  actionButton("reCacheButton", "Refresh Cache"),
+                ),
               ) # tabsetPanel
             ) # conditionalPanel
           ) # column
