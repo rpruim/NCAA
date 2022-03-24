@@ -348,6 +348,7 @@ head2head <-
            team_names = dimnames(ScoresM)[[1]],
            max_games_remaining = 15) {
   n_e <- nrow(ScoresM)
+  denominator <- ncol(TC)
   ordered_names <- team_names[order(apply(ScoresM, 1, mean))]
   res <-
     outer(1:n_e, 1:n_e,  # columns, rows
@@ -365,6 +366,7 @@ head2head <-
         factor( levels = ordered_names ), # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() ),
       other_name = team_names[other] |>
         factor( levels = ordered_names ), # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() ),
+      prop = scenarios / denominator,
       key_abbrv = key_name |> abbreviate(6) |>
         factor( levels = ordered_names |> abbreviate(6)), # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() |> abbreviate(6) ),
       other_abbrv = other_name |> abbreviate(6) |>

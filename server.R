@@ -981,18 +981,19 @@ shinyServer(function(input, output, session) {
   output$H2HPlotM <- renderPlotly({
     H2HM() |>
       mutate(
-        perc = round(100 * scenarios / 2^n_games_remaining(TW()), 2),
+        perc = round(100 * prop, 2),
         hovertext =
           glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
       ) |>
-      # mutate(scenarios = ifelse(scenarios <= 0, NA, scenarios)) |>
+      mutate(scenarios = ifelse(scenarios <= 0, NA, scenarios)) |>
       gf_tile(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
               text = ~hovertext) |>
       gf_labs(title = "Head to head winning scenarios",
               subtitle = "Read across rows for wins against the other player",
               x = "", y = "", fill = "winning\nscenarios" ) |>
       gf_refine(
-        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12)
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12,
+                         trans = "log2")
       ) |>
       gf_theme(
         axis.text.x = element_text(angle = 45, hjust = 1)
@@ -1019,7 +1020,7 @@ shinyServer(function(input, output, session) {
   output$H2HPlotW <- renderPlotly({
     H2HW() |>
       mutate(
-        perc = round(100 * scenarios / 2^n_games_remaining(TW()), 2),
+        perc = round(100 * prop, 2),
         hovertext =
           glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
       ) |>
@@ -1030,7 +1031,8 @@ shinyServer(function(input, output, session) {
               subtitle = "Read across rows for wins against the other player",
               x = "", y = "", fill = "winning\nscenarios" ) |>
       gf_refine(
-        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12)
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12,
+                         trans = "log2")
       ) |>
       gf_theme(
         axis.text.x = element_text(angle = 45, hjust = 1)
