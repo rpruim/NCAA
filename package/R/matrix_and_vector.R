@@ -369,7 +369,8 @@ head2head <-
       rownames(res) <- 1:n_e
       colnames(res) <- 1:n_e
 
-      res |>
+      res <-
+        res |>
         as.data.frame() |>
         setNames(c("key", "other", "scenarios")) |>
         mutate(
