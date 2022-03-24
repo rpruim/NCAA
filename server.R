@@ -1062,7 +1062,7 @@ shinyServer(function(input, output, session) {
         hovertext =
           glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
       ) |>
-      # mutate(scenarios = ifelse(scenarios <= 0, NA, scenarios)) |>
+      mutate(scenarios = ifelse(scenarios <= 0, NA, scenarios)) |>
       gf_tile(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
               text = ~hovertext) |>
       gf_labs(title = "Head to head winning scenarios",
