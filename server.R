@@ -257,7 +257,8 @@ shinyServer(function(input, output, session) {
         h2h <- madness::head2head(TM(), EM(), TCM())
         h2h |>  saveRDS('data/2022/H2HM.Rds')
 
-        ps <- apply(2, function(x, e = EM()) { contest_scores(x, e)} )
+        ps <- tc |>
+          apply(2, function(x, e = EM()) { madness::contest_scores(x, e)} )
         ps |> saveRDS('data/2022/PossibleScoresM.Rds')
 
         ps |>
@@ -319,7 +320,8 @@ shinyServer(function(input, output, session) {
         h2h <- madness::head2head(TW(), EW(), TCW())
         h2h |>  saveRDS('data/2022/H2HW.Rds')
 
-        ps <- apply(2, function(x, e = EW()) { contest_scores(x, e)} )
+        ps <- tc |>
+          apply(2, function(x, e = EW()) { contest_scores(x, e)} )
         ps |> saveRDS('data/2022/PossibleScoresW.Rds')
 
         ps |>
