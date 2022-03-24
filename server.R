@@ -69,6 +69,10 @@ shinyServer(function(input, output, session) {
 
   query <- reactive( parseQueryString(session$clientData$url_search) )
 
+  adminMode <- reactive({
+      tolower(query()["admin"]) %in% c("yes","y") || file.exists('admin.txt')
+  })
+
   ##############################
   # logging
 
@@ -244,9 +248,9 @@ shinyServer(function(input, output, session) {
   })
 
   observeEvent(
-    TM(),
+    input$saveScoreButtonM,
     {
-      if (tolower(query()["admin"]) %in% c("yes","y")) {
+      if (adminMode()) {
         madness::tournament_completions(TM(), max_games_remaining = 15) |>
           saveRDS('data/2022/TCM.Rds')
       }
@@ -262,7 +266,7 @@ shinyServer(function(input, output, session) {
   observeEvent(
     TCM(),
     {
-      if (tolower(query()["admin"]) %in% c("yes","y")) {
+      if (adminMode()) {
         madness::head2head(TM(), EM(), TCM()) |>
           saveRDS('data/2022/H2HM.Rds')
       }
@@ -283,7 +287,7 @@ shinyServer(function(input, output, session) {
   observeEvent(
     TCM(),
     {
-      if (tolower(query()["admin"]) %in% c("yes","y")) {
+      if (adminMode()) {
         TCM() |>
           apply(2, function(x, e = EM()) { contest_scores(x, e)} ) |>
           saveRDS('data/2022/PossibleScoresM.Rds')
@@ -298,7 +302,7 @@ shinyServer(function(input, output, session) {
   observeEvent(
     PossibleScoresM(),
     {
-      if (tolower(query()["admin"]) %in% c("yes","y")) {
+      if (adminMode()) }
         PossibleScoresM() |>
           apply(2, which.max) %>%
           tibble(winner = .) |>
@@ -325,9 +329,9 @@ shinyServer(function(input, output, session) {
   })
 
   observeEvent(
-    TW(),
+    input$saveScoreButtonW,
     {
-      if (tolower(query()["admin"]) %in% c("yes","y")) {
+      if (adminMode()) {
         madness::tournament_completions(TW(), max_games_remaining = 15) |>
           saveRDS('data/2022/TCW.Rds')
       }
@@ -343,7 +347,7 @@ shinyServer(function(input, output, session) {
   observeEvent(
     TCW(),
     {
-      if (tolower(query()["admin"]) %in% c("yes","y")) {
+      if (adminMode()) {
         madness::head2head(TW(), EW(), TCW()) |>
           saveRDS('data/2022/H2HW.Rds')
       }
@@ -364,7 +368,7 @@ shinyServer(function(input, output, session) {
   observeEvent(
     TCW(),
     {
-      if (tolower(query()["admin"]) %in% c("yes","y")) {
+      if (adminMode()) {
         TCW() |>
           apply(2, function(x, e = EW()) { contest_scores(x, e)} ) |>
           saveRDS('data/2022/PossibleScoresW.Rds')
@@ -379,7 +383,7 @@ shinyServer(function(input, output, session) {
   observeEvent(
     PossibleScoresW(),
     {
-      if (tolower(query()["admin"]) %in% c("yes","y")) {
+      if (adminMode()) {
         PossibleScoresW() |>
           apply(2, which.max) %>%
           tibble(winner = .) |>
@@ -581,14 +585,14 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "showEntryForm", suspendWhenHidden = FALSE)
 
   output$acceptingEntries <- reactive({
-    tolower(query()["admin"]) %in% c("yes","y") ||
+    adminMode() ||
       (file.exists(bracketFile) &&
          Sys.time() < lubridate::ymd_hm(deadline) + lubridate::hours(5) )
   })
   outputOptions(output, "acceptingEntries", suspendWhenHidden = FALSE)
 
   output$showAdminTab <- reactive({
-    tolower(query()["admin"]) %in% c("yes", "y")
+    adminMode()
   })
   outputOptions(output, "showAdminTab", suspendWhenHidden = FALSE)
 
