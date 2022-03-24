@@ -1012,7 +1012,6 @@ shinyServer(function(input, output, session) {
       "(" , round(100 * M / denom,2) , "%)") |>
       matrix(nrow = nrow(M))
   }
-  textMat(M, denom = 18)
 
   output$H2HPlotM <- renderPlotly({
     # h2h <- H2HM()
