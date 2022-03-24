@@ -35,6 +35,14 @@ humanTime <- function() format(Sys.time(), "%Y%m%d-%H%M%OS")
 
 ### Some utility functions
 
+safely_readRDS <- function(file, ...) {
+  if (file.exists(file)) {
+    readRDS(file, ...)
+  } else {
+    NULL
+  }
+}
+
 sessionID <- function(session) {
   digest::digest(session$request)
 }
@@ -254,7 +262,7 @@ shinyServer(function(input, output, session) {
         tc <- madness::tournament_completions(TM(), max_games_remaining = 15)
         tc |> saveRDS('data/2022/TCM.Rds')
 
-        h2h <- madness::head2head(TM(), EM(), TCM())
+        h2h <- madness::head2head(TM(), EM(), TCM(), result = "data.frame")
         h2h |>  saveRDS('data/2022/H2HM.Rds')
 
         ps <- tc |>
@@ -281,25 +289,25 @@ shinyServer(function(input, output, session) {
     reactiveFileReader(
       1000, session,
       'data/2022/TCM.Rds',
-      readRDS
+      safely_readRDS
     )
 
   H2HM <- reactiveFileReader(
     1000, session,
     'data/2022/H2HM.Rds',
-    readRDS
+    safely_readRDS
   )
 
   PossibleScoresM <- reactiveFileReader(
     1000, session,
     'data/2022/PossibleScoresM.Rds',
-    readRDS
+    safely_readRDS
   )
 
   WinnersTableM <- reactiveFileReader(
     1000, session,
     'data/2022/WinnersTableM.Rds',
-    readRDS)
+    safely_readRDS)
 
   PossibleScoresTableM <- reactive({
     PossibleScoresM() |>
@@ -317,7 +325,7 @@ shinyServer(function(input, output, session) {
         tc <- madness::tournament_completions(TW(), max_games_remaining = 15)
         tc |> saveRDS('data/2022/TCW.Rds')
 
-        h2h <- madness::head2head(TW(), EW(), TCW())
+        h2h <- madness::head2head(TW(), EW(), TCW(), result = "data.frame")
         h2h |>  saveRDS('data/2022/H2HW.Rds')
 
         ps <- tc |>
@@ -344,25 +352,25 @@ shinyServer(function(input, output, session) {
     reactiveFileReader(
       1000, session,
       'data/2022/TCW.Rds',
-      readRDS
+      safely_readRDS
     )
 
   H2HW <- reactiveFileReader(
     1000, session,
     'data/2022/H2HW.Rds',
-    readRDS
+    safely_readRDS
   )
 
   PossibleScoresW <- reactiveFileReader(
     1000, session,
     'data/2022/PossibleScoresW.Rds',
-    readRDS
+    safely_readRDS
   )
 
   WinnersTableW <- reactiveFileReader(
     1000, session,
     'data/2022/WinnersTableW.Rds',
-    readRDS)
+    safely_readRDS)
 
   PossibleScoresTableW <- reactive({
     PossibleScoresW() |>
@@ -978,7 +986,21 @@ shinyServer(function(input, output, session) {
           gf_labs(x = "score")
     })
 
+  textMat <- function(M, denom) {
+    rn <- rownames(M) |> matrix(nrow = nrow(M), ncol = ncol(M), byrow = FALSE)
+    cn <- colnames(M) |> matrix(nrow = nrow(M), ncol = ncol(M), byrow = TRUE)
+    paste0(
+      rn , " defeats " , cn , "</br>in " , M , " scenarios</br>",
+      "(" , round(100 * M / denom,2) , "%)") |>
+      matrix(nrow = nrow(M))
+  }
+  textMat(M, denom = 18)
+
   output$H2HPlotM <- renderPlotly({
+    # h2h <- H2HM()
+    # plot_ly(x = colnames(h2h), y = rownames(h2h), z = h2h, type = 'heatmap',
+    #         hover_info = 'text', text = textMat(h2h, ncol(TCM())))
+
     H2HM() |>
       mutate(
         perc = round(100 * prop, 2),
@@ -992,8 +1014,7 @@ shinyServer(function(input, output, session) {
               subtitle = "Read across rows for wins against the other player",
               x = "", y = "", fill = "winning\nscenarios" ) |>
       gf_refine(
-        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12,
-                         trans = "log2")
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12)
       ) |>
       gf_theme(
         axis.text.x = element_text(angle = 45, hjust = 1)
@@ -1031,8 +1052,7 @@ shinyServer(function(input, output, session) {
               subtitle = "Read across rows for wins against the other player",
               x = "", y = "", fill = "winning\nscenarios" ) |>
       gf_refine(
-        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12,
-                         trans = "log2")
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12)
       ) |>
       gf_theme(
         axis.text.x = element_text(angle = 45, hjust = 1)

@@ -346,32 +346,45 @@ head2head <-
            TC = tournament_completions(tournament, max_games_remaining = max_games_remaining),
            ScoresM =  TC |> apply(2, function(x, e = entries) {contest_scores(x, e)}),
            team_names = dimnames(ScoresM)[[1]],
-           max_games_remaining = 15) {
-  n_e <- nrow(ScoresM)
-  denominator <- ncol(TC)
-  ordered_names <- team_names[order(apply(ScoresM, 1, mean))]
-  res <-
-    outer(1:n_e, 1:n_e,  # columns, rows
-          Vectorize(function(x,y) sum(ScoresM[x, ] > ScoresM[y, ]))) |>
-    as.table()
+           max_games_remaining = 15,
+           result = c('data.frame', 'matrix'),
+           sort = TRUE) {
+    result <- match.arg(result)
+    n_e <- nrow(ScoresM)
+    denominator <- ncol(TC)
+    ordered_names <- team_names[order(apply(ScoresM, 1, mean))]
+    res <-
+      outer(1:n_e, 1:n_e,  # columns, rows
+            Vectorize(function(x,y) sum(ScoresM[x, ] > ScoresM[y, ]))) |>
+      as.table()
 
-  rownames(res) <- 1:n_e
-  colnames(res) <- 1:n_e
+    if (result == "matrix") {
+      rownames(res) <- team_names
+      colnames(res) <- team_names
+      if (sort) {
+        o <- order(apply(ScoresM, 1, mean, na.rm = TRUE))
+        res <- M[o, o]
+      }
+    } else {
+      rownames(res) <- 1:n_e
+      colnames(res) <- 1:n_e
 
-  res |>
-    as.data.frame() |>
-    setNames(c("key", "other", "scenarios")) |>
-    mutate(
-      key_name = team_names[key] |>
-        factor( levels = ordered_names ), # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() ),
-      other_name = team_names[other] |>
-        factor( levels = ordered_names ), # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() ),
-      prop = scenarios / denominator,
-      key_abbrv = key_name |> abbreviate(6) |>
-        factor( levels = ordered_names |> abbreviate(6)), # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() |> abbreviate(6) ),
-      other_abbrv = other_name |> abbreviate(6) |>
-        factor( levels = ordered_names |> abbreviate(6))  # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() |> abbreviate(6) )
-    )
+      res |>
+        as.data.frame() |>
+        setNames(c("key", "other", "scenarios")) |>
+        mutate(
+          key_name = team_names[key] |>
+            factor( levels = ordered_names ), # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() ),
+          other_name = team_names[other] |>
+            factor( levels = ordered_names ), # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() ),
+          prop = scenarios / denominator,
+          key_abbrv = key_name |> abbreviate(6) |>
+            factor( levels = ordered_names |> abbreviate(6)), # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() |> abbreviate(6) ),
+          other_abbrv = other_name |> abbreviate(6) |>
+            factor( levels = ordered_names |> abbreviate(6))  # ScoresM |> apply(1, mean) |> sort() |> rev() |> names() |> abbreviate(6) )
+        )
+    }
+    res
   }
 
 #' @export
