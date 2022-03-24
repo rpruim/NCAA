@@ -378,7 +378,7 @@ shinyServer(function(input, output, session) {
 
 
   observeEvent(
-    input$recacheButton,
+    input$reCacheButton,
     {
       if (as.numeric(input$reCacheButton) > 0 && adminMode()) {
         if (n_games_remaining(TM()) <= 15) {
