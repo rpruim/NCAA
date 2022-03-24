@@ -289,7 +289,7 @@ shinyUI(
             6,
             conditionalPanel(
               condition = 'output.showGameEntry',
-              h3("Enter Game Results !!!"),
+              h3("Enter Game Results"),
               tabsetPanel(
                 id = "gameScores",
                 type = "tabs",

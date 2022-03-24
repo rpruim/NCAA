@@ -250,60 +250,17 @@ shinyServer(function(input, output, session) {
   observeEvent(
     input$saveScoreButtonM,
     {
-      if (adminMode()) {
-        madness::tournament_completions(TM(), max_games_remaining = 15) |>
-          saveRDS('data/2022/TCM.Rds')
-      }
-    })
+      if (adminMode() && n_games_remaining(TM()) <= 16) {
+        tc <- madness::tournament_completions(TM(), max_games_remaining = 15)
+        tc |> saveRDS('data/2022/TCM.Rds')
 
-  TCM <-
-    reactiveFileReader(
-      1000, session,
-      'data/2022/TCM.Rds',
-      readRDS
-    )
+        h2h <- madness::head2head(TM(), EM(), TCM())
+        h2h |>  saveRDS('data/2022/H2HM.Rds')
 
-  observeEvent(
-    TCM(),
-    {
-      if (adminMode()) {
-        madness::head2head(TM(), EM(), TCM()) |>
-          saveRDS('data/2022/H2HM.Rds')
-      }
-    })
+        ps <- apply(2, function(x, e = EM()) { contest_scores(x, e)} )
+        ps |> saveRDS('data/2022/PossibleScoresM.Rds')
 
-  H2HM <- reactiveFileReader(
-    1000, session,
-    'data/2022/H2HM.Rds',
-    readRDS
-  )
-
-  PossibleScoresM <- reactiveFileReader(
-    1000, session,
-    'data/2022/PossibleScoresM.Rds',
-    readRDS
-  )
-
-  observeEvent(
-    TCM(),
-    {
-      if (adminMode()) {
-        TCM() |>
-          apply(2, function(x, e = EM()) { contest_scores(x, e)} ) |>
-          saveRDS('data/2022/PossibleScoresM.Rds')
-      }
-    })
-
-  WinnersTableM <- reactiveFileReader(
-    1000, session,
-    'data/2022/WinnersTableM.Rds',
-    readRDS)
-
-  observeEvent(
-    PossibleScoresM(),
-    {
-      if (adminMode()) }
-        PossibleScoresM() |>
+        ps |>
           apply(2, which.max) %>%
           tibble(winner = .) |>
           group_by(winner) |>
@@ -319,6 +276,30 @@ shinyServer(function(input, output, session) {
       }
     })
 
+  TCM <-
+    reactiveFileReader(
+      1000, session,
+      'data/2022/TCM.Rds',
+      readRDS
+    )
+
+  H2HM <- reactiveFileReader(
+    1000, session,
+    'data/2022/H2HM.Rds',
+    readRDS
+  )
+
+  PossibleScoresM <- reactiveFileReader(
+    1000, session,
+    'data/2022/PossibleScoresM.Rds',
+    readRDS
+  )
+
+  WinnersTableM <- reactiveFileReader(
+    1000, session,
+    'data/2022/WinnersTableM.Rds',
+    readRDS)
+
   PossibleScoresTableM <- reactive({
     PossibleScoresM() |>
       as.table() |>
@@ -331,60 +312,17 @@ shinyServer(function(input, output, session) {
   observeEvent(
     input$saveScoreButtonW,
     {
-      if (adminMode()) {
-        madness::tournament_completions(TW(), max_games_remaining = 15) |>
-          saveRDS('data/2022/TCW.Rds')
-      }
-    })
+      if (adminMode() && n_games_remaining(TW()) <= 16) {
+        tc <- madness::tournament_completions(TW(), max_games_remaining = 15)
+        tc |> saveRDS('data/2022/TCW.Rds')
 
-  TCW <-
-    reactiveFileReader(
-      1000, session,
-      'data/2022/TCW.Rds',
-      readRDS
-    )
+        h2h <- madness::head2head(TW(), EW(), TCW())
+        h2h |>  saveRDS('data/2022/H2HW.Rds')
 
-  observeEvent(
-    TCW(),
-    {
-      if (adminMode()) {
-        madness::head2head(TW(), EW(), TCW()) |>
-          saveRDS('data/2022/H2HW.Rds')
-      }
-    })
+        ps <- apply(2, function(x, e = EW()) { contest_scores(x, e)} )
+        ps |> saveRDS('data/2022/PossibleScoresW.Rds')
 
-  H2HW <- reactiveFileReader(
-    1000, session,
-    'data/2022/H2HW.Rds',
-    readRDS
-  )
-
-  PossibleScoresW <- reactiveFileReader(
-    1000, session,
-    'data/2022/PossibleScoresW.Rds',
-    readRDS
-  )
-
-  observeEvent(
-    TCW(),
-    {
-      if (adminMode()) {
-        TCW() |>
-          apply(2, function(x, e = EW()) { contest_scores(x, e)} ) |>
-          saveRDS('data/2022/PossibleScoresW.Rds')
-      }
-    })
-
-  WinnersTableW <- reactiveFileReader(
-    1000, session,
-    'data/2022/WinnersTableW.Rds',
-    readRDS)
-
-  observeEvent(
-    PossibleScoresW(),
-    {
-      if (adminMode()) {
-        PossibleScoresW() |>
+        ps |>
           apply(2, which.max) %>%
           tibble(winner = .) |>
           group_by(winner) |>
@@ -399,6 +337,30 @@ shinyServer(function(input, output, session) {
           saveRDS('data/2022/WinnersTableW.Rds')
       }
     })
+
+  TCW <-
+    reactiveFileReader(
+      1000, session,
+      'data/2022/TCW.Rds',
+      readRDS
+    )
+
+  H2HW <- reactiveFileReader(
+    1000, session,
+    'data/2022/H2HW.Rds',
+    readRDS
+  )
+
+  PossibleScoresW <- reactiveFileReader(
+    1000, session,
+    'data/2022/PossibleScoresW.Rds',
+    readRDS
+  )
+
+  WinnersTableW <- reactiveFileReader(
+    1000, session,
+    'data/2022/WinnersTableW.Rds',
+    readRDS)
 
   PossibleScoresTableW <- reactive({
     PossibleScoresW() |>
