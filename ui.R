@@ -314,7 +314,7 @@ shinyUI(
                   "Other stuff",
                   id = 'otherStuff',
                   br(), br(),
-                  actionButton("reCacheButton", "Refresh Cache"),
+                  actionButton("reCacheButton", "Refresh Crystal Ball Cache"),
                 ),
               ) # tabsetPanel
             ) # conditionalPanel
