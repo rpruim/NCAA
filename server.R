@@ -256,17 +256,46 @@ shinyServer(function(input, output, session) {
   })
 
 
+  # cacheCrystalBallM <- function() {
+  #   t <- TM()
+  #   e <- EM()
+  #   tc <- madness::tournament_completions(t, max_games_remaining = 15)
+  #   tc |> saveRDS('data/2022/TCM.Rds')
+  # 
+  # 
+  #   h2h <- madness::head2head(t, e, tc, result = "data.frame")
+  #   h2h |>  saveRDS('data/2022/H2HM.Rds')
+  # 
+  #   ps <- tc |>
+  #     apply(2, function(x, e = e) { madness::contest_scores(x, e)} )
+  #   ps |> saveRDS('data/2022/PossibleScoresM.Rds')
+  # 
+  #   ps |>
+  #     apply(2, which.max) %>%
+  #     tibble(winner = .) |>
+  #     group_by(winner) |>
+  #     summarise(scenarios = n()) |>
+  #     mutate(
+  #       winner = rownames(e)[winner],
+  #       p = scenarios / sum(scenarios)
+  #     ) |>
+  #     mutate(
+  #       winner = reorder(winner, scenarios)
+  #     ) |>
+  #     saveRDS('data/2022/WinnersTableM.Rds')
+  # }
+
   cacheCrystalBallM <- function() {
     tc <- madness::tournament_completions(TM(), max_games_remaining = 15)
     tc |> saveRDS('data/2022/TCM.Rds')
-
-    h2h <- madness::head2head(TM(), EM(), TCM(), result = "data.frame")
+    
+    h2h <- madness::head2head(TM(), EM(), tc, result = "data.frame")
     h2h |>  saveRDS('data/2022/H2HM.Rds')
-
+    
     ps <- tc |>
-      apply(2, function(x, e = EM()) { madness::contest_scores(x, e)} )
+      apply(2, function(x, e = EM()) { contest_scores(x, e)} )
     ps |> saveRDS('data/2022/PossibleScoresM.Rds')
-
+    
     ps |>
       apply(2, which.max) %>%
       tibble(winner = .) |>
@@ -281,7 +310,7 @@ shinyServer(function(input, output, session) {
       ) |>
       saveRDS('data/2022/WinnersTableM.Rds')
   }
-
+  
 
   TCM <-
     reactiveFileReader(
@@ -320,7 +349,7 @@ shinyServer(function(input, output, session) {
     tc <- madness::tournament_completions(TW(), max_games_remaining = 15)
     tc |> saveRDS('data/2022/TCW.Rds')
 
-    h2h <- madness::head2head(TW(), EW(), TCW(), result = "data.frame")
+    h2h <- madness::head2head(TW(), EW(), tc, result = "data.frame")
     h2h |>  saveRDS('data/2022/H2HW.Rds')
 
     ps <- tc |>
@@ -381,11 +410,11 @@ shinyServer(function(input, output, session) {
     input$reCacheButton,
     {
       if (as.numeric(input$reCacheButton) > 0 && adminMode()) {
-        if (n_games_remaining(TM()) <= 15) {
-          cacheCrystalBallM()
-        }
         if (n_games_remaining(TW()) <= 15) {
           cacheCrystalBallW()
+        }
+        if (n_games_remaining(TM()) <= 15) {
+          cacheCrystalBallM()
         }
       }
     })
