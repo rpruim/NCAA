@@ -188,13 +188,13 @@ minGuaranteed <- function( teams, bracket, games, matchups = possibleMatchups(br
 }
 
 
-head2head <- function(teams1, teams2, bracket, games, matchups = possibleMatchups(bracket)) {
-  c(
-    sum( mightWin(setdiff(teams1, teams2), bracket, games, matchups) ) -
-      sum( goingToWin(setdiff(teams2, teams1), bracket, games, matchups) )
-  )
-}
-
+# head2head <- function(teams1, teams2, bracket, games, matchups = possibleMatchups(bracket)) {
+#   c(
+#     sum( mightWin(setdiff(teams1, teams2), bracket, games, matchups) ) -
+#       sum( goingToWin(setdiff(teams2, teams1), bracket, games, matchups) )
+#   )
+# }
+# 
 
 
 guaranteedWins <- function( teams, bracket, games, matchups = possibleMatchups(bracket)) {
