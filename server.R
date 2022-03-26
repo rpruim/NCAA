@@ -14,8 +14,8 @@ theme_set(theme_bw())
 # library(reactlog)
 # reactlog_enable()
 
-source("Tourny.R")
-source("Loaders.R")
+# source("Tourny.R")
+# source("Loaders.R")
 
 maxPoints <- 200
 
@@ -146,31 +146,31 @@ shinyServer(function(input, output, session) {
       500,
       session = session,
       'data/Scores/2022/Mens/scores-2022-M.csv',
-      madness::load_scores_file
+      madness::load_game_scores
     )
 
   GameScoresW <- reactiveFileReader(
       500,
       session = session,
       'data/Scores/2022/Womens/scores-2022-W.csv',
-      madness::load_scores_file
+      madness::load_game_scores
     )
 
-  GameScoresM <-
-    reactivePoll(
-      500,
-      session = session,
-      function() max(file.mtime(dir("data/Scores/2022/Mens", full.names = TRUE))),
-      function() {LoadGameScores("data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv")}
-    )
-
-  GameScoresW <-
-    reactivePoll(
-      500,
-      session = session,
-      function() max(file.mtime(dir("data/Scores/2022/Womens", full.names = TRUE))),
-      function() {LoadGameScores("data/Scores/2022/Womens/", pattern = "W-.*2022.*\\.csv")}
-    )
+  # GameScoresM <-
+  #   reactivePoll(
+  #     500,
+  #     session = session,
+  #     function() max(file.mtime(dir("data/Scores/2022/Mens", full.names = TRUE))),
+  #     function() {LoadGameScores("data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv")}
+  #   )
+#
+#   GameScoresW <-
+#     reactivePoll(
+#       500,
+#       session = session,
+#       function() max(file.mtime(dir("data/Scores/2022/Womens", full.names = TRUE))),
+#       function() {LoadGameScores("data/Scores/2022/Womens/", pattern = "W-.*2022.*\\.csv")}
+#     )
 
   ##############################
   # entry matrices
@@ -218,18 +218,24 @@ shinyServer(function(input, output, session) {
   ### ****** -> madness?
 
   CompletedGamesM <- reactive({
-    compGames <- completedGames(GameScoresM(), BracketM())
-    if (nrow(compGames) < 1) return(compGames)
-    compGames %>%
-      arrange(game) %>%
-      select(game, winner, loser, score)
+    # compGames <- completedGames(GameScoresM(), BracketM())
+    # if (nrow(compGames) < 1) return(compGames)
+    # compGames %>%
+    #   arrange(game) %>%
+    #   select(game, winner, loser, score)
+    GameScoresM() |>
+      mutate(score = paste(pmax(hscore, ascore), "-", pmin(hscore, ascore))) |>
+      select(game_number, winner, loser, score)
   })
   CompletedGamesW <- reactive({
-    compGames <- completedGames(GameScoresW(), BracketW())
-    if (nrow(compGames) < 1) return(compGames)
-    compGames %>%
-      arrange(game) %>%
-      select(game, winner, loser, score)
+    # compGames <- completedGames(GameScoresW(), BracketW())
+    # if (nrow(compGames) < 1) return(compGames)
+    # compGames %>%
+    #   arrange(game) %>%
+    #   select(game, winner, loser, score)
+    GameScoresW() |>
+      mutate(score = paste(pmax(hscore, ascore), "-", pmin(hscore, ascore))) |>
+      select(game_number, winner, loser, score)
   })
 
   ContestStandingsM <- reactive({
@@ -261,15 +267,15 @@ shinyServer(function(input, output, session) {
   #   e <- EM()
   #   tc <- madness::tournament_completions(t, max_games_remaining = 15)
   #   tc |> saveRDS('data/2022/TCM.Rds')
-  # 
-  # 
+  #
+  #
   #   h2h <- madness::head2head(t, e, tc, result = "data.frame")
   #   h2h |>  saveRDS('data/2022/H2HM.Rds')
-  # 
+  #
   #   ps <- tc |>
   #     apply(2, function(x, e = e) { madness::contest_scores(x, e)} )
   #   ps |> saveRDS('data/2022/PossibleScoresM.Rds')
-  # 
+  #
   #   ps |>
   #     apply(2, which.max) %>%
   #     tibble(winner = .) |>
@@ -288,14 +294,14 @@ shinyServer(function(input, output, session) {
   cacheCrystalBallM <- function() {
     tc <- madness::tournament_completions(TM(), max_games_remaining = 15)
     tc |> saveRDS('data/2022/TCM.Rds')
-    
+
     h2h <- madness::head2head(TM(), EM(), tc, result = "data.frame")
     h2h |>  saveRDS('data/2022/H2HM.Rds')
-    
+
     ps <- tc |>
       apply(2, function(x, e = EM()) { contest_scores(x, e)} )
     ps |> saveRDS('data/2022/PossibleScoresM.Rds')
-    
+
     ps |>
       apply(2, which.max) %>%
       tibble(winner = .) |>
@@ -310,7 +316,7 @@ shinyServer(function(input, output, session) {
       ) |>
       saveRDS('data/2022/WinnersTableM.Rds')
   }
-  
+
 
   TCM <-
     reactiveFileReader(
@@ -638,48 +644,67 @@ shinyServer(function(input, output, session) {
   output$password <- renderPrint({input$password})
 
   output$gameScoreSelectorM <- renderUI({
-    games <- allGames(BracketM(), GameScoresM())
+    GS <- all_games(TM(), GameScoresM())
+    games <- GS[['game_number']] |> setNames(GS[['description']])
+
     selectInput("gameToScoreM", "Choose a Game", choices = games, selectize=FALSE)
   })
 
   output$gameScoreSelectorW <- renderUI({
-    games <- allGames(BracketW(), GameScoresW())
+    GS <- all_games(TW(), GameScoresW())
+    games <- GS[['game_number']] |> setNames(GS[['description']])
+
     selectInput("gameToScoreW", "Choose a Game", choices = games, selectize=FALSE)
   })
 
-  output$gameToScoreTextM <- renderText({
-    paste0("About to give score for game ", input$gameToScoreM, ": ",
-           awayTeam(as.numeric(input$gameToScoreM), BracketM(), GameScoresM()), " vs. ",
-           homeTeam(as.numeric(input$gameToScoreM), BracketM(), GameScoresM())
-    )
-  })
-  output$gameToScoreTextW <- renderText({
-    paste0("About to give score for game ", input$gameToScoreW, ": ",
-           awayTeam(as.numeric(input$gameToScoreW), BracketW(), GameScoresW()), " vs. ",
-           homeTeam(as.numeric(input$gameToScoreW), BracketW(), GameScoresW())
-    )
-  })
+  # output$gameToScoreTextM <- renderText({
+  #   paste0("About to give score for game ", input$gameToScoreM, ": ",
+  #          awayTeam(as.numeric(input$gameToScoreM), BracketM(), GameScoresM()), " vs. ",
+  #          homeTeam(as.numeric(input$gameToScoreM), BracketM(), GameScoresM())
+  #   )
+  # })
+  # output$gameToScoreTextW <- renderText({
+  #   paste0("About to give score for game ", input$gameToScoreW, ": ",
+  #          awayTeam(as.numeric(input$gameToScoreW), BracketW(), GameScoresW()), " vs. ",
+  #          homeTeam(as.numeric(input$gameToScoreW), BracketW(), GameScoresW())
+  #   )
+  # })
 
   output$homeTeamScoreM <- renderUI({
+    tourn <- TM()
     numericInput("hscoreM", step=0,
-                 label = homeTeam(as.numeric(input$gameToScoreM), BracketM(), GameScoresM()),
-                 value = homeScore(as.numeric(input$gameToScoreM), BracketM(), GameScoresM()))
+                 label = home_team_name(tourn, as.numeric(input$gameToScoreM)),
+                 value = ""
+    #              value = GameScoresM() |>
+    #                filter(game_number == as.numeric(input$gameToScoresM)) |>
+    #                pull(hscore) |> c(NA) |> getElement(1)
+    )
   })
   output$homeTeamScoreW <- renderUI({
+    tourn <- TW()
     numericInput("hscoreW", step=0,
-                 label = homeTeam(as.numeric(input$gameToScoreW), BracketW(), GameScoresW()),
-                 value = homeScore(as.numeric(input$gameToScoreW), BracketW(), GameScoresW()))
+                 label = home_team_name(tourn, as.numeric(input$gameToScoreW)),
+                 value = ""
+    )
   })
 
   output$awayTeamScoreM <- renderUI({
     numericInput("ascoreM", step=0,
-                 label = awayTeam(as.numeric(input$gameToScoreM), BracketM(), GameScoresM()),
-                 value = awayScore(as.numeric(input$gameToScoreM), BracketM(), GameScoresM()))
+                 label = away_team_name(TM(), as.numeric(input$gameToScoreM)),
+                 value = ""
+                 # value = GameScoresM() |>
+                 #   filter(game_number == as.numeric(input$gameToScoresM)) |>
+                 #   pull(ascore) |> c(NA) |> getElement(1)
+    )
   })
   output$awayTeamScoreW <- renderUI({
     numericInput("ascoreW", step=0,
-                 label = awayTeam(as.numeric(input$gameToScoreW), BracketW(), GameScoresW()),
-                 value = awayScore(as.numeric(input$gameToScoreW), BracketW(), GameScoresW()))
+                 label = away_team_name(TW(), as.numeric(input$gameToScoreW)),
+                 value = ""
+                 # value = GameScoresW() |>
+                 #   filter(game_number == as.numeric(input$gameToScoresW)) |>
+                 #   pull(ascore) |> c(NA) |> getElement(1)
+    )
   })
 
   output$scoreSavedTextM <- renderText({
@@ -690,8 +715,8 @@ shinyServer(function(input, output, session) {
       isolate(hs <- as.numeric(input$hscoreM))
       isolate(as <- as.numeric(input$ascoreM))
 
-      home <- homeTeam(gts, BracketM(), GameScoresM())
-      away <- awayTeam(gts, BracketM(), GameScoresM())
+      home <- home_team_name(TM(), gts)
+      away <- away_team_name(TM(), gts)
 
       # this will react each time the save score button is pressed.
       if (as.numeric(input$saveScoreButtonM) > 0)
@@ -709,8 +734,8 @@ shinyServer(function(input, output, session) {
       isolate(hs <- as.numeric(input$hscoreW))
       isolate(as <- as.numeric(input$ascoreW))
 
-      home <- homeTeam(gts, BracketW(), GameScoresW())
-      away <- awayTeam(gts, BracketW(), GameScoresW())
+      home <- home_team_name(TW(), gts)
+      away <- away_team_name(TW(), gts)
 
       # this will react each time the save score button is pressed.
       if (as.numeric(input$saveScoreButtonW) > 0)
@@ -780,13 +805,13 @@ shinyServer(function(input, output, session) {
 
   ########## Bracket ###############
 
-  # updates when games scores change
-  BracketWithTeamStatusM <- reactive({
-    addTeamStatus(BracketM(), scheduledGames(bracket=BracketM(), results = GameScoresM()))
-  })
-  BracketWithTeamStatusW <- reactive({
-    addTeamStatus(BracketW(), scheduledGames(bracket=BracketW(), results = GameScoresW()))
-  })
+  # # updates when games scores change
+  # BracketWithTeamStatusM <- reactive({
+  #   addTeamStatus(BracketM(), scheduledGames(bracket=BracketM(), results = GameScoresM()))
+  # })
+  # BracketWithTeamStatusW <- reactive({
+  #   addTeamStatus(BracketW(), scheduledGames(bracket=BracketW(), results = GameScoresW()))
+  # })
 
 
   ############ Query Stuff #############
@@ -915,25 +940,25 @@ shinyServer(function(input, output, session) {
 
   ######### (basketball) team data table #########
 
-  TeamDataM <- reactive({
-    teamData(Entries(), BracketWithTeamStatusM())
-  })
+  # TeamDataM <- reactive({
+  #   teamData(Entries(), BracketWithTeamStatusM())
+  # })
+  #
+  # TeamDataW <- reactive({
+  #   teamData(Entries(), BracketWithTeamStatusW())
+  # })
 
-  TeamDataW <- reactive({
-    teamData(Entries(), BracketWithTeamStatusW())
-  })
-
-  output$teamData <- renderDataTable(
-    options=list(pageLength = 64,             # initial number of records
-                 lengthMenu = c(5,10,25,50),  # records/page options
-                 lengthChange = 0,            # show/hide records per page dropdown
-                 searching = 1,               # global search box on/off
-                 info = 1,                    # information on/off (how many records filtered, etc)
-                 autoWidth = 1                # automatic column width calculation, disable if passing column width via aoColumnDefs
-                 #aoColumnDefs = list(list(sWidth="300px", aTargets=c(list(0),list(1))))    # custom column size
-    ),
-    TeamDataM()
-  )
+  # output$teamData <- renderDataTable(
+  #   options=list(pageLength = 64,             # initial number of records
+  #                lengthMenu = c(5,10,25,50),  # records/page options
+  #                lengthChange = 0,            # show/hide records per page dropdown
+  #                searching = 1,               # global search box on/off
+  #                info = 1,                    # information on/off (how many records filtered, etc)
+  #                autoWidth = 1                # automatic column width calculation, disable if passing column width via aoColumnDefs
+  #                #aoColumnDefs = list(list(sWidth="300px", aTargets=c(list(0),list(1))))    # custom column size
+  #   ),
+  #   TeamDataM()
+  # )
       # E <- Entries()
       # M <- do.call(rbind, lapply( E, function(x) x$teamsLogical ) )
       # B <- BracketWithTeamStatus()
