@@ -1,3 +1,4 @@
+library(tidyverse)
 seedOrder   <- c(1,16, 8,9, 5,12, 4,13, 6,11, 3,14, 7,10, 2,15)
 seedCost    <- c(42,30,23,20,14,14,12,9, 7,8,8,6,3,2,1,1)
 seedCostOld <- c(22,18,15,12,10, 9, 7, 6,5,4,3,2,1,1,1,1)
@@ -194,7 +195,7 @@ minGuaranteed <- function( teams, bracket, games, matchups = possibleMatchups(br
 #       sum( goingToWin(setdiff(teams2, teams1), bracket, games, matchups) )
 #   )
 # }
-# 
+#
 
 
 guaranteedWins <- function( teams, bracket, games, matchups = possibleMatchups(bracket)) {
