@@ -6,7 +6,7 @@
 #
 
 library(shiny)
-library(d3heatmap)
+# library(d3heatmap)
 library(shinycssloaders)
 library(waiter)
 library(plotly)
