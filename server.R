@@ -752,8 +752,8 @@ shinyServer(function(input, output, session) {
       gts <- as.numeric(input$gameToScoreM)
       hs <- as.numeric(input$hscoreM)
       as <- as.numeric(input$ascoreM)
-      home <- homeTeam(gts, BracketM(), GameScoresM())
-      away <- awayTeam(gts, BracketM(), GameScoresM())
+      home <- home_team_name(TM(), gts)
+      away <- away_team_name(TM(), gts)
       # createLogEntry(paste("Score enterred:", away, "vs.", home, as, "-", hs))
       # Note for winner_01: 0 = home win; 1 = away win
       readr::write_csv(
@@ -779,8 +779,8 @@ shinyServer(function(input, output, session) {
       gts <- as.numeric(input$gameToScoreW)
       hs <- as.numeric(input$hscoreW)
       as <- as.numeric(input$ascoreW)
-      home <- homeTeam(gts, BracketW(), GameScoresW())
-      away <- awayTeam(gts, BracketW(), GameScoresW())
+      home <- home_team_name(TW(), gts)
+      away <- away_team_name(TW(), gts)
       # createLogEntry(paste("Women's Score enterred:", away, "vs.", home, as, "-", hs))
       # Note for winner_01: 0 = home win; 1 = away win
       readr::write_csv(
