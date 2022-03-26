@@ -1079,16 +1079,22 @@ shinyServer(function(input, output, session) {
           glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
       ) |>
       mutate(scenarios = ifelse(scenarios <= 0, NA, scenarios)) |>
-      gf_tile(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
+      gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
               text = ~hovertext) |>
+      gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
+      gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
       gf_labs(title = "Head to head winning scenarios",
               subtitle = "Read across rows for wins against the other player",
               x = "", y = "", fill = "winning\nscenarios" ) |>
       gf_refine(
-        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12)
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12),
+        coord_cartesian(expand = FALSE)
       ) |>
       gf_theme(
-        axis.text.x = element_text(angle = 45, hjust = 1)
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
       ) |>
       plotly::ggplotly(tooltip = "text")
   })
@@ -1117,16 +1123,22 @@ shinyServer(function(input, output, session) {
           glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
       ) |>
       mutate(scenarios = ifelse(scenarios <= 0, NA, scenarios)) |>
-      gf_tile(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
+      gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
               text = ~hovertext) |>
+      gf_hline(yintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, size = 0.5) |>
+      gf_vline(xintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, size = 0.5) |>
       gf_labs(title = "Head to head winning scenarios",
               subtitle = "Read across rows for wins against the other player",
               x = "", y = "", fill = "winning\nscenarios" ) |>
       gf_refine(
+        coord_cartesian(expand = FALSE),
         scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12)
       ) |>
       gf_theme(
-        axis.text.x = element_text(angle = 45, hjust = 1)
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
       ) |>
       plotly::ggplotly(tooltip = "text")
   })
