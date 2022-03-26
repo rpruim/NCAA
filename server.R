@@ -134,13 +134,13 @@ shinyServer(function(input, output, session) {
       500,
       session = session,
       "data/bracket2022.csv",
-      madness::load_bracket 
+      madness::load_bracket
     )
   BracketW <- reactiveFileReader(
       500,
       session = session,
       "data/bracket2022w.csv",
-      madness::load_bracket 
+      madness::load_bracket
     )
 
   GameScoresM <- reactiveFileReader(
@@ -774,6 +774,7 @@ shinyServer(function(input, output, session) {
       cacheCrystalBallM()
     }
   })
+
   observeEvent( input$saveScoreButtonW, {
     if (as.numeric(input$saveScoreButtonW) > 0) {
       gts <- as.numeric(input$gameToScoreW)
