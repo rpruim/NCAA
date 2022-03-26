@@ -74,6 +74,27 @@ load_entries_from_files <-
     res
   }
 
+#' Load Bracket
+#'
+#'
+#' Load bracket from a CSV file
+#'
+#' @export
+load_bracket <- function(file) {
+  bracket <- readr::read_csv(file)
+
+  bracket |>
+    dplyr::mutate(
+      cost = seedCost[seed],
+      cost.old = seedCostOld[seed],
+      # which regions play in final 4 is determined by order of appearance in csv
+      slot = ( as.numeric(factor(region, levels = unique(region), # c('east','west','south','midwest'),
+                                 ordered=TRUE)) * 100 + order(seedOrder)[seed] )
+    ) |>
+    dplyr::arrange(slot)
+}
+
+#'
 #' Load Games Scores
 #'
 #' Load game scores from a CSV file or files.

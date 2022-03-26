@@ -133,13 +133,13 @@ shinyServer(function(input, output, session) {
       500,
       session = session,
       "data/bracket2022.csv",
-      LoadBracket
+      load_bracket
     )
   BracketW <- reactiveFileReader(
       500,
       session = session,
       "data/bracket2022w.csv",
-      LoadBracket
+      load_bracket
     )
 
   GameScoresM <- reactiveFileReader(
