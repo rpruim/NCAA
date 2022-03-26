@@ -17,6 +17,7 @@ theme_set(theme_bw())
 # source("Tourny.R")
 # source("Loaders.R")
 
+
 maxPoints <- 200
 
 deadline <- "2017-03-16 12:30"
@@ -133,13 +134,13 @@ shinyServer(function(input, output, session) {
       500,
       session = session,
       "data/bracket2022.csv",
-      load_bracket
+      madness::load_bracket 
     )
   BracketW <- reactiveFileReader(
       500,
       session = session,
       "data/bracket2022w.csv",
-      load_bracket
+      madness::load_bracket 
     )
 
   GameScoresM <- reactiveFileReader(
@@ -599,9 +600,8 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "showEntryForm", suspendWhenHidden = FALSE)
 
   output$acceptingEntries <- reactive({
-    adminMode() ||
-      (file.exists(bracketFile) &&
-         Sys.time() < lubridate::ymd_hm(deadline) + lubridate::hours(5) )
+    adminMode() || (Sys.time() < lubridate::ymd_hm(deadline) + lubridate::hours(5))
+      # (file.exists(bracketFile) &&
   })
   outputOptions(output, "acceptingEntries", suspendWhenHidden = FALSE)
 
