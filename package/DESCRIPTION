@@ -6,6 +6,12 @@ Authors@R:
 Description: Used for modeling contest at Calvin University
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
+Imports:
+  dplyr,
+  tibble,
+  purrr,
+  readr,
+  bitops
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2

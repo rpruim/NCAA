@@ -433,3 +433,23 @@ entry_teams <- function(tournament, entries) {
     as.vector()
 }
 
+#' @export
+#'
+all_games <-
+  function(tournament, game_scores, keep.all = FALSE) {
+    ng <- n_games(tournament)
+    tibble(
+      game_number = 1:ng,
+      home = home_team_name(tournament),
+      away = away_team_name(tournament)
+    ) |>
+      left_join(game_scores) |>
+      mutate(
+        description =
+          paste0(
+            away, " vs ", home,
+            " (", ascore, " - ", hscore, ")"
+          )
+      ) |>
+      filter(keep.all | (!is.na(home) & !is.na(away)))
+  }

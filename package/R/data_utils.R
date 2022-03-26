@@ -74,21 +74,35 @@ load_entries_from_files <-
     res
   }
 
-#' Load Scores
+#' Load Games Scores
 #'
-#' Load game scores from a CSV file.
+#' Load game scores from a CSV file or files.
 #'
 #' @export
-#' @param file The file name of a csv with columms `game_number`, `winner_01`, (0 if "home" wins, 1 if "away" wins),
-#'   `home`, `away`, `hscore`, and `ascore`
+#' @param files A vector of csv files names. Each file should have coluns `game_number` (int),
+#' `winner_01` (0 if "home" wins, 1 if "away" wins),
+#'   `home` (chr), `away` (chr), `hscore` (int), and `ascore (int)`
 #' @returns a data frame containing information about each game. `winner` and `loser` columns are computed from
 #'   the scores and `home` and `away`.
+#' @importFrom dplyr group_by slice_tail mutate
+#' @importFrom purrr map_df
+#' @importFrom tibble tibble
 
-load_scores_file <- function(file) {
-  scores <- readr::read_csv(file, col_types = "iiccii")
-  scores |>
-    mutate(
+load_game_scores <- function(files) {
+  if (length(files) < 1)
+    return(
+      tibble::tibble(game_number = NA, winner_01 = NA,
+             home = NA, away = NA, hscore = NA, ascore = NA) |>
+        head(0))
+
+  res <- list()
+  # read files in order; newer entries with same teams will clobber older ones
+  purrr::map_df(files, readr::read_csv, col_types = "iiccii") |>
+    dplyr::group_by(game_number) |>
+    dplyr::slice_tail(n = 1) |>
+    dplyr::mutate(
       winner = ifelse(hscore > ascore, home, away),
       loser = ifelse(hscore < ascore, home, away)
     )
 }
+

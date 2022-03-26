@@ -16,7 +16,7 @@ EW <- build_entry_matrix(Entries, ext = "W")
 
 ScoresM <- LoadGameScores()
 
-ScoresM <- load_scores_file('data/Scores/2022/Mens/scores-2022-M.csv')
+ScoresM <- load_game_scores('data/Scores/2022/Mens/scores-2022-M.csv')
 TM <-
   tournament_init(names = Bracket2022M[['team']], seeds = Bracket2022M[['seed']], label = "M") |>
   tournament_update(ScoresM[['game_number']], ScoresM[['winner_01']])
