@@ -18,18 +18,20 @@ theme_set(theme_bw())
 # source("Loaders.R")
 
 
+config <- yaml::read_yaml('ncaa-2022.yml')
+
 maxPoints <- 200
 
-deadline <- "2017-03-16 12:30"
-deadline <- "2018-03-15 12:30"
-deadline <- "2019-03-21 11:30"   # standard time!
-defaultYear <- 2019
-
-deadline <- "2021-03-19 11:30"   # standard time!
-defaultYear <- 2021
-
-deadline <- "2022-03-17 11:30"   # standard time!
-defaultYear <- 2022
+# deadline <- "2017-03-16 12:30"
+# deadline <- "2018-03-15 12:30"
+# deadline <- "2019-03-21 11:30"   # standard time!
+# defaultYear <- 2019
+#
+# deadline <- "2021-03-19 11:30"   # standard time!
+# defaultYear <- 2021
+#
+# deadline <- "2022-03-17 11:30"   # standard time!
+# defaultYear <- 2022
 
 humanTime <- function() format(Sys.time(), "%Y%m%d-%H%M%OS")
 
@@ -119,59 +121,41 @@ shinyServer(function(input, output, session) {
     reactivePoll(
       500,
       session = session,
-      function() dir("data/Entries/", full.names = TRUE) |> file.mtime() |> max(),
+      function() dir(config[['entries_path']], full.names = TRUE) |> file.mtime() |> max(),
       function() {
         load_entries_from_files(
           TMinit(),
-          path = "data/Entries/2022"
+          path = config[['entries_path']]   # "data/Entries/2022"
           )
       }
     )
-  # BracketM <- reactiveVal(LoadBracket('data/bracket2022.csv'))
-  # BracketW <- reactiveVal(LoadBracket('data/bracket2022w.csv'))
-
   BracketM <- reactiveFileReader(
       500,
       session = session,
-      "data/bracket2022.csv",
+      config[["brackets"]][1],    # "data/bracket2022.csv",
       madness::load_bracket
     )
   BracketW <- reactiveFileReader(
       500,
       session = session,
-      "data/bracket2022w.csv",
+      config[["brackets"]][2],    #  "data/bracket2022w.csv",
       madness::load_bracket
     )
 
   GameScoresM <- reactiveFileReader(
       500,
       session = session,
-      'data/Scores/2022/Mens/scores-2022-M.csv',
+      config[['scores']][1],   # 'data/Scores/2022/Mens/scores-2022-M.csv',
       madness::load_game_scores
     )
 
   GameScoresW <- reactiveFileReader(
       500,
       session = session,
-      'data/Scores/2022/Womens/scores-2022-W.csv',
+      config[['scores']][2],   #  'data/Scores/2022/Womens/scores-2022-W.csv',
       madness::load_game_scores
     )
 
-  # GameScoresM <-
-  #   reactivePoll(
-  #     500,
-  #     session = session,
-  #     function() max(file.mtime(dir("data/Scores/2022/Mens", full.names = TRUE))),
-  #     function() {LoadGameScores("data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv")}
-  #   )
-#
-#   GameScoresW <-
-#     reactivePoll(
-#       500,
-#       session = session,
-#       function() max(file.mtime(dir("data/Scores/2022/Womens", full.names = TRUE))),
-#       function() {LoadGameScores("data/Scores/2022/Womens/", pattern = "W-.*2022.*\\.csv")}
-#     )
 
   ##############################
   # entry matrices
@@ -216,24 +200,12 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  ### ****** -> madness?
-
   CompletedGamesM <- reactive({
-    # compGames <- completedGames(GameScoresM(), BracketM())
-    # if (nrow(compGames) < 1) return(compGames)
-    # compGames %>%
-    #   arrange(game) %>%
-    #   select(game, winner, loser, score)
     GameScoresM() |>
       mutate(score = paste(pmax(hscore, ascore), "-", pmin(hscore, ascore))) |>
       select(game_number, winner, loser, score)
   })
   CompletedGamesW <- reactive({
-    # compGames <- completedGames(GameScoresW(), BracketW())
-    # if (nrow(compGames) < 1) return(compGames)
-    # compGames %>%
-    #   arrange(game) %>%
-    #   select(game, winner, loser, score)
     GameScoresW() |>
       mutate(score = paste(pmax(hscore, ascore), "-", pmin(hscore, ascore))) |>
       select(game_number, winner, loser, score)
@@ -263,45 +235,17 @@ shinyServer(function(input, output, session) {
   })
 
 
-  # cacheCrystalBallM <- function() {
-  #   t <- TM()
-  #   e <- EM()
-  #   tc <- madness::tournament_completions(t, max_games_remaining = 15)
-  #   tc |> saveRDS('data/2022/TCM.Rds')
-  #
-  #
-  #   h2h <- madness::head2head(t, e, tc, result = "data.frame")
-  #   h2h |>  saveRDS('data/2022/H2HM.Rds')
-  #
-  #   ps <- tc |>
-  #     apply(2, function(x, e = e) { madness::contest_scores(x, e)} )
-  #   ps |> saveRDS('data/2022/PossibleScoresM.Rds')
-  #
-  #   ps |>
-  #     apply(2, which.max) %>%
-  #     tibble(winner = .) |>
-  #     group_by(winner) |>
-  #     summarise(scenarios = n()) |>
-  #     mutate(
-  #       winner = rownames(e)[winner],
-  #       p = scenarios / sum(scenarios)
-  #     ) |>
-  #     mutate(
-  #       winner = reorder(winner, scenarios)
-  #     ) |>
-  #     saveRDS('data/2022/WinnersTableM.Rds')
-  # }
 
   cacheCrystalBallM <- function() {
     tc <- madness::tournament_completions(TM(), max_games_remaining = 15)
-    tc |> saveRDS('data/2022/TCM.Rds')
+    tc |> saveRDS(file.path(config[['crystal_ball_path']], 'TCM.Rds'))
 
     h2h <- madness::head2head(TM(), EM(), tc, result = "data.frame")
-    h2h |>  saveRDS('data/2022/H2HM.Rds')
+    h2h |>  saveRDS(file.path(config[['crystal_ball_path']], 'H2HM.Rds'))
 
     ps <- tc |>
       apply(2, function(x, e = EM()) { contest_scores(x, e)} )
-    ps |> saveRDS('data/2022/PossibleScoresM.Rds')
+    ps |> saveRDS(file.path(config[['crystal_ball_path']], 'PossibleScoresM.Rds'))
 
     ps |>
       apply(2, which.max) %>%
@@ -315,32 +259,32 @@ shinyServer(function(input, output, session) {
       mutate(
         winner = reorder(winner, scenarios)
       ) |>
-      saveRDS('data/2022/WinnersTableM.Rds')
+      saveRDS(file.path(config[['crystal_ball_path']], 'WinnersTableM.Rds'))
   }
 
 
   TCM <-
     reactiveFileReader(
       1000, session,
-      'data/2022/TCM.Rds',
+      file.path(config[['crystal_ball_path']], 'TCM.Rds'),
       safely_readRDS
     )
 
   H2HM <- reactiveFileReader(
     1000, session,
-    'data/2022/H2HM.Rds',
+    file.path(config[['crystal_ball_path']], 'H2HM.Rds'),
     safely_readRDS
   )
 
   PossibleScoresM <- reactiveFileReader(
     1000, session,
-    'data/2022/PossibleScoresM.Rds',
+    file.path(config[['crystal_ball_path']], 'PossibleScoresM.Rds'),
     safely_readRDS
   )
 
   WinnersTableM <- reactiveFileReader(
     1000, session,
-    'data/2022/WinnersTableM.Rds',
+    file.path(config[['crystal_ball_path']], 'WinnersTableM.Rds'),
     safely_readRDS)
 
   PossibleScoresTableM <- reactive({
@@ -354,14 +298,14 @@ shinyServer(function(input, output, session) {
 
   cacheCrystalBallW <- function() {
     tc <- madness::tournament_completions(TW(), max_games_remaining = 15)
-    tc |> saveRDS('data/2022/TCW.Rds')
+    tc |> saveRDS(file.path(config[['crystal_ball_path']], 'TCW.Rds'))
 
     h2h <- madness::head2head(TW(), EW(), tc, result = "data.frame")
-    h2h |>  saveRDS('data/2022/H2HW.Rds')
+    h2h |>  saveRDS(file.path(config[['crystal_ball_path']], 'data/2022/H2HW.Rds'))
 
     ps <- tc |>
       apply(2, function(x, e = EW()) { contest_scores(x, e)} )
-    ps |> saveRDS('data/2022/PossibleScoresW.Rds')
+    ps |> saveRDS(file.path(config[['crystal_ball_path']], 'PossibleScoresW.Rds'))
 
     ps |>
       apply(2, which.max) %>%
@@ -375,32 +319,32 @@ shinyServer(function(input, output, session) {
       mutate(
         winner = reorder(winner, scenarios)
       ) |>
-      saveRDS('data/2022/WinnersTableW.Rds')
+      saveRDS(file.path(config[['crystal_ball_path']], 'WinnersTableW.Rds'))
   }
 
 
   TCW <-
     reactiveFileReader(
       1000, session,
-      'data/2022/TCW.Rds',
+      file.path(config[['crystal_ball_path']], 'TCW.Rds'),
       safely_readRDS
     )
 
   H2HW <- reactiveFileReader(
     1000, session,
-    'data/2022/H2HW.Rds',
+    file.path(config[['crystal_ball_path']], 'H2HW.Rds'),
     safely_readRDS
   )
 
   PossibleScoresW <- reactiveFileReader(
     1000, session,
-    'data/2022/PossibleScoresW.Rds',
+    file.path(config[['crystal_ball_path']], 'PossibleScoresW.Rds'),
     safely_readRDS
   )
 
   WinnersTableW <- reactiveFileReader(
     1000, session,
-    'data/2022/WinnersTableW.Rds',
+    file.path(config[['crystal_ball_path']], 'WinnersTableW.Rds'),
     safely_readRDS)
 
   PossibleScoresTableW <- reactive({
@@ -411,7 +355,6 @@ shinyServer(function(input, output, session) {
       group_by(name, score) |>
       tally()
   })
-
 
   observeEvent(
     input$reCacheButton,
@@ -542,13 +485,12 @@ shinyServer(function(input, output, session) {
               teamsLogicalW = sapply(BracketW()$team, function(x) x %in% TeamsW()),
               time = lastTimeStamp)
       )
-      saveRDS(NewEntry, file=paste0("data/Entries/2022/Entry-",
+      saveRDS(NewEntry, file=paste0(file.path(config[['entries_path']], "Entry-"),
                                     humanTime(),
                                     "-",    # was missing when 2016 entries were posted.
                                     digest::digest(NewEntry),
                                     ".rds"))
       # createLogEntry(paste("Entry submitted for", isolate(input$email)))
-#      Entries <<- LoadEntries()
     }
 
     if (input$submitButton < 1) {
@@ -600,7 +542,7 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "showEntryForm", suspendWhenHidden = FALSE)
 
   output$acceptingEntries <- reactive({
-    adminMode() || (Sys.time() < lubridate::ymd_hm(deadline) + lubridate::hours(5))
+    adminMode() || (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
       # (file.exists(bracketFile) &&
   })
   outputOptions(output, "acceptingEntries", suspendWhenHidden = FALSE)
@@ -759,13 +701,14 @@ shinyServer(function(input, output, session) {
       readr::write_csv(
         tibble(game_number = gts, winner_01 = as.numeric(as > hs),
                home = home, away = away, hscore = hs, ascore = as),
-        file = paste0("data/Scores/2022/Mens/M-",gsub("/"," or ", home),"-", gsub("/", " or ", away),
+        file = paste0(dirname(config[['scores']][1]), "/M-",
+                      gsub("/"," or ", home), "-", gsub("/", " or ", away),
                       "-", humanTime(), ".csv")
       )
       readr::write_csv(
         tibble(game_number = gts, winner_01 = as.numeric(as > hs),
                home = home, away = away, hscore = hs, ascore = as),
-        file = "data/Scores/2022/Mens/scores-2022-M.csv", append = TRUE)
+        file = dirname(config[['scores']][1]), "/scores-2022-M.csv", append = TRUE)
     }
 
     if (as.numeric(input$saveScoreButtonM) > 0 &&
@@ -788,13 +731,14 @@ shinyServer(function(input, output, session) {
         tibble(game_number = gts, winner_01 = as.numeric(as > hs),
                home = home, away = away, hscore = hs, ascore = as),
         # row.names = FALSE,
-        file = paste0("data/Scores/2022/Womens/W-",gsub("/"," or ", home),"-", gsub("/", " or ", away),
+        file = paste0(dirname(config[['scores']][2]), "/W-",
+                      gsub("/"," or ", home), "-", gsub("/", " or ", away),
                       "-", humanTime(), ".csv")
       )
       readr::write_csv(
         tibble(game_number = gts, winner_01 = as.numeric(as > hs),
                home = home, away = away, hscore = hs, ascore = as),
-        file = "data/Scores/2022/Womens/scores-2022-W.csv", append = TRUE)
+        file = dirname(config[['scores']][2]), "/scores-2022-W.csv", append = TRUE)
     }
     if (as.numeric(input$saveScoreButtonW) > 0 &&
         adminMode() &&
@@ -986,62 +930,6 @@ shinyServer(function(input, output, session) {
   })
 
 
-  # H2H <- reactive({
-  #   E <- Entries()
-  #   G <- GameScoresM()
-  #   B <- BracketWithTeamStatusM()
-  #   head2head_byindex <-
-  #     Vectorize( function(i, j) head2head(E[[i]]$teams, E[[j]]$teams, BracketM(), G) )
-  #   n <- length(E)
-  #   best <- t(outer(input$oneEntrant, 1:n, head2head_byindex))
-  #   bestText <- ifelse(best > 0, paste("win by", best), ifelse (best == 0, "tie", paste("lose by", -best)))
-  #   worst <- outer(1:n, input$oneEntrant, head2head_byindex)
-  #   worstText <- ifelse(worst > 0, paste("lose by", worst), ifelse (worst == 0, "tie", paste("win by" , -worst)))
-  #   tibble(
-  #     `other player` = sapply(E, function(x) x$name),
-  #     `best head-to-head result` = as.vector(bestText),
-  #     `worst head-to-head result` = as.vector(worstText),
-  #     `plus teams`  = sapply(E, function(x)
-  #         intersect( B[B$alive, "team"], setdiff(E[[input$oneEntrant]]$teams, x$teams))
-  #       ),
-  #       `minus teams` = sapply(E, function(x)
-  #           intersect( B[B$alive, "team"], setdiff(x$teams, E[[input$oneEntrant]]$teams))
-  #       ),
-  #       `common teams` = sapply(E, function(x)
-  #           intersect( B[B$alive, "team"], intersect(x$teams, E[[input$oneEntrant]]$teams))
-  #       )
-  #   ) %>%
-  #     cbind( ContestStandings() ) %>%
-  #     arrange(- score) %>%
-  #     select(1:6, `current score of other player` = score)
-  # })
-  #
-  # output$H2HTable <- renderDataTable(
-  #   options=list(pageLength = 100,                    # initial number of records
-  #                lengthMenu=c(25,50,100),             # records/page options
-  #                lengthChange=0,                      # show/hide records per page dropdown
-  #                searching=1,                         # global search box on/off
-  #                info=1,                              # information on/off (how many records filtered, etc)
-  #                ordering = TRUE,
-  #                autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
-  #   ),
-  #   {
-  #   H2H()
-  # })
-
-  # Sweet16M <-
-  #   reactiveFileReader(
-  #     2000, session,
-  #     "data/Sweet16winMatrix.rds",
-  #     readRDS
-  #   )
-  #
-  # Sweet16Standings <-
-  #   reactiveFileReader(
-  #     2000, session,
-  #     "data/Sweet16Standings.rds",
-  #     readRDS
-  #   )
 
   output$WhoCanWinPlotM <- renderPlot({
     WinnersTableM() |>
@@ -1069,10 +957,6 @@ shinyServer(function(input, output, session) {
   }
 
   output$H2HPlotM <- renderPlotly({
-    # h2h <- H2HM()
-    # plot_ly(x = colnames(h2h), y = rownames(h2h), z = h2h, type = 'heatmap',
-    #         hover_info = 'text', text = textMat(h2h, ncol(TCM())))
-
     H2HM() |>
       mutate(
         perc = round(100 * prop, 2),
@@ -1144,26 +1028,6 @@ shinyServer(function(input, output, session) {
       plotly::ggplotly(tooltip = "text")
   })
 
-
-  # output$WhoCanWinTable <- renderDataTable(
-  #   options=list(pageLength = 100,                    # initial number of records
-  #                lengthMenu=c(25,50,100),             # records/page options
-  #                lengthChange=0,                      # show/hide records per page dropdown
-  #                searching=1,                         # global search box on/off
-  #                info=1,                              # information on/off (how many records filtered, etc)
-  #                ordering = TRUE,
-  #                autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
-  #   ),
-  #   WhoCanWin(
-  #     Entries(),
-  #     M = Sweet16M(), Sweet16Standings(),
-  #     results = (TeamData() %>% filter(Team %in% rownames(Sweet16M())))$Wins - 2
-  #     ) %>%
-  #     merge(ContestStandingsM(), by = "name") %>%
-  #     select(name, `winning scenarios`, `win percent`,
-  #            score, `guaranteed wins`, `max possible`,
-  #            `losing scenarios`, `lose percent`)
-  # )
 
   # output$dendroPlot <- renderD3heatmap({
   #   E <- Entries()

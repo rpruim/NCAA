@@ -1,0 +1,15 @@
+year: 2022
+deadline: "2022-03-17 11:30"
+names:
+  - "Men's Bracket"
+  - "Women's Bracket"
+brackets:
+  - data/2022/bracket-2022-M.csv
+  - data/2022/bracket-2022-W.csv
+entries_path:
+  - data/2022/Entries
+scores:
+  - data/2022/Scores/Mens/scores-2022-M.csv
+  - data/2022/Scores/Womens/scores-2022-W.csv
+crystal_ball_path:
+  - data/2022/Crystal-Ball
