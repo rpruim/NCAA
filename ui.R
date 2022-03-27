@@ -39,7 +39,7 @@ shinyUI(
           tags$li("Each team has an integer cost determined by its seed in its region (see table below).  Periodically costs are revised.  The most recent revision was in 2019."),
           tags$li("Each contestant selects as many teams as he/she wants with costs totaling at most 200."),
           tags$li("Each contestant receives one point for each win by a team that he/she selects."),
-          tags$li("The four play-in games do not count -- you buy the spot in the bracket and get the team that wins the play-in game but only score points starting with round 2."),
+          tags$li("The four play-in games do not count -- you buy the spot in the bracket and get the team that wins the play-in game but only score points starting with the round of 64."),
           tags$li("The contestant with the most points wins."),
           tags$li("In case of a tie, the winner is the contestant who scores the \"most points in
                   the latest round\". That is, the first tie-breaker is choosing the champion.
