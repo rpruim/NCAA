@@ -366,29 +366,78 @@ shinyServer(function(input, output, session) {
         if (n_games_remaining(TM()) <= 15) {
           cacheCrystalBallM()
         }
+        if (n_games_remaining(TM()) + n_games_remaining(TW()) <= 15) {
+          cacheCrystalBallC()
+        }
       }
     })
 
-  H2HC <- reactive({
+  PossibleScoresC <- reactiveFileReader(
+    1000, session,
+    file.path(config[['crystal_ball_path']], 'PossibleScoresC.Rds'),
+    safely_readRDS
+  )
+
+  cacheCrystalBallC <- function() {
     psm <- PossibleScoresM()
     psw <- PossibleScoresW()
     denom <- ncol(psm) * ncol(psw)
     n <- nrow(EM())
-    psc <-
+    ps <-
       sapply(1:nrow(EM()),
              function(x) {
                outer(psm[x, ], psw[x, ], "+")
              }
       ) |> t()
+    ps |>
+      saveRDS(file.path(config[['crystal_ball_path']], 'PossibleScoresC.Rds'))
+    ps |>
+      apply(2, which.max) %>%
+      tibble(winner = .) |>
+      group_by(winner) |>
+      summarise(scenarios = n()) |>
+      mutate(
+        winner = rownames(EM())[winner],
+        p = scenarios / sum(scenarios)
+      ) |>
+      mutate(
+        winner = reorder(winner, scenarios)
+      ) |>
+      saveRDS(file.path(config[['crystal_ball_path']], 'WinnersTableC.Rds'))
+  }
 
+  PossibleScoresTableC <- reactive({
+    PossibleScoresC() |>
+      as.table() |>
+      as.data.frame() |>
+      setNames(c('name', 'sceneario', 'score')) |>
+      group_by(name, score) |>
+      tally()
+  })
+
+  WinnersTableC <- reactiveFileReader(
+    1000, session,
+    file.path(config[['crystal_ball_path']], 'WinnersTableC.Rds'),
+    safely_readRDS)
+
+  output$WhoCanWinPlotC <- renderPlot({
+    WinnersTableC() |>
+      gf_col(winner ~ p, fill = "steelblue") |>
+      gf_labs(x = "percent of scenarios that win") |>
+      gf_refine(scale_x_continuous(labels = scales::label_percent()))
+  })
+
+
+  H2HC <- reactive({
+    n <- nrow(EM())
+    psc <- PossibleScoresC()
+    denom <- ncol(psc)
     res <-
       outer(1:n, 1:n, Vectorize(function(r, c) {
-      sum(psc[r,] > psc[c, ])
-    })
-    )
+        sum(psc[r,] > psc[c, ])
+      })
+      )
 
-    message(dim(res))
-    print(str(res))
     rownames(res) <- attr(EM(), "name")
     colnames(res) <- attr(EM(), "name")
 
@@ -1006,6 +1055,7 @@ shinyServer(function(input, output, session) {
       gf_labs(x = "percent of scenarios that win") |>
       gf_refine(scale_x_continuous(labels = scales::label_percent()))
   })
+
 
   output$ScoreHistogramsM <-
     renderPlot(height = 600,
