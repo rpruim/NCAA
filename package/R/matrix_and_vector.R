@@ -1,8 +1,17 @@
 
+#' Seed order and costs
+#'
+#' Numeric vectors giving seed order and costs for the NCAA modeling competition.
+#'
+#'
 #' @export
 seedOrder   <- c(1,16, 8,9, 5,12, 4,13, 6,11, 3,14, 7,10, 2,15)
+
+#' @rdname seedOrder
 #' @export
 seedCostOld <- c(22,18,15,12,10, 9, 7, 6,5,4,3,2,1,1,1,1)
+
+#' @rdname seedOrder
 #' @export
 seedCost    <- c(48,35,29,23, 17,15,13,11, 10,9,8,7, 4,3,1,1)
 
@@ -10,7 +19,11 @@ seedCost    <- c(48,35,29,23, 17,15,13,11, 10,9,8,7, 4,3,1,1)
 #'
 #' Create a tournament with no games played
 #'
-#' @param rounds Number of rounds in a complete single elimination tournament
+#' @param names A character vector of team names.
+#' @param seeds An optional numeric vector of team seeds or NULL.
+#' @param label A label to prepend to game numbers.
+#' @returns A tournament object will all games listed as NA for the winner.
+#'   An attribute contains the team names.
 #' @export
 tournament_init <-
   function(names, seeds = NULL, label = "G") {
@@ -33,7 +46,7 @@ n_games <- function(tournament) {
 }
 
 #' @export
-#' @inheritParams ngames
+#' @inheritParams n_games
 n_teams <- function(tournament) {
   1 + length(tournament)
 }
@@ -45,16 +58,24 @@ n_games_remaining <-
     sum(is.na(tournament))
   }
 
+#' Information about teams involved in a game
+#'
+#' Information about teams involved in a game
+#'
+#' @param tournament A tournament object
+#' @param game A numeric vector of game numbers
 #' @export
 winner <- function(tournament, game = 1L:n_games(tournament)) {
   tournament[game] |> as.vector()
 }
 
+#' @rdname winner
 #' @export
 winner_team_name <- function(tournament, game = 1L:n_games(tournament)) {
   attr(tournament, "team_names")[tournament[game]] |> as.vector()
 }
 
+#' @rdname winner
 #' @export
 loser <- function(tournament, game = 1L:n_games(tournament)) {
   force(game)
@@ -63,6 +84,7 @@ loser <- function(tournament, game = 1L:n_games(tournament)) {
 }
 
 
+#' @rdname winner
 #' @export
 loser_team_name <- function(tournament, game = 1L:n_games(tournament)) {
   force(game)
@@ -72,11 +94,20 @@ loser_team_name <- function(tournament, game = 1L:n_games(tournament)) {
   ]
 }
 
+#' Teams Still Alive
+#'
+#' List teams that have not yet lost.
+#' @inheritParams contest_scores
+#' @param teams A numerical vector of teams numbers.
+#' @returns A subset of `teams` containing only teams who have not yet lost.
 #' @export
 alive <- function(tournament, teams = 1L:n_teams(tournament)) {
   ! teams %in% loser(tournament)
 }
 
+
+
+#' @rdname winner
 #' @export
 home_team <- function(tournament, game = 1L:n_games(tournament)) {
   force(game)
@@ -84,21 +115,31 @@ home_team <- function(tournament, game = 1L:n_games(tournament)) {
   tournament[2 * game] |> as.vector()
 }
 
+#' Extract team names with various properties
+#'
+#' @inheritParams winner
+#' @returns For `home_team_name()` and `away_team_name()`,
+#'   a character vector of home/away team names for the specified games.
 #' @export
 home_team_name <- function(tournament, game = 1L:n_games(tournament)) {
   attr(tournament, "team_names")[home_team(tournament, game)]
 }
 
+#' @rdname home_team_name
 #' @export
 away_team_name <- function(tournament, game = 1L:n_games(tournament)) {
   attr(tournament, "team_names")[away_team(tournament, game)]
 }
 
+#' @rdname home_team_name
 #' @export
+#' @returns For `team_names()` a character vector of team names specified by the numbers
+#' in `teams.
 team_names <- function(tournament, teams = 1L:n_teams(tournament)) {
   attr(tournament, "team_names")[teams]
 }
 
+#' @rdname winner
 #' @export
 away_team <- function(tournament, game = 1L:n_games(tournament)) {
   force(game)
@@ -107,20 +148,21 @@ away_team <- function(tournament, game = 1L:n_games(tournament)) {
 }
 
 #' @export
-all_games <- function(tournament, unplayed.only = FALSE, determined.only = FALSE) {
-  n <- n_games(tournament)
-  names <-
-    gsub( "NA", "TBD",
-          paste(
-            away_team_name(tournament, 1L:n),
-            " vs. ",
-            home_team_name(tournament, 1L:n),
-            sep="")
-    )
-  res <- 1L:n
-  names(res) <- names
-  res[(!unplayed.only | is.na(tournament[1:n])) & (!determined.only | !grepl("TBD", names))]
-}
+all_games <-
+  function(tournament, unplayed.only = FALSE, determined.only = FALSE) {
+    n <- n_games(tournament)
+    names <-
+      gsub( "NA", "TBD",
+            paste(
+              away_team_name(tournament, 1L:n),
+              " vs. ",
+              home_team_name(tournament, 1L:n),
+              sep="")
+      )
+    res <- 1L:n
+    names(res) <- names
+    res[(!unplayed.only | is.na(tournament[1:n])) & (!determined.only | !grepl("TBD", names))]
+  }
 
 #' Tabular report of contest standings
 
@@ -237,7 +279,7 @@ max_possible_scores <-
   function(tournament, entries, dust = TRUE) {
     pw <- possible_winners(tournament)
     purrr::map_int(1:nrow(entries),
-           function(e) {purrr::map_int(pw, function(x) any(which(as.logical(entries[e,])) %in% x)) |> sum() }
+                   function(e) {purrr::map_int(pw, function(x) any(which(as.logical(entries[e,])) %in% x)) |> sum() }
     ) |>
       as.vector() |>
       setNames(rownames(entries))
@@ -290,12 +332,12 @@ round_by_round <- function(tournament, entries) {
   W <- wins(tournament)
   res <-
     purrr::map(
-    1:nrow(entries),
-    function(e) {
-      w <- W[as.logical(entries[e, ])]
-      purrr::map_int(1:max(W, na.rm = TRUE), function(r) sum(w >= r, na.rm = TRUE))
-    }
-  )
+      1:nrow(entries),
+      function(e) {
+        w <- W[as.logical(entries[e, ])]
+        purrr::map_int(1:max(W, na.rm = TRUE), function(r) sum(w >= r, na.rm = TRUE))
+      }
+    )
   do.call(rbind, res)
 }
 
@@ -448,8 +490,18 @@ entry_teams <- function(tournament, entries) {
     as.vector()
 }
 
-#' @export
+#' Produce a table of games and scores
 #'
+#' Produce a table of games and scores
+#' @param game_scores A data frame containing games scores. The following columns must
+#'   exist: `home` (chr), `away` (chr), `hscore` (int), `ascore` (int).
+#' @param keep.all A logical indicating whether rows should be kept for games
+#'   for which the opponents are not yet determined.
+#' @returns A data frame with columns `game_number`, `home`, `away`, `ascore`, `hscore`,
+#' `description`, plus any additional columns that were present in `game_scores`.
+#'
+#' @export
+
 all_games <-
   function(tournament, game_scores, keep.all = FALSE) {
     ng <- n_games(tournament)

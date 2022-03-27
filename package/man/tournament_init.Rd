@@ -7,7 +7,15 @@
 tournament_init(names, seeds = NULL, label = "G")
 }
 \arguments{
-\item{rounds}{Number of rounds in a complete single elimination tournament}
+\item{names}{A character vector of team names.}
+
+\item{seeds}{An optional numeric vector of team seeds or NULL.}
+
+\item{label}{A label to prepend to game numbers.}
+}
+\value{
+A tournament object will all games listed as NA for the winner.
+An attribute contains the team names.
 }
 \description{
 Create a tournament with no games played
