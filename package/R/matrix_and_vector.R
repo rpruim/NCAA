@@ -51,10 +51,25 @@ winner <- function(tournament, game = 1L:n_games(tournament)) {
 }
 
 #' @export
+winner_team_name <- function(tournament, game = 1L:n_games(tournament)) {
+  attr(tournament, "team_names")[tournament[game]] |> as.vector()
+}
+
+#' @export
 loser <- function(tournament, game = 1L:n_games(tournament)) {
   force(game)
   tournament <- c(tournament, 1:n_teams(tournament))
   (tournament[2*game] + tournament[2*game + 1] - tournament[game]) |> as.vector()
+}
+
+
+#' @export
+loser_team_name <- function(tournament, game = 1L:n_games(tournament)) {
+  force(game)
+  tournament <- c(tournament, 1:n_teams(tournament))
+  attr(tournament, "team_names")[
+    (tournament[2*game] + tournament[2*game + 1] - tournament[game]) |> as.vector()
+  ]
 }
 
 #' @export
