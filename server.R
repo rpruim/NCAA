@@ -301,7 +301,7 @@ shinyServer(function(input, output, session) {
     tc |> saveRDS(file.path(config[['crystal_ball_path']], 'TCW.Rds'))
 
     h2h <- madness::head2head(TW(), EW(), tc, result = "data.frame")
-    h2h |>  saveRDS(file.path(config[['crystal_ball_path']], 'data/2022/H2HW.Rds'))
+    h2h |>  saveRDS(file.path(config[['crystal_ball_path']], 'H2HW.Rds'))
 
     ps <- tc |>
       apply(2, function(x, e = EW()) { contest_scores(x, e)} )
@@ -368,6 +368,75 @@ shinyServer(function(input, output, session) {
         }
       }
     })
+
+  H2HC <- reactive({
+    psm <- PossibleScoresM()
+    psw <- PossibleScoresW()
+    denom <- ncol(psm) * ncol(psw)
+    n <- nrow(EM())
+    psc <-
+      sapply(1:nrow(EM()),
+             function(x) {
+               outer(psm[x, ], psw[x, ], "+")
+             }
+      ) |> t()
+
+    res <-
+      outer(1:n, 1:n, Vectorize(function(r, c) {
+      sum(psc[r,] > psc[c, ])
+    })
+    )
+
+    message(dim(res))
+    print(str(res))
+    rownames(res) <- attr(EM(), "name")
+    colnames(res) <- attr(EM(), "name")
+
+    res |>
+      as.table() |> as.data.frame() |>
+      setNames(c('key', 'other', 'scenarios')) |>
+      mutate(
+        prop = scenarios / denom,
+        key_name = attr(EM(), 'name')[key],
+        other_name = attr(EM(), 'name')[other],
+        key_abbrv = abbreviate(key_name, 6),
+        other_abbrv = abbreviate(other_name, 6)
+      ) |>
+      mutate(
+        key_name = reorder(key_name, scenarios),
+        key_abbrv = reorder(key_abbrv, scenarios),
+        other_name = reorder(other_name, scenarios, function(x) - mean(x)),
+        other_abbrv = reorder(other_abbrv, scenarios, function(x) - mean(x))
+      )
+  })
+
+  output$H2HPlotC <- renderPlotly({
+    H2HC() |>
+      mutate(
+        perc = round(100 * prop, 2),
+        hovertext =
+          glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
+      ) |>
+      mutate(scenarios = ifelse(scenarios <= 0, NA, scenarios)) |>
+      gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
+              text = ~hovertext) |>
+      gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
+      gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
+      gf_labs(title = "Head to head winning scenarios",
+              subtitle = "Read across rows for wins against the other player",
+              x = "", y = "", fill = "winning\nscenarios" ) |>
+      gf_refine(
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12),
+        coord_cartesian(expand = FALSE)
+      ) |>
+      gf_theme(
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
+      ) |>
+      plotly::ggplotly(tooltip = "text")
+  })
 
   ############ Select Teams ###########
 

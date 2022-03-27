@@ -260,6 +260,12 @@ shinyUI(
               h3('Score Histograms'),
               plotOutput('ScoreHistogramsM') |> withSpinner(),
               br()
+            ),
+            tabPanel(
+              "Combined",
+              h3('Head to Head'),
+              p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
+              plotlyOutput('H2HPlotC', height = "600px") |> withSpinner(),
             )
           )
         )
