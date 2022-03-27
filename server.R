@@ -777,7 +777,7 @@ shinyServer(function(input, output, session) {
       readr::write_csv(
         tibble(game_number = gts, winner_01 = as.numeric(as > hs),
                home = home, away = away, hscore = hs, ascore = as),
-        file = dirname(config[['scores']][1]), "/scores-2022-M.csv", append = TRUE)
+        file = file.path(dirname(config[['scores']][1]), "scores-2022-M.csv"), append = TRUE)
     }
 
     if (as.numeric(input$saveScoreButtonM) > 0 &&
@@ -807,7 +807,7 @@ shinyServer(function(input, output, session) {
       readr::write_csv(
         tibble(game_number = gts, winner_01 = as.numeric(as > hs),
                home = home, away = away, hscore = hs, ascore = as),
-        file = dirname(config[['scores']][2]), "/scores-2022-W.csv", append = TRUE)
+        file = file.path(dirname(config[['scores']][2]), "/scores-2022-W.csv"), append = TRUE)
     }
     if (as.numeric(input$saveScoreButtonW) > 0 &&
         adminMode() &&
