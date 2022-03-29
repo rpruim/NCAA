@@ -407,6 +407,7 @@ head2head <-
            result = c('data.frame', 'matrix'),
            sort = TRUE) {
     result <- match.arg(result)
+    ScoresM <- round(ScoresM, 12)     # avoid floating point issues
     n_e <- nrow(ScoresM)
     denominator <- ncol(TC)
     ordered_names <- team_names[order(apply(ScoresM, 1, mean))]
