@@ -245,7 +245,8 @@ shinyServer(function(input, output, session) {
 
     ps <- tc |>
       apply(2, function(x, e = EM()) { contest_scores(x, e)} )
-    ps |> saveRDS(file.path(config[['crystal_ball_path']], 'PossibleScoresM.Rds'))
+    ps |> round(12) |>
+      saveRDS(file.path(config[['crystal_ball_path']], 'PossibleScoresM.Rds'))
 
     ps |>
       apply(2, which.max) %>%
@@ -305,7 +306,8 @@ shinyServer(function(input, output, session) {
 
     ps <- tc |>
       apply(2, function(x, e = EW()) { contest_scores(x, e)} )
-    ps |> saveRDS(file.path(config[['crystal_ball_path']], 'PossibleScoresW.Rds'))
+    ps |> round(12) |>
+      saveRDS(file.path(config[['crystal_ball_path']], 'PossibleScoresW.Rds'))
 
     ps |>
       apply(2, which.max) %>%
@@ -389,7 +391,7 @@ shinyServer(function(input, output, session) {
                outer(psm[x, ], psw[x, ], "+")
              }
       ) |> t()
-    ps |>
+    ps |> round(12) |>
       saveRDS(file.path(config[['crystal_ball_path']], 'PossibleScoresC.Rds'))
     ps |>
       apply(2, which.max) %>%
