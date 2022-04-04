@@ -468,7 +468,7 @@ shinyServer(function(input, output, session) {
         hovertext =
           glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
       ) |>
-      mutate(scenarios = ifelse(scenarios <= 0, NA, scenarios)) |>
+      mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
       gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
               text = ~hovertext) |>
       gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
@@ -1084,7 +1084,7 @@ shinyServer(function(input, output, session) {
         hovertext =
           glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
       ) |>
-      mutate(scenarios = ifelse(scenarios <= 0, NA, scenarios)) |>
+      mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
       gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
               text = ~hovertext) |>
       gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
@@ -1128,7 +1128,7 @@ shinyServer(function(input, output, session) {
         hovertext =
           glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
       ) |>
-      mutate(scenarios = ifelse(scenarios <= 0, NA, scenarios)) |>
+      mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
       gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
               text = ~hovertext) |>
       gf_hline(yintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, size = 0.5) |>
@@ -1138,7 +1138,7 @@ shinyServer(function(input, output, session) {
               x = "", y = "", fill = "winning\nscenarios" ) |>
       gf_refine(
         coord_cartesian(expand = FALSE),
-        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12)
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8)
       ) |>
       gf_theme(
         panel.grid.major.x = element_blank(),
