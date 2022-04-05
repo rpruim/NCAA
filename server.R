@@ -386,11 +386,12 @@ shinyServer(function(input, output, session) {
     denom <- ncol(psm) * ncol(psw)
     n <- nrow(EM())
     ps <-
-      sapply(1:nrow(EM()),
+      sapply(1:n,
              function(x) {
                outer(psm[x, ], psw[x, ], "+")
              }
       ) |> t()
+    if (nrow(ps) != n) {ps <- t(ps)}
     ps |> round(12) |>
       saveRDS(file.path(config[['crystal_ball_path']], 'PossibleScoresC.Rds'))
     ps |>
@@ -469,15 +470,14 @@ shinyServer(function(input, output, session) {
           glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
       ) |>
       mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
-      gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
-              text = ~hovertext) |>
+      gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8, text = ~hovertext) |>
       gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
       gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
       gf_labs(title = "Head to head winning scenarios",
               subtitle = "Read across rows for wins against the other player",
               x = "", y = "", fill = "winning\nscenarios" ) |>
       gf_refine(
-        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12),
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
         coord_cartesian(expand = FALSE)
       ) |>
       gf_theme(
@@ -1093,7 +1093,7 @@ shinyServer(function(input, output, session) {
               subtitle = "Read across rows for wins against the other player",
               x = "", y = "", fill = "winning\nscenarios" ) |>
       gf_refine(
-        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 12),
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
         coord_cartesian(expand = FALSE)
       ) |>
       gf_theme(
