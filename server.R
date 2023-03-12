@@ -18,7 +18,7 @@ theme_set(theme_bw())
 # source("Loaders.R")
 
 
-config <- yaml::read_yaml('ncaa-2022.yml')
+config <- yaml::read_yaml('ncaa-2023.yml')
 
 maxPoints <- 200
 

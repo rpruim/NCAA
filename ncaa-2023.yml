@@ -1,0 +1,15 @@
+year: 2023
+deadline: "2023-03-17 11:30"
+names:
+  - "Men's Bracket"
+  - "Women's Bracket"
+brackets:
+  - data/2023/bracket-2023-M.csv
+  - data/2023/bracket-2023-W.csv
+entries_path:
+  - data/2023/Entries
+scores:
+  - data/2023/Scores/Mens/scores-2023-M.csv
+  - data/2023/Scores/Womens/scores-2023-W.csv
+crystal_ball_path:
+  - data/2023/Crystal-Ball
