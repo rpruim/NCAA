@@ -233,6 +233,11 @@ shinyUI(
         "Crystal Ball",
         conditionalPanel(
           condition = 'true',
+          br(),
+          p('Information will be displayed here after the first two rounds of the tournament have been played.'),
+          ),
+        conditionalPanel(
+          condition = 'false',
           tabsetPanel(
             type = "pills",
             tabPanel(
