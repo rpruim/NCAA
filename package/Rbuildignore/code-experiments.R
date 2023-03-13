@@ -1,8 +1,8 @@
 
-library(madness)
-# source('../../package/R/data_utils.R')
-# source('../../package/R/matrix_and_vector.R')
-# source('../../package/R/scenarios.R')
+# library(madness)
+source('../../package/R/data_utils.R')
+source('../../package/R/matrix_and_vector.R')
+source('../../package/R/scenarios.R')
 
 library(ggformula)
 
@@ -36,8 +36,8 @@ alive(TM)
 n_games_remaining(TM)
 home_team(TM)
 away_team(TM)
-madness::winner(TM)
-madness::loser(TM)
+winner(TM)
+loser(TM)
 all_games(TM)
 all_games(TM, determined.only = TRUE)
 all_games(TM, unplayed.only = TRUE)
