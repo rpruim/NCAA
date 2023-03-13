@@ -6,7 +6,10 @@
 
 library(shiny)
 library(dplyr)
-library(madness)
+# library(madness)
+source('package/R/data_utils.R')
+source('package/R/matrix_and_vector.R')
+source('package/R/scenarios.R')
 library(waiter)
 library(ggformula)
 library(plotly)
