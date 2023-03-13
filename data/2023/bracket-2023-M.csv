@@ -1,4 +1,20 @@
 region,seed,team
+South,1,Alabama
+South,2,Arizona
+South,3,Baylor
+South,4,Virginia
+South,5,San Diego State
+South,6,Creighton
+South,7,Missouri
+South,8,Maryland
+South,9,West Virginia
+South,10,Utah State
+South,11,North Carolina State
+South,12,College of Charleston
+South,13,Furman
+South,14,UC-Santa Barbara
+South,15,Princeton
+South,16,Texas A&M-Corpus Christi/Southeast Missouri State
 East,1,Purdue
 East,2,Marquette
 East,3,Kansas State
@@ -31,22 +47,6 @@ Midwest,13,Kent State
 Midwest,14,Kennesaw State
 Midwest,15,Colgate
 Midwest,16,Northern Kentucky
-South,1,Alabama
-South,2,Arizona
-South,3,Baylor
-South,4,Virginia
-South,5,San Diego State
-South,6,Creighton
-South,7,Missouri
-South,8,Maryland
-South,9,West Virginia
-South,10,Utah State
-South,11,North Carolina State
-South,12,College of Charleston
-South,13,Furman
-South,14,UC-Santa Barbara
-South,15,Princeton
-South,16,Texas A&M-Corpus Christi/Southeast Missouri State
 West,1,Kansas
 West,2,UCLA
 West,3,Gonzaga
