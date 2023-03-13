@@ -1,0 +1,65 @@
+region,seed,team
+East,1,Purdue
+East,2,Marquette
+East,3,Kansas State
+East,4,Tennessee
+East,5,Duke
+East,6,Kentucky
+East,7,Michigan State
+East,8,Memphis
+East,9,Florida Atlantic
+East,10,Southern California
+East,11,Providence
+East,12,Oral Roberts
+East,13,Louisiana-Lafayette
+East,14,Montana State
+East,15,Vermont
+East,16,Texas Southern/Fairleigh Dickinson
+Midwest,1,Houston
+Midwest,2,Texas
+Midwest,3,Xavier
+Midwest,4,Indiana
+Midwest,5,Miami (FL)
+Midwest,6,Iowa State
+Midwest,7,Texas A&M
+Midwest,8,Iowa
+Midwest,9,Auburn
+Midwest,10,Penn State
+Midwest,11,Mississippi State/Pittsburgh
+Midwest,12,Drake
+Midwest,13,Kent State
+Midwest,14,Kennesaw State
+Midwest,15,Colgate
+Midwest,16,Northern Kentucky
+South,1,Alabama
+South,2,Arizona
+South,3,Baylor
+South,4,Virginia
+South,5,San Diego State
+South,6,Creighton
+South,7,Missouri
+South,8,Maryland
+South,9,West Virginia
+South,10,Utah State
+South,11,North Carolina State
+South,12,College of Charleston
+South,13,Furman
+South,14,UC-Santa Barbara
+South,15,Princeton
+South,16,Texas A&M-Corpus Christi/Southeast Missouri State
+West,1,Kansas
+West,2,UCLA
+West,3,Gonzaga
+West,4,Connecticut
+West,5,Saint Mary's (CA)
+West,6,Texas Christian
+West,7,Northwestern
+West,8,Arkansas
+West,9,Illinois
+West,10,Boise State
+West,11,Arizona State/Nevada
+West,12,Virginia Commonwealth
+West,13,Iona
+West,14,Grand Canyon
+West,15,North Carolina-Asheville
+West,16,Howard
