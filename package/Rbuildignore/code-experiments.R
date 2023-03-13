@@ -1,5 +1,9 @@
 
 library(madness)
+# source('../../package/R/data_utils.R')
+# source('../../package/R/matrix_and_vector.R')
+# source('../../package/R/scenarios.R')
+
 library(ggformula)
 
 BracketM <- LoadBracket('data/bracket2022.csv')

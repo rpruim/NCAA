@@ -136,27 +136,27 @@ shinyServer(function(input, output, session) {
       500,
       session = session,
       config[["brackets"]][1],    # "data/bracket2022.csv",
-      madness::load_bracket
+      load_bracket
     )
   BracketW <- reactiveFileReader(
       500,
       session = session,
       config[["brackets"]][2],    #  "data/bracket2022w.csv",
-      madness::load_bracket
+      load_bracket
     )
 
   GameScoresM <- reactiveFileReader(
       500,
       session = session,
       config[['scores']][1],   # 'data/Scores/2022/Mens/scores-2022-M.csv',
-      madness::load_game_scores
+      load_game_scores
     )
 
   GameScoresW <- reactiveFileReader(
       500,
       session = session,
       config[['scores']][2],   #  'data/Scores/2022/Womens/scores-2022-W.csv',
-      madness::load_game_scores
+      load_game_scores
     )
 
 
@@ -215,10 +215,10 @@ shinyServer(function(input, output, session) {
   })
 
   ContestStandingsM <- reactive({
-    madness::contest_standings(TM(), EM(), BracketM())
+    contest_standings(TM(), EM(), BracketM())
   })
   ContestStandingsW <- reactive({
-    madness::contest_standings(TW(), EW(), BracketW())
+    contest_standings(TW(), EW(), BracketW())
   })
   ContestStandingsAll <- reactive({
     CSM <- ContestStandingsM()
@@ -240,10 +240,10 @@ shinyServer(function(input, output, session) {
 
 
   cacheCrystalBallM <- function() {
-    tc <- madness::tournament_completions(TM(), max_games_remaining = 15)
+    tc <- tournament_completions(TM(), max_games_remaining = 15)
     tc |> saveRDS(file.path(config[['crystal_ball_path']], 'TCM.Rds'))
 
-    h2h <- madness::head2head(TM(), EM(), tc, result = "data.frame")
+    h2h <- head2head(TM(), EM(), tc, result = "data.frame")
     h2h |>  saveRDS(file.path(config[['crystal_ball_path']], 'H2HM.Rds'))
 
     ps <- tc |>
@@ -301,10 +301,10 @@ shinyServer(function(input, output, session) {
   })
 
   cacheCrystalBallW <- function() {
-    tc <- madness::tournament_completions(TW(), max_games_remaining = 15)
+    tc <- tournament_completions(TW(), max_games_remaining = 15)
     tc |> saveRDS(file.path(config[['crystal_ball_path']], 'TCW.Rds'))
 
-    h2h <- madness::head2head(TW(), EW(), tc, result = "data.frame")
+    h2h <- head2head(TW(), EW(), tc, result = "data.frame")
     h2h |>  saveRDS(file.path(config[['crystal_ball_path']], 'H2HW.Rds'))
 
     ps <- tc |>
