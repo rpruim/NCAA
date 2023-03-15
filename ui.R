@@ -147,194 +147,195 @@ shinyUI(
         ) # conditional panel
       ),  # tabPanel choose wisely
 
-      tabPanel(
-        "Scores",
-        br(),
-        tabsetPanel(
-          type = "pills",
-          tabPanel(
-            "Women's Bracket",
-            br(),br(),
-            conditionalPanel(
-              condition = '! output.showStandingsW',
-              helpText("Information will display here after the first tournament results are in and loaded.")
-            ),
-            conditionalPanel(
-              condition = 'true || output.showStandingsW',
-              dataTableOutput("ScoresTableW") |> withSpinner()
-            )
-          ),
-          tabPanel(
-            "Men's Bracket",
-            br(),br(),
-            conditionalPanel(
-              condition = '! output.showStandingsM',
-              helpText("Information will display here after the first tournament results are in and loaded.")
-            ),
-            conditionalPanel(
-              condition = 'true || output.showStandingsM',
-              dataTableOutput("ScoresTableM") |> withSpinner()
-            )
-          ) # tabPanel
-        ) # tabsetPanel
-      ), # tabPanel Scores
+      # tabPanel(
+      #   "Scores",
+      #   br(),
+      #   tabsetPanel(
+      #     type = "pills",
+      #     tabPanel(
+      #       "Women's Bracket",
+      #       br(),br(),
+      #       conditionalPanel(
+      #         condition = '! output.showStandingsW',
+      #         helpText("Information will display here after the first tournament results are in and loaded.")
+      #       ),
+      #       conditionalPanel(
+      #         condition = 'true || output.showStandingsW',
+      #         dataTableOutput("ScoresTableW") |> withSpinner()
+      #       )
+      #     ),
+      #     tabPanel(
+      #       "Men's Bracket",
+      #       br(),br(),
+      #       conditionalPanel(
+      #         condition = '! output.showStandingsM',
+      #         helpText("Information will display here after the first tournament results are in and loaded.")
+      #       ),
+      #       conditionalPanel(
+      #         condition = 'true || output.showStandingsM',
+      #         dataTableOutput("ScoresTableM") |> withSpinner()
+      #       )
+      #     ) # tabPanel
+      #   ) # tabsetPanel
+      # ), # tabPanel Scores
 
-      tabPanel(
-        "Standings",
-        br(),
-        tabsetPanel(
-          type = "pills",
-          tabPanel(
-            "Women's Bracket",
-            br(),br(),
-            conditionalPanel(
-              condition = '! output.showStandingsW',
-              helpText("Standings will be displayed after the first tournament results are in and loaded.")
-            ),
-            conditionalPanel(
-              condition = 'output.showStandingsW',
-              strong(textOutput("tournyStatusW")),
-              dataTableOutput("standingsTableW") |> withSpinner()
-            )
-          ),
-          tabPanel(
-            "Men's Bracket",
-            br(),br(),
-            conditionalPanel(
-              condition = 'true', # 'output.contestStandingsReady',
-              conditionalPanel(
-                condition = '! output.showStandingsM',
-                helpText("Standings will be displayed after the first tournament results are in and loaded.")
-              ),
-              conditionalPanel(
-                condition = 'output.showStandingsM',
-                strong(textOutput("tournyStatusM")),
-                dataTableOutput("standingsTableM") |> withSpinner()
-              )
-            )
-          ),
-          tabPanel(
-            "Combined",
-            br(),br(),
-            conditionalPanel(
-              condition = '! output.showStandingsW || ! output.showStandingsM',
-              helpText("Standings will be displayed after the first tournament results are in and loaded.")
-            ),
-            conditionalPanel(
-              condition = 'output.showStandingsW && output.showStandingsM',
-              # strong(textOutput("tournyStatusW")),
-              dataTableOutput("standingsTableAll") |> withSpinner()
-            )
-          )
-        )
-      ),
+      # tabPanel(
+      #   "Standings",
+      #   br(),
+      #   tabsetPanel(
+      #     type = "pills",
+      #     tabPanel(
+      #       "Women's Bracket",
+      #       br(),br(),
+      #       conditionalPanel(
+      #         condition = '! output.showStandingsW',
+      #         helpText("Standings will be displayed after the first tournament results are in and loaded.")
+      #       ),
+      #       conditionalPanel(
+      #         condition = 'output.showStandingsW',
+      #         strong(textOutput("tournyStatusW")),
+      #         dataTableOutput("standingsTableW") |> withSpinner()
+      #       )
+      #     ),
+      #     tabPanel(
+      #       "Men's Bracket",
+      #       br(),br(),
+      #       conditionalPanel(
+      #         condition = 'true', # 'output.contestStandingsReady',
+      #         conditionalPanel(
+      #           condition = '! output.showStandingsM',
+      #           helpText("Standings will be displayed after the first tournament results are in and loaded.")
+      #         ),
+      #         conditionalPanel(
+      #           condition = 'output.showStandingsM',
+      #           strong(textOutput("tournyStatusM")),
+      #           dataTableOutput("standingsTableM") |> withSpinner()
+      #         )
+      #       )
+      #     ),
+      #     tabPanel(
+      #       "Combined",
+      #       br(),br(),
+      #       conditionalPanel(
+      #         condition = '! output.showStandingsW || ! output.showStandingsM',
+      #         helpText("Standings will be displayed after the first tournament results are in and loaded.")
+      #       ),
+      #       conditionalPanel(
+      #         condition = 'output.showStandingsW && output.showStandingsM',
+      #         # strong(textOutput("tournyStatusW")),
+      #         dataTableOutput("standingsTableAll") |> withSpinner()
+      #       )
+      #     )
+      #   )
+      # ),
 
-      tabPanel(
-        "Crystal Ball",
-        conditionalPanel(
-          condition = 'true',
-          br(),
-          p('Information will be displayed here after the first two rounds of the tournament have been played.'),
-          ),
-        conditionalPanel(
-          condition = 'false',
-          tabsetPanel(
-            type = "pills",
-            tabPanel(
-              "Women's Bracket",
-              h3("Who can win?"),
-              plotOutput('WhoCanWinPlotW') |> withSpinner(),
-              br(),
-              h3('Head to Head'),
-              p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
-              plotlyOutput('H2HPlotW', height = "600px") |> withSpinner(),
-              br(),
-              h3('Score Histograms'),
-              plotOutput('ScoreHistogramsW') |> withSpinner(),
-              br()
-            ),
-            tabPanel(
-              "Men's Bracket",
-              h3("Who can win?"),
-              plotOutput('WhoCanWinPlotM') |> withSpinner(),
-              br(),
-              h3('Head to Head'),
-              p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
-              plotlyOutput('H2HPlotM', height = "600px") |> withSpinner(),
-              br(),
-              h3('Score Histograms'),
-              plotOutput('ScoreHistogramsM') |> withSpinner(),
-              br()
-            ),
-            tabPanel(
-              "Combined",
-              h3('Who can win?'),
-              plotOutput('WhoCanWinPlotC') |> withSpinner(),
-              br(),
-              h3('Head to Head'),
-              p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
-              plotlyOutput('H2HPlotC', height = "600px") |> withSpinner(),
-            )
-          )
-        )
-      ), # crystal ball panel,
+      # tabPanel(
+      #   "Crystal Ball",
+      #   conditionalPanel(
+      #     condition = 'true',
+      #     br(),
+      #     p('Information will be displayed here after the first two rounds of the tournament have been played.'),
+      #     ),
+      #   conditionalPanel(
+      #     condition = 'false',
+      #     tabsetPanel(
+      #       type = "pills",
+      #       tabPanel(
+      #         "Women's Bracket",
+      #         h3("Who can win?"),
+      #         plotOutput('WhoCanWinPlotW') |> withSpinner(),
+      #         br(),
+      #         h3('Head to Head'),
+      #         p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
+      #         plotlyOutput('H2HPlotW', height = "600px") |> withSpinner(),
+      #         br(),
+      #         h3('Score Histograms'),
+      #         plotOutput('ScoreHistogramsW') |> withSpinner(),
+      #         br()
+      #       ),
+      #       tabPanel(
+      #         "Men's Bracket",
+      #         h3("Who can win?"),
+      #         plotOutput('WhoCanWinPlotM') |> withSpinner(),
+      #         br(),
+      #         h3('Head to Head'),
+      #         p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
+      #         plotlyOutput('H2HPlotM', height = "600px") |> withSpinner(),
+      #         br(),
+      #         h3('Score Histograms'),
+      #         plotOutput('ScoreHistogramsM') |> withSpinner(),
+      #         br()
+      #       ),
+      #       tabPanel(
+      #         "Combined",
+      #         h3('Who can win?'),
+      #         plotOutput('WhoCanWinPlotC') |> withSpinner(),
+      #         br(),
+      #         h3('Head to Head'),
+      #         p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
+      #         plotlyOutput('H2HPlotC', height = "600px") |> withSpinner(),
+      #       )
+      #     )
+      #   )
+      # ), # crystal ball panel,
 
-      tabPanel(
-        "Admin",
-        fluidRow(
-          column(6,
-                 conditionalPanel(
-                   condition = '!output.showAdminTab',
-                   helpText("If you have administrative access, you should know how to unlock the door."),
-                   helpText("If not, this tab will be pretty boring."),
-                   br(), br(),
-                   strong("Commissioner:"), span("R Pruim"), br(),
-                   strong("Scoremaster:"), span("R Bebej"), br(),
-                   strong("Honorary Commissioner & Historian:"), span("M Stob"), br()
-                 ),
-                 conditionalPanel(
-                   condition = 'output.showAdminTab',
-                   textInput("passwd", label = h3("Access Code"), value = ""),
-                   # h3("System Log"),
-                   # dataTableOutput("logTable") |> withSpinner()
-                 ) # conditionalPanel
-          ),  # column
-          column(
-            6,
-            conditionalPanel(
-              condition = 'output.showGameEntry',
-              h3("Enter Game Results"),
-              tabsetPanel(
-                id = "gameScores",
-                type = "tabs",
-                tabPanel(
-                  "Women's",
-                  id = "gameScoresW",
-                  uiOutput("gameScoreSelectorW") |> withSpinner(),
-                  uiOutput("awayTeamScoreW"),
-                  uiOutput("homeTeamScoreW"),
-                   actionButton("saveScoreButtonW", "Submit Score"),
-                   textOutput("scoreSavedTextW")
-                ),
-                tabPanel(
-                  "Men's",
-                  id = "gameScoresM",
-                  uiOutput("gameScoreSelectorM") |> withSpinner(),
-                  uiOutput("awayTeamScoreM"),
-                  uiOutput("homeTeamScoreM"),
-                  actionButton("saveScoreButtonM", "Submit Score"),
-                ), # tabPanel
-                tabPanel(
-                  "Other stuff",
-                  id = 'otherStuff',
-                  br(), br(),
-                  actionButton("reCacheButton", "Refresh Crystal Ball Cache"),
-                ),
-              ) # tabsetPanel
-            ) # conditionalPanel
-          ) # column
-        ) # fluidRow
-      ) # tabPanel
+      # tabPanel(
+      #   "Admin",
+      #   fluidRow(
+      #     column(6,
+      #            conditionalPanel(
+      #              condition = '!output.showAdminTab',
+      #              helpText("If you have administrative access, you should know how to unlock the door."),
+      #              helpText("If not, this tab will be pretty boring."),
+      #              br(), br(),
+      #              strong("Commissioner:"), span("R Pruim"), br(),
+      #              strong("Scoremaster:"), span("R Bebej"), br(),
+      #              strong("Honorary Commissioner & Historian:"), span("M Stob"), br()
+      #            ),
+      #            conditionalPanel(
+      #              condition = 'output.showAdminTab',
+      #              textInput("passwd", label = h3("Access Code"), value = ""),
+      #              # h3("System Log"),
+      #              # dataTableOutput("logTable") |> withSpinner()
+      #            ) # conditionalPanel
+      #     ),  # column
+      #     column(
+      #       6,
+      #       conditionalPanel(
+      #         condition = 'output.showGameEntry',
+      #         h3("Enter Game Results"),
+      #         tabsetPanel(
+      #           id = "gameScores",
+      #           type = "tabs",
+      #           tabPanel(
+      #             "Women's",
+      #             id = "gameScoresW",
+      #             uiOutput("gameScoreSelectorW") |> withSpinner(),
+      #             uiOutput("awayTeamScoreW"),
+      #             uiOutput("homeTeamScoreW"),
+      #              actionButton("saveScoreButtonW", "Submit Score"),
+      #              textOutput("scoreSavedTextW")
+      #           ),
+      #           tabPanel(
+      #             "Men's",
+      #             id = "gameScoresM",
+      #             uiOutput("gameScoreSelectorM") |> withSpinner(),
+      #             uiOutput("awayTeamScoreM"),
+      #             uiOutput("homeTeamScoreM"),
+      #             actionButton("saveScoreButtonM", "Submit Score"),
+      #           ), # tabPanel
+      #           tabPanel(
+      #             "Other stuff",
+      #             id = 'otherStuff',
+      #             br(), br(),
+      #             actionButton("reCacheButton", "Refresh Crystal Ball Cache"),
+      #           ),
+      #         ) # tabsetPanel
+      #       ) # conditionalPanel
+      #     ) # column
+      #   ) # fluidRow
+      # ) # tabPanel admin
+
     ) # tabsetPanel
   ) # fluidPage
 ) # shinyUI
