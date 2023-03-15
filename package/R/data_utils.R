@@ -95,7 +95,7 @@ load_entries_from_dropbox <-
 #' @export
 
 load_entries_from_pins <-
-  function(board, tournament, year = 2022, pattern = paste0("entry-", year), keep.all = FALSE) {
+  function(board, tournament, year = 2023, pattern = paste0("NCAA-entry-", year), keep.all = FALSE) {
     epin_names <- board |> pins::pin_search(pattern) |> dplyr::pull(name)
 
     res <- list()
@@ -112,7 +112,7 @@ pin_write_entry <- function(board, entry, year = entry$year, name = NULL, ...) {
   if (is.null(name)) {
     email_name <- entry$email |>
       stringr::str_replace_all("[@.]", "_")
-    name <- paste0("rpruim/ncaa-", year, "-entry-", email_name)
+    name <- paste0("rpruim/NCAA-", year, "-entry-", email_name)
   }
   pin_write(board, x = entry, name = name, ...)
 }
