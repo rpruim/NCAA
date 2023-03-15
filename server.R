@@ -51,7 +51,7 @@ my_pin_read <- function(name, board, ...) {
   }
 }
 
-my_pin_reactive_read <- function(board, name, default, interval = 1000, ...) {
+my_pin_reactive_read <- function(board, name, default, interval = 60000, ...) {
   clean_name <- clean_name(name)
   print(c(rective = clean_name))
   if (!pin_exists(board, clean_name)) {
@@ -175,7 +175,7 @@ shinyServer(function(input, output, session) {
 
   Entries <-
     reactivePoll(
-      500,
+      60000,
       session = session,
       # function() dir(config[['entries_path']], full.names = TRUE) |> file.mtime() |> max(),
       function() pin_search(board, search = "NCAA-2023-entry") |> pull(created) |> max(),
