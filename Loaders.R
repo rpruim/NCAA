@@ -33,7 +33,7 @@ update_teams <- function(teams, canonical_teams) {
 
 LoadEntries <-
   function(
-    path = "data/Entries/", year = 2022)
+    path = "data/Entries/", year = 2023)
   {
     # rdsFile <- paste0(path, "Entries.rds")
     # if (file.exists(rdsFile)) {
@@ -42,6 +42,7 @@ LoadEntries <-
 
     entryPattern <- paste0("Entry-",year,".*rds")
     efiles <- dir(path, pattern = entryPattern, full.names = TRUE)
+
     res <- list()
     # read files in order; newer entries with same email will clobber older ones
     for (f in sort(efiles)) {
