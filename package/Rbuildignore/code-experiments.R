@@ -6,21 +6,21 @@ source('../../package/R/scenarios.R')
 
 library(ggformula)
 
-BracketM <- load_bracket('data/2022/bracket-2022-M.csv')
-BracketW <- load_bracket('data/2022/bracket-2022-W.csv')
+BracketM <- load_bracket('data/2023/bracket-2023-M.csv')
+BracketW <- load_bracket('data/2023/bracket-2023-W.csv')
 
 TMinit <- tournament_init(names = BracketM[['team']], seeds = BracketM[['seed']], label = "M")
 TWinit <- tournament_init(names = BracketW[['team']], seeds = BracketW[['seed']], label = "W")
 
-Entries <- load_entries_from_dropbox(TMinit, path = "data/2022/Entries/", year = 2022)
-Entries0 <- load_entries_from_dropbox(TMinit, path = "data/2022/Entries/", year = 2022, keep.all = TRUE)
+Entries <- load_entries_from_pins(board = board, year = 2023)
 
 EM <- build_entry_matrix(Entries, ext = "M")
 EW <- build_entry_matrix(Entries, ext = "W")
 
-ScoresM <- LoadGameScores()
+# ScoresM <- load_game_scores('data/Scores/2022/Mens/scores-2022-M.csv')
+ScoresM <- my_pin_read(board, name = config[['scores']][1], d)
 
-ScoresM <- load_game_scores('data/Scores/2022/Mens/scores-2022-M.csv')
+
 TM <-
   tournament_init(names = Bracket2022M[['team']], seeds = Bracket2022M[['seed']], label = "M") |>
   tournament_update(ScoresM[['game_number']], ScoresM[['winner_01']])
