@@ -147,37 +147,37 @@ shinyUI(
         ) # conditional panel
       ),  # tabPanel choose wisely
 
-      # tabPanel(
-      #   "Scores",
-      #   br(),
-      #   tabsetPanel(
-      #     type = "pills",
-      #     tabPanel(
-      #       "Women's Bracket",
-      #       br(),br(),
-      #       conditionalPanel(
-      #         condition = '! output.showStandingsW',
-      #         helpText("Information will display here after the first tournament results are in and loaded.")
-      #       ),
-      #       conditionalPanel(
-      #         condition = 'true || output.showStandingsW',
-      #         dataTableOutput("ScoresTableW") |> withSpinner()
-      #       )
-      #     ),
-      #     tabPanel(
-      #       "Men's Bracket",
-      #       br(),br(),
-      #       conditionalPanel(
-      #         condition = '! output.showStandingsM',
-      #         helpText("Information will display here after the first tournament results are in and loaded.")
-      #       ),
-      #       conditionalPanel(
-      #         condition = 'true || output.showStandingsM',
-      #         dataTableOutput("ScoresTableM") |> withSpinner()
-      #       )
-      #     ) # tabPanel
-      #   ) # tabsetPanel
-      # ), # tabPanel Scores
+      tabPanel(
+        "Scores",
+        br(),
+        tabsetPanel(
+          type = "pills",
+          tabPanel(
+            "Women's Bracket",
+            br(),br(),
+            conditionalPanel(
+              condition = '! output.showStandingsW',
+              helpText("Information will display here after the first tournament results are in and loaded.")
+            ),
+            conditionalPanel(
+              condition = 'true || output.showStandingsW',
+              dataTableOutput("ScoresTableW") |> withSpinner()
+            )
+          ),
+          tabPanel(
+            "Men's Bracket",
+            br(),br(),
+            conditionalPanel(
+              condition = '! output.showStandingsM',
+              helpText("Information will display here after the first tournament results are in and loaded.")
+            ),
+            conditionalPanel(
+              condition = 'true || output.showStandingsM',
+              dataTableOutput("ScoresTableM") |> withSpinner()
+            )
+          ) # tabPanel
+        ) # tabsetPanel
+      ), # tabPanel Scores
 
       # tabPanel(
       #   "Standings",
@@ -279,62 +279,63 @@ shinyUI(
       #   )
       # ), # crystal ball panel,
 
-      # tabPanel(
-      #   "Admin",
-      #   fluidRow(
-      #     column(6,
-      #            conditionalPanel(
-      #              condition = '!output.showAdminTab',
-      #              helpText("If you have administrative access, you should know how to unlock the door."),
-      #              helpText("If not, this tab will be pretty boring."),
-      #              br(), br(),
-      #              strong("Commissioner:"), span("R Pruim"), br(),
-      #              strong("Scoremaster:"), span("R Bebej"), br(),
-      #              strong("Honorary Commissioner & Historian:"), span("M Stob"), br()
-      #            ),
-      #            conditionalPanel(
-      #              condition = 'output.showAdminTab',
-      #              textInput("passwd", label = h3("Access Code"), value = ""),
-      #              # h3("System Log"),
-      #              # dataTableOutput("logTable") |> withSpinner()
-      #            ) # conditionalPanel
-      #     ),  # column
-      #     column(
-      #       6,
-      #       conditionalPanel(
-      #         condition = 'output.showGameEntry',
-      #         h3("Enter Game Results"),
-      #         tabsetPanel(
-      #           id = "gameScores",
-      #           type = "tabs",
-      #           tabPanel(
-      #             "Women's",
-      #             id = "gameScoresW",
-      #             uiOutput("gameScoreSelectorW") |> withSpinner(),
-      #             uiOutput("awayTeamScoreW"),
-      #             uiOutput("homeTeamScoreW"),
-      #              actionButton("saveScoreButtonW", "Submit Score"),
-      #              textOutput("scoreSavedTextW")
-      #           ),
-      #           tabPanel(
-      #             "Men's",
-      #             id = "gameScoresM",
-      #             uiOutput("gameScoreSelectorM") |> withSpinner(),
-      #             uiOutput("awayTeamScoreM"),
-      #             uiOutput("homeTeamScoreM"),
-      #             actionButton("saveScoreButtonM", "Submit Score"),
-      #           ), # tabPanel
-      #           tabPanel(
-      #             "Other stuff",
-      #             id = 'otherStuff',
-      #             br(), br(),
-      #             actionButton("reCacheButton", "Refresh Crystal Ball Cache"),
-      #           ),
-      #         ) # tabsetPanel
-      #       ) # conditionalPanel
-      #     ) # column
-      #   ) # fluidRow
-      # ) # tabPanel admin
+      tabPanel(
+        "Admin",
+        fluidRow(
+          column(6,
+                 conditionalPanel(
+                   condition = '!output.showAdminTab',
+                   helpText("If you have administrative access, you should know how to unlock the door."),
+                   helpText("If not, this tab will be pretty boring."),
+                   br(), br(),
+                   strong("Commissioner:"), span("R Pruim"), br(),
+                   strong("Scoremaster:"), span("R Bebej"), br(),
+                   strong("Honorary Commissioner & Historian:"), span("M Stob"), br()
+                 ),
+                 conditionalPanel(
+                   condition = 'output.showAdminTab',
+                   textInput("passwd", label = h3("Access Code"), value = ""),
+                   # h3("System Log"),
+                   # dataTableOutput("logTable") |> withSpinner()
+                 ) # conditionalPanel
+          ),  # column
+          column(
+            6,
+            conditionalPanel(
+              condition = 'output.showGameEntry',
+              h3("Enter Game Results"),
+              tabsetPanel(
+                id = "gameScores",
+                type = "tabs",
+                tabPanel(
+                  "Women's",
+                  id = "gameScoresW",
+                  uiOutput("gameScoreSelectorW") |> withSpinner(),
+                  uiOutput("awayTeamScoreW"),
+                  uiOutput("homeTeamScoreW"),
+                   actionButton("saveScoreButtonW", "Submit Score"),
+                   textOutput("scoreSavedTextW")
+                ),
+                tabPanel(
+                  "Men's",
+                  id = "gameScoresM",
+                  uiOutput("gameScoreSelectorM") |> withSpinner(),
+                  uiOutput("awayTeamScoreM"),
+                  uiOutput("homeTeamScoreM"),
+                  actionButton("saveScoreButtonM", "Submit Score"),
+                  textOutput("scoreSavedTextM")
+                ), # tabPanel
+                tabPanel(
+                  "Other stuff",
+                  id = 'otherStuff',
+                  br(), br(),
+                  actionButton("reCacheButton", "Refresh Crystal Ball Cache"),
+                ),
+              ) # tabsetPanel
+            ) # conditionalPanel
+          ) # column
+        ) # fluidRow
+      ) # tabPanel admin
 
     ) # tabsetPanel
   ) # fluidPage
