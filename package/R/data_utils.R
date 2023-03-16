@@ -26,63 +26,7 @@ build_entry_matrix <- function(E, ext = c("M", "W")){
   res
 }
 
-readRDS_from_dropbox <- function(file, dtoken = my_dropbox_token()) {
-  localfile = tempfile()
-  print(c(file = file, localfile = localfile))
-  drop_download(file, local_path = localfile, overwrite = TRUE, dtoken = dtoken)
-  readRDS(localfile)
-}
 
-
-#' Load Entries From Dropbox
-#'
-#' Load entries from files in a dropbox directory that match a specified pattern.
-#'
-#' @inheritParams contest_scores
-#' @param path directory in which entry files are located.
-#' @param pattern regex pattern.
-#' @param year used to create the default value of pattern.
-#' @export
-load_entries_from_dropbox <-
-  function(tournament, path, year = 2023, pattern =  paste0("Entry-", year, ".*rds"),
-           dtoken = my_dropbox_token(),
-           keep.all = FALSE) {
-    efiles_info <- drop_dir(file.path('ncaa', path), dtoken = dtoken) # tibble of directory info
-    efiles <- efiles_info$name |> stringr::str_subset(pattern)
-    res <- list()
-    # read files in order; newer entries with same email will clobber older ones
-    for (f in sort(efiles)) {
-      e <- readRDS_from_dropbox(file.path("ncaa", path, f), dtoken = dtoken)
-
-      # updating names based on the play-in game winners not happening at the moment
-      # e$teams <- update_teams(e$teams, Bracket$team)
-      # names(e$teamsLogical) <- team_names(tournament) # update_teams(names(e$teamsLogical), Bracket$team) # gsub(names(playin[i]), playin[i], names(e$teamsLogical))
-
-      # ensure the order is the same for all the logical vectors and matches the bracket order
-      # this should now be happening at the time of creation
-      # e$teamsLogical <- e$teamsLogical[Bracket$team]
-      if (keep.all) {
-        res[[paste0(sprintf("%03d", 1 + length(res)), "-", e$email)]] <- e
-      } else {
-        if (!is.null(res[[e$email]])) {
-          if (purrr::pluck(e, 'points') < 190 && purrr::pluck(res, e$email, 'points') >= 190) {
-            e[['points']] <- NULL
-            e[['teams']] <- NULL
-            e[['teamsLogical']] <- NULL
-          }
-          if (purrr::pluck(e, 'pointsW') < 190 && purrr::pluck(res, e$email, 'pointsW') >= 190) {
-            e[['pointsW']] <- NULL
-            e[['teamsW']] <- NULL
-            e[['teamsLogicalW']] <- NULL
-          }
-          res[[e$email]] <- modifyList(res[[e$email]], e)
-        } else {
-          res[[e$email]] <- e
-        }
-      }
-    }
-    res
-  }
 
 #' Load Entries From Pins
 #'
@@ -95,7 +39,9 @@ load_entries_from_dropbox <-
 #' @export
 
 load_entries_from_pins <-
-  function(board, tournament, year = 2023, pattern = paste0("NCAA-entry-", year), keep.all = FALSE) {
+  function(
+    board, year = 2023,
+    pattern = paste0("NCAA-", year, "-entry-"), keep.all = FALSE) {
     epin_names <- board |> pins::pin_search(pattern) |> dplyr::pull(name)
 
     res <- list()
@@ -189,39 +135,6 @@ load_bracket <- function(file) {
     dplyr::arrange(slot)
 }
 
-#'
-#' Load Games Scores from Dropbox
-#'
-#' Load game scores from a CSV file or files on dropbox.
-#'
-#' @export
-#' @param files A vector of csv files names. Each file should have coluns `game_number` (int),
-#' `winner_01` (0 if "home" wins, 1 if "away" wins),
-#'   `home` (chr), `away` (chr), `hscore` (int), and `ascore (int)`
-#' @returns a data frame containing information about each game. `winner` and `loser` columns are computed from
-#'   the scores and `home` and `away`.
-#' @importFrom dplyr group_by slice_tail mutate
-#' @importFrom purrr map_df
-#' @importFrom tibble tibble
-
-load_game_scores_from_dropbox <- function(files) {
-  files <- file.path('ncaa', files)
-  if (length(files) < 1)
-    return(
-      tibble::tibble(game_number = NA, winner_01 = NA,
-             home = NA, away = NA, hscore = NA, ascore = NA) |>
-        head(0))
-
-  res <- list()
-  # read files in order; newer entries with same teams will clobber older ones
-  purrr::map_df(files, rdrop2::drop_read_csv) # , col_types = "iiccii") |>
-    dplyr::group_by(game_number) |>
-    dplyr::slice_tail(n = 1) |>
-    dplyr::mutate(
-      winner = ifelse(hscore > ascore, home, away),
-      loser = ifelse(hscore < ascore, home, away)
-    )
-}
 
 #'
 #' Load Games Scores
