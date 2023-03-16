@@ -7,9 +7,9 @@ brackets:
   - data/2023/bracket-2023-M.csv
   - data/2023/bracket-2023-W.csv
 entries_path:
-  - data/2023/Entries
+  - entry-
 scores:
-  - data/2023/Scores/Mens/scores-2023-M.csv
-  - data/2023/Scores/Womens/scores-2023-W.csv
+  - scores-2023-M
+  - scores-2023-W
 crystal_ball_path:
   - data/2023/Crystal-Ball
