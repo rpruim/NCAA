@@ -179,55 +179,55 @@ shinyUI(
         ) # tabsetPanel
       ), # tabPanel Scores
 
-      # tabPanel(
-      #   "Standings",
-      #   br(),
-      #   tabsetPanel(
-      #     type = "pills",
-      #     tabPanel(
-      #       "Women's Bracket",
-      #       br(),br(),
-      #       conditionalPanel(
-      #         condition = '! output.showStandingsW',
-      #         helpText("Standings will be displayed after the first tournament results are in and loaded.")
-      #       ),
-      #       conditionalPanel(
-      #         condition = 'output.showStandingsW',
-      #         strong(textOutput("tournyStatusW")),
-      #         dataTableOutput("standingsTableW") |> withSpinner()
-      #       )
-      #     ),
-      #     tabPanel(
-      #       "Men's Bracket",
-      #       br(),br(),
-      #       conditionalPanel(
-      #         condition = 'true', # 'output.contestStandingsReady',
-      #         conditionalPanel(
-      #           condition = '! output.showStandingsM',
-      #           helpText("Standings will be displayed after the first tournament results are in and loaded.")
-      #         ),
-      #         conditionalPanel(
-      #           condition = 'output.showStandingsM',
-      #           strong(textOutput("tournyStatusM")),
-      #           dataTableOutput("standingsTableM") |> withSpinner()
-      #         )
-      #       )
-      #     ),
-      #     tabPanel(
-      #       "Combined",
-      #       br(),br(),
-      #       conditionalPanel(
-      #         condition = '! output.showStandingsW || ! output.showStandingsM',
-      #         helpText("Standings will be displayed after the first tournament results are in and loaded.")
-      #       ),
-      #       conditionalPanel(
-      #         condition = 'output.showStandingsW && output.showStandingsM',
-      #         # strong(textOutput("tournyStatusW")),
-      #         dataTableOutput("standingsTableAll") |> withSpinner()
-      #       )
-      #     )
-      #   )
-      # ),
+      tabPanel(
+        "Standings",
+        br(),
+        tabsetPanel(
+          type = "pills",
+          tabPanel(
+            "Women's Bracket",
+            br(),br(),
+            conditionalPanel(
+              condition = '! output.showStandingsW',
+              helpText("Standings will be displayed after the first tournament results are in and loaded.")
+            ),
+            conditionalPanel(
+              condition = 'output.showStandingsW',
+              strong(textOutput("tournyStatusW")),
+              dataTableOutput("standingsTableW") |> withSpinner()
+            )
+          ),
+          tabPanel(
+            "Men's Bracket",
+            br(),br(),
+            conditionalPanel(
+              condition = 'true', # 'output.contestStandingsReady',
+              conditionalPanel(
+                condition = '! output.showStandingsM',
+                helpText("Standings will be displayed after the first tournament results are in and loaded.")
+              ),
+              conditionalPanel(
+                condition = 'output.showStandingsM',
+                strong(textOutput("tournyStatusM")),
+                dataTableOutput("standingsTableM") |> withSpinner()
+              )
+            )
+          ),
+          tabPanel(
+            "Combined",
+            br(),br(),
+            conditionalPanel(
+              condition = '! output.showStandingsW || ! output.showStandingsM',
+              helpText("Standings will be displayed after the first tournament results are in and loaded.")
+            ),
+            conditionalPanel(
+              condition = 'output.showStandingsW && output.showStandingsM',
+              # strong(textOutput("tournyStatusW")),
+              dataTableOutput("standingsTableAll") |> withSpinner()
+            )
+          )
+        )
+      ),
 
       # tabPanel(
       #   "Crystal Ball",
