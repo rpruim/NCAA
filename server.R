@@ -742,8 +742,9 @@ shinyServer(function(input, output, session) {
   outputOptions(output, "showEntryForm", suspendWhenHidden = FALSE)
 
   output$acceptingEntries <- reactive({
-    AdminMode() || (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
-      # (file.exists(bracketfile) &&
+    # TODO: fix this time-based check
+    FALSE
+    # AdminMode() || (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
   })
   outputOptions(output, "acceptingEntries", suspendWhenHidden = FALSE)
 
