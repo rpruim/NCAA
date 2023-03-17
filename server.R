@@ -14,9 +14,9 @@ board <-
 
 # board |> pin_search()
 # library(madness)
-source('package/R/data_utils.r')
-source('package/R/matrix_and_vector.r')
-source('package/R/scenarios.r')
+source('package/R/data_utils.R')
+source('package/R/matrix_and_vector.R')
+source('package/R/scenarios.R')
 
 library(waiter)
 library(ggformula)
