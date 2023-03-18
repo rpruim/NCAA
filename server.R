@@ -873,7 +873,7 @@ shinyServer(function(input, output, session) {
       "sample text."
     }
   })
-  output$scoreSavedTexW <- renderText({
+  output$scoreSavedTextW <- renderText({
     # don't react to these until the button is pushed
     if(TRUE) {
       input$saveScoreButtonW
@@ -922,13 +922,11 @@ shinyServer(function(input, output, session) {
           game_number = gts, winner_01 = as.numeric(as > hs),
           home = home, away = away, hscore = hs, ascore = as, timestamp = human_time()
         )
-      print(new_score)
-      print(list(
-          game_number = gts, winner_01 = as.numeric(as > hs),
-          home = home, away = away, hscore = hs, ascore = as, timestamp = human_time()
-        ))
       # replacement for a write_csv() with apend = TRUE
       bind_rows(previous_scores, new_score) |>
+        group_by(game_number) |>
+        arrange(timestamp, .by_group = TRUE) |>
+        slice_tail(n = 1) |>
         my_pin_write(board = board, name = config[['scores']][1] )
     }
 
@@ -970,6 +968,9 @@ shinyServer(function(input, output, session) {
       print(new_score)
 
       bind_rows(previous_scores, new_score) |>
+        group_by(game_number) |>
+        arrange(timestamp, .by_group = TRUE) |>
+        slice_tail(n = 1) |>
         my_pin_write( board = board, name = config[['scores']][2] )
     }
     if (as.numeric(input$saveScoreButtonW) > 0 &&
