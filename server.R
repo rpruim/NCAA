@@ -28,7 +28,7 @@ theme_set(theme_bw())
 
 clean_name <- function(name) {
   paste0('rpruim/NCAA-2023-', name) |>
-    stringr::str_replace_all('[@.]', '_')
+    stringr::str_replace_all('[@.-]', '_')
 }
 
 my_pin_write <- function(object, name, board, ...) {
@@ -57,19 +57,6 @@ my_pin_reactive_read <- function(board, name, default, interval = 60000){
   pin_reactive_read(board = board, name = clean_name, interval = interval)
 }
 
-# mysaverds <- function(object, file = "", dtoken = my_dropbox_token(), ...) {
-#   saverds(object = object, file = file, ...)
-#   board |> pin_upload(file)
-#   # drop_upload(file, path = 'ncaa/data/2023/entries', dtoken = dtoken)
-# }
-
-
-# myreadrds <- function(file, refhook = null, ...) { # , dtoken = my_dropbox_token()) {
-#   board |> pin_download(name = file)
-#   # drop_download(file, overwrite = TRUE, dtoken = dtoken)
-#   readrds(file = file, refhook = refhook)
-# }
-
 config <- yaml::read_yaml('ncaa-2023.yml')
 
 maxPoints <- 200
@@ -79,14 +66,6 @@ human_time <- function() format(Sys.time(), "%y%m%d-%h%m%os")
 
 ### some utility functions
 
-# safely_readrds <- function(file, ...) {
-#   if (file.exists(file)) {
-#     myreadrds(file, ...)
-#   } else {
-#     null
-#   }
-# }
-
 sessionid <- function(session) {
   digest::digest(session$request)
 }
@@ -94,8 +73,7 @@ sessionid <- function(session) {
 the_year <- function() {
   return(config[['year']])
 
-  return(2023)
-  # the above is a temporary hack.
+  ## perhaps allow this to be read as part of URL instead
   qq <- Query()
   if ("year" %in% names(qq)) {
     as.numeric(qq["year"])
@@ -185,7 +163,6 @@ shinyServer(function(input, output, session) {
       load_bracket
     )
 
-  # todo: change this to watching a pin with scores
   empty_scores_df <-
     tibble(
       game_number = integer(0),
@@ -287,286 +264,253 @@ shinyServer(function(input, output, session) {
 
 
   # todo: deal with crystal ball
-  # cachecrystalballm <- function() {
-  #   tc <- tournament_completions(TM(), max_games_remaining = 15)
-  #   tc |>
-  #   # mysaverds(file.path(config[['crystal_ball_path']], 'tcm.rds'))
-  #     my_pin_write(name = 'tcm', board = board)
-  #
-  #   h2h <- head2head(TM(), EM(), tc, result = "data.frame")
-  #   h2h |>
-  #   # mysaverds(file.path(config[['crystal_ball_path']], 'h2hm.rds'))
-  #     my_pin_write(name = "h2hm", board = board)
-  #
-  #   ps <- tc |>
-  #     apply(2, function(x, e = EM()) { contest_scores(x, e)} )
-  #   ps |> round(12) |>
-  #     # mysaverds(file.path(config[['crystal_ball_path']], 'possiblescoresm.rds'))
-  #     my_pin_write(name = 'possiblescoresm', board = board)
-  #
-  #   ps |>
-  #     apply(2, which.max) %>%
-  #     tibble(winner = .) |>
-  #     group_by(winner) |>
-  #     summarise(scenarios = n()) |>
-  #     mutate(
-  #       winner = rownames(EM())[winner],
-  #       p = scenarios / sum(scenarios)
-  #     ) |>
-  #     mutate(
-  #       winner = reorder(winner, scenarios)
-  #     ) |>
-  #     # mysaverds(file.path(config[['crystal_ball_path']], 'winnerstablem.rds'))
-  #     my_pin_write(name = "winnerstablem", board = board)
-  # }
-  #
-  #
-  # tcm <-
-  #   pin_reactive_read(board, name = clean_name('tcm'))
-  #   # reactiveFileReader(
-  #   #   1000, session,
-  #   #   file.path(config[['crystal_ball_path']], 'tcm.rds'),
-  #   #   safely_readrds
-  #   # )
-  #
-  # h2hm <-
-  #   my_pin_reactive_read(board, name = 'h2hm', default = tibble())
-  #
-  # #   reactiveFileReader(
-  # #   1000, session,
-  # #   file.path(config[['crystal_ball_path']], 'h2hm.rds'),
-  # #   safely_readrds
-  # # )
-  #
-  # possiblescoresm <-
-  #   my_pin_reactive_read(board, name = 'possiblescoresm', default = matrix())
-  #
-  # #   reactiveFileReader(
-  # #   1000, session,
-  # #   file.path(config[['crystal_ball_path']], 'possiblescoresm.rds'),
-  # #   safely_readrds
-  # # )
-  #
-  # winnerstablem <-
-  #   my_pin_reactive_read(board, name = "winnerstablem", default = tibble())
-  #   # reactiveFileReader(
-  #   # 1000, session,
-  #   # file.path(config[['crystal_ball_path']], 'winnerstablem.rds'),
-  #   # safely_readrds)
-  #
-  # possiblescorestablem <- reactive({
-  #   possiblescoresm() |>
-  #     as.table() |>
-  #     as.data.frame() |>
-  #     setNames(c('name', 'sceneario', 'score')) |>
-  #     group_by(name, score) |>
-  #     tally()
-  # })
-  #
-  # cachecrystalballw <- function() {
-  #   tc <- tournament_completions(TW(), max_games_remaining = 15)
-  #   tc |> my_pin_write(board, name = 'tcw')
-  #
-  #   h2h <- head2head(TW(), EW(), tc, result = "data.frame")
-  #   h2h |>
-  #     my_pin_write(name = 'h2hw', board = board)
-  #
-  #   ps <- tc |>
-  #     apply(2, function(x, e = EW()) { contest_scores(x, e)} )
-  #   ps |> round(12) |>
-  #     my_pin_write(name = 'possiblescoresw', board = board)
-  #
-  #   ps |>
-  #     apply(2, which.max) %>%
-  #     tibble(winner = .) |>
-  #     group_by(winner) |>
-  #     summarise(scenarios = n()) |>
-  #     mutate(
-  #       winner = rownames(EW())[winner],
-  #       p = scenarios / sum(scenarios)
-  #     ) |>
-  #     mutate(
-  #       winner = reorder(winner, scenarios)
-  #     ) |>
-  #     my_pin_write(name = 'winnerstablew', board = board)
-  # }
-  #
-  #
-  # tcw <-
-  #   my_pin_reactive_read(board, name = 'tcw', default = matrix())
-  #
-  #   # reactiveFileReader(
-  #   #   1000, session,
-  #   #   file.path(config[['crystal_ball_path']], 'tcw.rds'),
-  #   #   safely_readrds
-  #   # )
-  #
-  # h2hw <-
-  #   my_pin_reactive_read(board, name = 'h2hw', default = tibble())
-  # #   reactiveFileReader(
-  # #   1000, session,
-  # #   file.path(config[['crystal_ball_path']], 'h2hw.rds'),
-  # #   safely_readrds
-  # # )
-  #
-  # possiblescoresw <-
-  #   my_pin_reactive_read(board, name = 'possiblescoresw', default = matrix())
-  # #   reactiveFileReader(
-  # #   1000, session,
-  # #   file.path(config[['crystal_ball_path']], 'possiblescoresw.rds'),
-  # #   safely_readrds
-  # # )
-  #
-  # winnerstablew <-
-  #   my_pin_reactive_read(board, name = 'winnerstablew', default = tibble())
-  #   # reactiveFileReader(
-  #   # 1000, session,
-  #   # file.path(config[['crystal_ball_path']], 'winnerstablew.rds'),
-  #   # safely_readrds)
-  #
-  # possiblescorestablew <- reactive({
-  #   possiblescoresw() |>
-  #     as.table() |>
-  #     as.data.frame() |>
-  #     setNames(c('name', 'sceneario', 'score')) |>
-  #     group_by(name, score) |>
-  #     tally()
-  # })
+  cacheCrystalBallM <- function() {
+    tc <- tournament_completions(TM(), max_games_remaining = 15)
+    tc |>
+      my_pin_write(name = 'TCM', board = board)
 
-  # observeEvent(
-  #   input$reCacheButton,
-  #   {
-  #     if (as.numeric(input$reCacheButton) > 0 && AdminMode()) {
-  #       if (n_games_remaining(TW()) <= 15) {
-  #         cachecrystalballw()
-  #       }
-  #       if (n_games_remaining(TM()) <= 15) {
-  #         cachecrystalballm()
-  #       }
-  #       if (n_games_remaining(TM()) + n_games_remaining(TW()) <= 15) {
-  #         cachecrystalballc()
-  #       }
-  #     }
-  #   })
-  #
-  # possiblescoresc <-
-  #   my_pin_reactive_read(board, name = 'possiblescoresc', default = matrix())
-  # #   reactiveFileReader(
-  # #   1000, session,
-  # #   file.path(config[['crystal_ball_path']], 'possiblescoresc.rds'),
-  # #   safely_readrds
-  # # )
-  #
-  # cachecrystalballc <- function() {
-  #   psm <- possiblescoresm()
-  #   psw <- possiblescoresw()
-  #   denom <- ncol(psm) * ncol(psw)
-  #   n <- nrow(EM())
-  #   ps <-
-  #     sapply(1:n,
-  #            function(x) {
-  #              outer(psm[x, ], psw[x, ], "+")
-  #            }
-  #     ) |> t()
-  #   if (nrow(ps) != n) {ps <- t(ps)}
-  #   ps |> round(12) |>
-  #     my_pin_write(name = 'possiblescoresc', board = board)
-  #   ps |>
-  #     apply(2, which.max) %>%
-  #     tibble(winner = .) |>
-  #     group_by(winner) |>
-  #     summarise(scenarios = n()) |>
-  #     mutate(
-  #       winner = rownames(EM())[winner],
-  #       p = scenarios / sum(scenarios)
-  #     ) |>
-  #     mutate(
-  #       winner = reorder(winner, scenarios)
-  #     ) |>
-  #     my_pin_write(name = 'winnerstablec', board = board)
-  # }
-  #
-  # possiblescorestablec <- reactive({
-  #   possiblescoresc() |>
-  #     as.table() |>
-  #     as.data.frame() |>
-  #     setNames(c('name', 'sceneario', 'score')) |>
-  #     group_by(name, score) |>
-  #     tally()
-  # })
-  #
-  # winnerstablec <-
-  #   my_pin_reactive_read(name = 'winnerstablec', board = board, default = tibble())
-  #   # reactiveFileReader(
-  #   # 1000, session,
-  #   # file.path(config[['crystal_ball_path']], 'winnerstablec.rds'),
-  #   # safely_readrds)
-  #
-  # output$whocanwinplotc <- renderPlot({
-  #   winnerstablec() |>
-  #     gf_col(winner ~ p, fill = "steelblue") |>
-  #     gf_labs(x = "percent of scenarios that win") |>
-  #     gf_refine(scale_x_continuous(labels = scales::label_percent()))
-  # })
-  #
-  #
-  # h2hc <- reactive({
-  #   n <- nrow(EM())
-  #   psc <- possiblescoresc()
-  #   denom <- ncol(psc)
-  #   res <-
-  #     outer(1:n, 1:n, vectorize(function(r, c) {
-  #       sum(psc[r,] > psc[c, ])
-  #     })
-  #     )
-  #
-  #   rownames(res) <- attr(EM(), "name")
-  #   colnames(res) <- attr(EM(), "name")
-  #
-  #   res |>
-  #     as.table() |> as.data.frame() |>
-  #     setNames(c('key', 'other', 'scenarios')) |>
-  #     mutate(
-  #       prop = scenarios / denom,
-  #       key_name = attr(EM(), 'name')[key],
-  #       other_name = attr(EM(), 'name')[other],
-  #       key_abbrv = abbreviate(key_name, 6),
-  #       other_abbrv = abbreviate(other_name, 6)
-  #     ) |>
-  #     mutate(
-  #       key_name = reorder(key_name, scenarios),
-  #       key_abbrv = reorder(key_abbrv, scenarios),
-  #       other_name = reorder(other_name, scenarios, function(x) - mean(x)),
-  #       other_abbrv = reorder(other_abbrv, scenarios, function(x) - mean(x))
-  #     )
-  # })
-  #
-  # output$h2hplotc <- renderPlotly({
-  #   h2hc() |>
-  #     mutate(
-  #       perc = round(100 * prop, 2),
-  #       hovertext =
-  #         glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
-  #     ) |>
-  #     mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, na, scenarios)) |>
-  #     gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8, text = ~hovertext) |>
-  #     gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
-  #     gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
-  #     gf_labs(title = "head to head winning scenarios",
-  #             subtitle = "read across rows for wins against the other player",
-  #             x = "", y = "", fill = "winning\nscenarios" ) |>
-  #     gf_refine(
-  #       scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
-  #       coord_cartesian(expand = FALSE)
-  #     ) |>
-  #     gf_theme(
-  #       panel.grid.major.x = element_blank(),
-  #       panel.grid.major.y = element_blank(),
-  #       axis.text.x = element_text(angle = 45, hjust = 1),
-  #       panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
-  #     ) |>
-  #     plotly::ggplotly(tooltip = "text")
-  # })
+    h2h <- head2head(TM(), EM(), tc, result = "data.frame")
+    h2h |>
+      my_pin_write(name = "H2HM", board = board)
+
+    ps <- tc |>
+      apply(2, function(x, e = EM()) { contest_scores(x, e)} )
+    ps |> round(12) |>
+      my_pin_write(name = 'PossibleScoresM', board = board)
+
+    ps |>
+      apply(2, which.max) %>%
+      tibble(winner = .) |>
+      group_by(winner) |>
+      summarise(scenarios = n()) |>
+      mutate(
+        winner = rownames(EM())[winner],
+        p = scenarios / sum(scenarios)
+      ) |>
+      mutate(
+        winner = reorder(winner, scenarios)
+      ) |>
+      my_pin_write(name = "WinnersTableM", board = board)
+  }
+
+
+  TCM <-
+    my_pin_reactive_read(board, name = clean_name('TCM'), default = NULL)
+
+  h2h_default <-
+    tibble(
+      key = factor(integer(0)),
+      other = factor(integer(0)),
+      scenarios = integer(0),
+      key_name = factor(character(0)),
+      other_name = factor(character(0)),
+      prop = numeric(0),
+      key_abbrev = factor(character(0)),
+      other_abbrev = factor(character(0))
+    )
+
+  H2HM <-
+    my_pin_reactive_read(board, name = 'H2HM', default = tibble(), default = h2h_default)
+
+  possible_scores_default <-
+    matrix(numeric(0), nrow = nrow(EM()))
+
+  PossibleScoresM <-
+    my_pin_reactive_read(board, name = 'PossibleScoresM', default = possible_scores_default)
+
+  winners_table_default <- tibble(
+    winner = factor(character(0)),
+    scenarios = integer(0),
+    p = numeric(0)
+  )
+
+  WinnersTableM <-
+    my_pin_reactive_read(board, name = "WinnersTableM", default = winners_table_default)
+
+  PossibleScoresTableM <- reactive({
+    PossibleScoresM() |>
+      as.table() |>
+      as.data.frame() |>
+      setNames(c('name', 'sceneario', 'score')) |>
+      group_by(name, score) |>
+      tally()
+  })
+
+  cacheCrystalBallW <- function() {
+    tc <- tournament_completions(TW(), max_games_remaining = 15)
+    tc |> my_pin_write(board, name = 'TCW')
+
+    h2h <- head2head(TW(), EW(), tc, result = "data.frame")
+    h2h |>
+      my_pin_write(name = 'H2HW', board = board)
+
+    ps <- tc |>
+      apply(2, function(x, e = EW()) { contest_scores(x, e)} )
+    ps |> round(12) |>
+      my_pin_write(name = 'PossibleScoresW', board = board)
+
+    ps |>
+      apply(2, which.max) %>%
+      tibble(winner = .) |>
+      group_by(winner) |>
+      summarise(scenarios = n()) |>
+      mutate(
+        winner = rownames(EW())[winner],
+        p = scenarios / sum(scenarios)
+      ) |>
+      mutate(
+        winner = reorder(winner, scenarios)
+      ) |>
+      my_pin_write(name = 'WinnersTableW', board = board)
+  }
+
+
+  TCW <-
+    my_pin_reactive_read(board, name = 'TCW', default = matrix())
+
+  H2HW <-
+    my_pin_reactive_read(board, name = 'H2HW', default = tibble())
+
+  PossibleScoresW <-
+    my_pin_reactive_read(board, name = 'PossibleScoresW', default = matrix())
+
+  WinnersTableW <-
+    my_pin_reactive_read(board, name = 'WinnersTableW', default = tibble())
+
+  PossibleScoresTableW <- reactive({
+    PossibleScoresW() |>
+      as.table() |>
+      as.data.frame() |>
+      setNames(c('name', 'sceneario', 'score')) |>
+      group_by(name, score) |>
+      tally()
+  })
+
+  observeEvent(
+    input$reCacheButton,
+    {
+      if (as.numeric(input$reCacheButton) > 0 && AdminMode()) {
+        if (n_games_remaining(TW()) <= 15) {
+          cacheCrystalBallW()
+        }
+        if (n_games_remaining(TM()) <= 15) {
+          cacheCrystalBallM()
+        }
+        if (n_games_remaining(TM()) + n_games_remaining(TW()) <= 15) {
+          cacheCrystalBallC()
+        }
+      }
+    })
+
+  PossibleScoresC <-
+    my_pin_reactive_read(board, name = 'PossibleScoresC', default = matrix())
+
+  cacheCrystalBallC <- function() {
+    psm <- PossibleScoresM()
+    psw <- PossibleScoresW()
+    denom <- ncol(psm) * ncol(psw)
+    n <- nrow(EM())
+    ps <-
+      sapply(1:n,
+             function(x) {
+               outer(psm[x, ], psw[x, ], "+")
+             }
+      ) |> t()
+    if (nrow(ps) != n) {ps <- t(ps)}
+    ps |> round(12) |>
+      my_pin_write(name = 'PossibleScoresC', board = board)
+    ps |>
+      apply(2, which.max) %>%
+      tibble(winner = .) |>
+      group_by(winner) |>
+      summarise(scenarios = n()) |>
+      mutate(
+        winner = rownames(EM())[winner],
+        p = scenarios / sum(scenarios)
+      ) |>
+      mutate(
+        winner = reorder(winner, scenarios)
+      ) |>
+      my_pin_write(name = 'WinnersTableC', board = board)
+  }
+
+  PossibleScoresTableC <- reactive({
+    PossibleScoresC() |>
+      as.table() |>
+      as.data.frame() |>
+      setNames(c('name', 'sceneario', 'score')) |>
+      group_by(name, score) |>
+      tally()
+  })
+
+  WinnersTableC <-
+    my_pin_reactive_read(name = 'WinnersTableC', board = board, default = tibble())
+
+output$WhoCanWinPlotC <- renderPlot({
+  winnerstablec() |>
+    gf_col(winner ~ p, fill = "steelblue") |>
+    gf_labs(x = "percent of scenarios that win") |>
+    gf_refine(scale_x_continuous(labels = scales::label_percent()))
+})
+
+
+H2HC <- reactive({
+  n <- nrow(EM())
+  psc <- PossibleScoresC()
+  denom <- ncol(psc)
+  res <-
+    outer(1:n, 1:n, vectorize(function(r, c) {
+      sum(psc[r,] > psc[c, ])
+    })
+    )
+
+  rownames(res) <- attr(EM(), "name")
+  colnames(res) <- attr(EM(), "name")
+
+  res |>
+    as.table() |> as.data.frame() |>
+    setNames(c('key', 'other', 'scenarios')) |>
+    mutate(
+      prop = scenarios / denom,
+      key_name = attr(EM(), 'name')[key],
+      other_name = attr(EM(), 'name')[other],
+      key_abbrv = abbreviate(key_name, 6),
+      other_abbrv = abbreviate(other_name, 6)
+    ) |>
+    mutate(
+      key_name = reorder(key_name, scenarios),
+      key_abbrv = reorder(key_abbrv, scenarios),
+      other_name = reorder(other_name, scenarios, function(x) - mean(x)),
+      other_abbrv = reorder(other_abbrv, scenarios, function(x) - mean(x))
+    )
+})
+
+output$H2HPlotC <- renderPlotly({
+  H2HC() |>
+    mutate(
+      perc = round(100 * prop, 2),
+      hovertext =
+        glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
+    ) |>
+    mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, na, scenarios)) |>
+    gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8, text = ~hovertext) |>
+    gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
+    gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
+    gf_labs(title = "head to head winning scenarios",
+            subtitle = "read across rows for wins against the other player",
+            x = "", y = "", fill = "winning\nscenarios" ) |>
+    gf_refine(
+      scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
+      coord_cartesian(expand = FALSE)
+    ) |>
+    gf_theme(
+      panel.grid.major.x = element_blank(),
+      panel.grid.major.y = element_blank(),
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
+    ) |>
+    plotly::ggplotly(tooltip = "text")
+})
 
   ############ select teams ###########
 
@@ -1194,8 +1138,8 @@ shinyServer(function(input, output, session) {
   #     matrix(nrow = nrow(m))
   # }
   #
-  # output$h2hPlotM <- renderPlotly({
-  #   h2hm() |>
+  # output$H2HPlotM <- renderPlotly({
+  #   H2HM() |>
   #     mutate(
   #       perc = round(100 * prop, 2),
   #       hovertext =
@@ -1238,8 +1182,8 @@ shinyServer(function(input, output, session) {
   #                  gf_labs(x = "score")
   #              })
   #
-  # output$h2hPlotW <- renderPlotly({
-  #   h2hw() |>
+  # output$H2HPlotW <- renderPlotly({
+  #   H2HW() |>
   #     mutate(
   #       perc = round(100 * prop, 2),
   #       hovertext =
@@ -1293,8 +1237,8 @@ shinyServer(function(input, output, session) {
   # outputOptions(output, "whoCanWinPlotM", suspendWhenHidden = FALSE, priority = 80)
   # outputOptions(output, "whoCanWinPlotM", suspendWhenHidden = FALSE, priority = 50)
   # outputOptions(output, "whoCanWinPlotW", suspendWhenHidden = FALSE, priority = 50)
-  # outputOptions(output, "h2hPlotM", suspendWhenHidden = FALSE, priority = 40)
-  # outputOptions(output, "h2hPlotW", suspendWhenHidden = FALSE, priority = 40)
+  # outputOptions(output, "H2HPlotM", suspendWhenHidden = FALSE, priority = 40)
+  # outputOptions(output, "H2HPlotW", suspendWhenHidden = FALSE, priority = 40)
   # outputOptions(output, "scoreHistogramsM", suspendWhenHidden = FALSE, priority = 80)
   # outputOptions(output, "scoreHistogramsM", suspendWhenHidden = FALSE, priority = 30)
   # outputOptions(output, "scoreHistogramsW", suspendWhenHidden = FALSE, priority = 30)

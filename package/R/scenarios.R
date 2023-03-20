@@ -45,5 +45,9 @@ tournament_completions <- function(tournament, max_games_remaining = 15) {
   if (length(na_idx) < 1) return(matrix(tournament, ncol = 1))
 
   M <- scenario_matrix(length(na_idx), max_games_remaining = max_games_remaining)
+  if (ncol(M) == 0) {
+    # decide how to handle if called before we get to Sweet 16.
+    # return NULL?
+  }
   apply(M, 2, function(x, t = tournament) { t |> tournament_update(na_idx, x) })
 }

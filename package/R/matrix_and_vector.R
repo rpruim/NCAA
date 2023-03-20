@@ -407,6 +407,20 @@ head2head <-
            result = c('data.frame', 'matrix'),
            sort = TRUE) {
     result <- match.arg(result)
+    if (length(TC) < 1) {
+      h2h_default <-
+        tibble(
+          key = factor(integer(0)),
+          other = factor(integer(0)),
+          scenarios = integer(0),
+          key_name = factor(character(0)),
+          other_name = factor(character(0)),
+          prop = numeric(0),
+          key_abbrev = factor(character(0)),
+          other_abbrev = factor(character(0))
+        )
+      return (h2h_default)
+    }
     ScoresM <- round(ScoresM, 12)     # avoid floating point issues
     n_e <- nrow(ScoresM)
     denominator <- ncol(TC)
