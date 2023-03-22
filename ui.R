@@ -240,8 +240,6 @@ shinyUI(
           condition = 'true || output.showCrystalBallM || output.showCrystalBallW',
           tabsetPanel(
             type = "pills",
-            conditionalPanel(
-              condition = 'true', # 'output.showCrystalBallW',
               tabPanel(
                 "Women's Bracket",
                 h3("Who can win?"),
@@ -254,10 +252,7 @@ shinyUI(
                 h3('Score Histograms'),
                 plotOutput('ScoreHistogramsW') |> withSpinner(),
                 br()
-              )
             ),
-            conditionalPanel(
-              condition = 'true', # 'output.showCrystalBallM',
               tabPanel(
                 "Men's Bracket",
                 h3("Who can win?"),
@@ -270,7 +265,6 @@ shinyUI(
                 h3('Score Histograms'),
                 plotOutput('ScoreHistogramsM') |> withSpinner(),
                 br()
-              )
             ),
             conditionalPanel(
               condition = 'false', # 'output.showCrystalBallC',

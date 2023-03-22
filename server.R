@@ -269,7 +269,7 @@ shinyServer(function(input, output, session) {
     tc |>
       my_pin_write(name = 'TCM', board = board)
 
-    h2h <- head2head(TM(), EM(), tc, result = "data.frame")
+    h2h <- head2head(TM(), EM() , tc, result = "data.frame")
     h2h |>
       my_pin_write(name = "H2HM", board = board)
 

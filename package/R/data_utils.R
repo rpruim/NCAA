@@ -23,7 +23,10 @@ build_entry_matrix <- function(E, ext = c("M", "W")){
     attr(res, a) <- sapply(E, function(x) x[[a]])
   }
   rownames(res) <- sapply(E, function(x) x[['name']]) |> as.vector()
-  res
+
+  # remove entries with no teams, then return
+  has_teams <- apply(res, 1, sum) > 0
+  res[has_teams, ]
 }
 
 
