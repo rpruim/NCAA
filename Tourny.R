@@ -226,7 +226,7 @@ addTeamStatus <- function(bracket, games) {
   bracket$alive <- ! sapply(as.character(bracket$team), function(t) t %in% as.character(games$loser))
   bracket$wins <- sapply(as.character(bracket$team), function(t) sum( as.character(games$winner) == t, na.rm=TRUE ) )
   bracket$cost <- seedCost[bracket$seed]
-  bracket$cost.old <- seedCostOld[bracket$seed]
+  # bracket$cost.old <- seedCostOld[bracket$seed]
   bracket
 }
 

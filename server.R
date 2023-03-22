@@ -28,7 +28,7 @@ theme_set(theme_bw())
 
 clean_name <- function(name) {
   paste0('rpruim/NCAA-2023-', name) |>
-    stringr::str_replace_all('[@.-]', '_')
+    stringr::str_replace_all('[@.]', '_')
 }
 
 my_pin_write <- function(object, name, board, ...) {
@@ -295,7 +295,7 @@ shinyServer(function(input, output, session) {
 
 
   TCM <-
-    my_pin_reactive_read(board, name = clean_name('TCM'), default = NULL)
+    my_pin_reactive_read(board, name = 'TCM', default = NULL)
 
   h2h_default <-
     tibble(
@@ -310,10 +310,10 @@ shinyServer(function(input, output, session) {
     )
 
   H2HM <-
-    my_pin_reactive_read(board, name = 'H2HM', default = tibble(), default = h2h_default)
+    my_pin_reactive_read(board, name = 'H2HM', default = h2h_default)
 
   possible_scores_default <-
-    matrix(numeric(0), nrow = nrow(EM()))
+    isolate(matrix(numeric(0), nrow = nrow(EM())))
 
   PossibleScoresM <-
     my_pin_reactive_read(board, name = 'PossibleScoresM', default = possible_scores_default)
@@ -447,7 +447,7 @@ shinyServer(function(input, output, session) {
     my_pin_reactive_read(name = 'WinnersTableC', board = board, default = tibble())
 
 output$WhoCanWinPlotC <- renderPlot({
-  winnerstablec() |>
+  WinnersTableC() |>
     gf_col(winner ~ p, fill = "steelblue") |>
     gf_labs(x = "percent of scenarios that win") |>
     gf_refine(scale_x_continuous(labels = scales::label_percent()))
@@ -459,7 +459,7 @@ H2HC <- reactive({
   psc <- PossibleScoresC()
   denom <- ncol(psc)
   res <-
-    outer(1:n, 1:n, vectorize(function(r, c) {
+    outer(1:n, 1:n, Vectorize(function(r, c) {
       sum(psc[r,] > psc[c, ])
     })
     )
@@ -492,7 +492,7 @@ output$H2HPlotC <- renderPlotly({
       hovertext =
         glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
     ) |>
-    mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, na, scenarios)) |>
+    mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
     gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8, text = ~hovertext) |>
     gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
     gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
@@ -673,12 +673,20 @@ output$H2HPlotC <- renderPlotly({
 
   # todo: restore crystal ball
 
-  # output$showCrystalBallM <- reactive({
-  #   n_teams_remaining(TM()) <= 16
-  # })
-  # output$showCrystalBallW <- reactive({
-  #   n_teams_remaining(TW()) <= 16
-  # })
+  output$showCrystalBallM <- reactive({
+    print(n_teams_remaining(TM()))
+    n_teams_remaining(TM()) <= 16
+    TRUE
+  })
+  output$showCrystalBallW <- reactive({
+    print(n_teams_remaining(TW()))
+    n_teams_remaining(TW()) <= 16
+    TRUE
+  })
+  output$showCrystalBallC <- reactive({
+    ( n_teams_remaining(TW()) + n_teams_remaining(TM()) )<= 16
+    FALSE
+  })
 
   output$showEntryForm <- reactive({
     ( as.numeric(input$submitButton) + as.numeric(input$reviseButton) ) %% 2 == 0
@@ -909,7 +917,7 @@ output$H2HPlotC <- renderPlotly({
         )
       # replacement for a write_csv() with apend = TRUE
 
-      print(new_score)
+      # print(new_score)
 
       bind_rows(previous_scores, new_score) |>
         group_by(game_number) |>
@@ -1098,117 +1106,117 @@ output$H2HPlotC <- renderPlotly({
 
 
   # todo: more crystal ball stuff?
-  # output$entrantSelector <- renderUI({
-  #   entrants <- sapply(Entries(), function(x) x$email)
-  #   names(entrants) <-
-  #     paste0(
-  #       sapply(Entries(), function(x) x$name),
-  #       " [",
-  #       conteststandings()$score,
-  #       "]"
-  #     )
-  #   selectInput("oneentrant", "select a player", choices = entrants[order(- conteststandings()$score)], selectize=FALSE)
-  # })
-  #
-  #
-  #
-  # output$whoCanWinPlotM <- renderPlot({
-  #   WinnersTableM() |>
-  #     gf_col(winner ~ p, fill = "steelblue") |>
-  #     gf_labs(x = "percent of scenarios that win") |>
-  #     gf_refine(scale_x_continuous(labels = scales::label_percent()))
-  # })
-  #
-  #
-  # output$scoreHistogramsM <-
-  #   renderPlot(height = 600,
-  #     {
-  #     PossibleScoresTableM() |>
-  #       gf_col(n ~ round(score) | reorder(name, score, function(x) - mean (x)),
-  #              binwidth = 1, fill = "steelblue") |>
-  #         gf_labs(x = "score")
-  #   })
-  #
-  # textmat <- function(m, denom) {
-  #   rn <- rownames(m) |> matrix(nrow = nrow(m), ncol = ncol(m), byrow = FALSE)
-  #   cn <- colnames(m) |> matrix(nrow = nrow(m), ncol = ncol(m), byrow = TRUE)
-  #   paste0(
-  #     rn , " defeats " , cn , "</br>in " , m , " scenarios</br>",
-  #     "(" , round(100 * m / denom,2) , "%)") |>
-  #     matrix(nrow = nrow(m))
-  # }
-  #
-  # output$H2HPlotM <- renderPlotly({
-  #   H2HM() |>
-  #     mutate(
-  #       perc = round(100 * prop, 2),
-  #       hovertext =
-  #         glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
-  #     ) |>
-  #     mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, na, scenarios)) |>
-  #     gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
-  #             text = ~hovertext) |>
-  #     gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
-  #     gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
-  #     gf_labs(title = "head to head winning scenarios",
-  #             subtitle = "read across rows for wins against the other player",
-  #             x = "", y = "", fill = "winning\nscenarios" ) |>
-  #     gf_refine(
-  #       scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
-  #       coord_cartesian(expand = FALSE)
-  #     ) |>
-  #     gf_theme(
-  #       panel.grid.major.x = element_blank(),
-  #       panel.grid.major.y = element_blank(),
-  #       axis.text.x = element_text(angle = 45, hjust = 1),
-  #       panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
-  #     ) |>
-  #     plotly::ggplotly(tooltip = "text")
-  # })
-  #
-  # output$whoCanWinPlotW <- renderPlot({
-  #   WinnersTableW() |>
-  #     gf_col(winner ~ p, fill = "steelblue") |>
-  #     gf_labs(x = "percent of scenarios that win") |>
-  #     gf_refine(scale_x_continuous(labels = scales::label_percent()))
-  # })
-  #
-  # output$scoreHistogramsW <-
-  #   renderPlot(height = 600,
-  #              {
-  #                PossibleScoresTableW() |>
-  #                  gf_col(n ~ round(score) | reorder(name, score, function(x) - mean (x)),
-  #                         binwidth = 1, fill = "steelblue") |>
-  #                  gf_labs(x = "score")
-  #              })
-  #
-  # output$H2HPlotW <- renderPlotly({
-  #   H2HW() |>
-  #     mutate(
-  #       perc = round(100 * prop, 2),
-  #       hovertext =
-  #         glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
-  #     ) |>
-  #     mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, na, scenarios)) |>
-  #     gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
-  #             text = ~hovertext) |>
-  #     gf_hline(yintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, size = 0.5) |>
-  #     gf_vline(xintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, size = 0.5) |>
-  #     gf_labs(title = "head to head winning scenarios",
-  #             subtitle = "read across rows for wins against the other player",
-  #             x = "", y = "", fill = "winning\nscenarios" ) |>
-  #     gf_refine(
-  #       coord_cartesian(expand = FALSE),
-  #       scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8)
-  #     ) |>
-  #     gf_theme(
-  #       panel.grid.major.x = element_blank(),
-  #       panel.grid.major.y = element_blank(),
-  #       axis.text.x = element_text(angle = 45, hjust = 1),
-  #       panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
-  #     ) |>
-  #     plotly::ggplotly(tooltip = "text")
-  # })
+  output$entrantSelector <- renderUI({
+    entrants <- sapply(Entries(), function(x) x$email)
+    names(entrants) <-
+      paste0(
+        sapply(Entries(), function(x) x$name),
+        " [",
+        ContestStandings()$score,
+        "]"
+      )
+    selectInput("oneEntrant", "select a player", choices = entrants[order(- ContestStandings()$score)], selectize=FALSE)
+  })
+
+
+
+  output$WhoCanWinPlotM <- renderPlot({
+    WinnersTableM() |>
+      gf_col(winner ~ p, fill = "steelblue") |>
+      gf_labs(x = "percent of scenarios that win") |>
+      gf_refine(scale_x_continuous(labels = scales::label_percent()))
+  })
+
+
+  output$ScoreHistogramsM <-
+    renderPlot(height = 600,
+      {
+      PossibleScoresTableM() |>
+        gf_col(n ~ round(score) | reorder(name, score, function(x) - mean (x)),
+               binwidth = 1, fill = "steelblue") |>
+          gf_labs(x = "score")
+    })
+
+  textmat <- function(m, denom) {
+    rn <- rownames(m) |> matrix(nrow = nrow(m), ncol = ncol(m), byrow = FALSE)
+    cn <- colnames(m) |> matrix(nrow = nrow(m), ncol = ncol(m), byrow = TRUE)
+    paste0(
+      rn , " defeats " , cn , "</br>in " , m , " scenarios</br>",
+      "(" , round(100 * m / denom,2) , "%)") |>
+      matrix(nrow = nrow(m))
+  }
+
+  output$H2HPlotM <- renderPlotly({
+    H2HM() |>
+      mutate(
+        perc = round(100 * prop, 2),
+        hovertext =
+          glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
+      ) |>
+      mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
+      gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
+              text = ~hovertext) |>
+      gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
+      gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
+      gf_labs(title = "head to head winning scenarios",
+              subtitle = "read across rows for wins against the other player",
+              x = "", y = "", fill = "winning\nscenarios" ) |>
+      gf_refine(
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
+        coord_cartesian(expand = FALSE)
+      ) |>
+      gf_theme(
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
+      ) |>
+      plotly::ggplotly(tooltip = "text")
+  })
+
+  output$WhoCanWinPlotW <- renderPlot({
+    WinnersTableW() |>
+      gf_col(winner ~ p, fill = "steelblue") |>
+      gf_labs(x = "percent of scenarios that win") |>
+      gf_refine(scale_x_continuous(labels = scales::label_percent()))
+  })
+
+  output$ScoreHistogramsW <-
+    renderPlot(height = 600,
+               {
+                 PossibleScoresTableW() |>
+                   gf_col(n ~ round(score) | reorder(name, score, function(x) - mean (x)),
+                          binwidth = 1, fill = "steelblue") |>
+                   gf_labs(x = "score")
+               })
+
+  output$H2HPlotW <- renderPlotly({
+    H2HW() |>
+      mutate(
+        perc = round(100 * prop, 2),
+        hovertext =
+          glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
+      ) |>
+      mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
+      gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
+              text = ~hovertext) |>
+      gf_hline(yintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, size = 0.5) |>
+      gf_vline(xintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, size = 0.5) |>
+      gf_labs(title = "head to head winning scenarios",
+              subtitle = "read across rows for wins against the other player",
+              x = "", y = "", fill = "winning\nscenarios" ) |>
+      gf_refine(
+        coord_cartesian(expand = FALSE),
+        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8)
+      ) |>
+      gf_theme(
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
+      ) |>
+      plotly::ggplotly(tooltip = "text")
+  })
 
 
   # commented out prior to 15 march 2023
@@ -1234,14 +1242,14 @@ output$H2HPlotC <- renderPlotly({
   outputOptions(output, "standingsTableM", suspendWhenHidden = FALSE, priority = 100)
   outputOptions(output, "standingsTableW", suspendWhenHidden = FALSE, priority = 101)
   outputOptions(output, "standingsTableAll", suspendWhenHidden = FALSE, priority = 90)
-  # outputOptions(output, "whoCanWinPlotM", suspendWhenHidden = FALSE, priority = 80)
-  # outputOptions(output, "whoCanWinPlotM", suspendWhenHidden = FALSE, priority = 50)
-  # outputOptions(output, "whoCanWinPlotW", suspendWhenHidden = FALSE, priority = 50)
-  # outputOptions(output, "H2HPlotM", suspendWhenHidden = FALSE, priority = 40)
-  # outputOptions(output, "H2HPlotW", suspendWhenHidden = FALSE, priority = 40)
-  # outputOptions(output, "scoreHistogramsM", suspendWhenHidden = FALSE, priority = 80)
-  # outputOptions(output, "scoreHistogramsM", suspendWhenHidden = FALSE, priority = 30)
-  # outputOptions(output, "scoreHistogramsW", suspendWhenHidden = FALSE, priority = 30)
+  outputOptions(output, "WhoCanWinPlotM", suspendWhenHidden = FALSE, priority = 80)
+  outputOptions(output, "WhoCanWinPlotM", suspendWhenHidden = FALSE, priority = 50)
+  outputOptions(output, "WhoCanWinPlotW", suspendWhenHidden = FALSE, priority = 50)
+  outputOptions(output, "H2HPlotM", suspendWhenHidden = FALSE, priority = 40)
+  outputOptions(output, "H2HPlotW", suspendWhenHidden = FALSE, priority = 40)
+  outputOptions(output, "ScoreHistogramsM", suspendWhenHidden = FALSE, priority = 80)
+  outputOptions(output, "ScoreHistogramsM", suspendWhenHidden = FALSE, priority = 30)
+  outputOptions(output, "ScoreHistogramsW", suspendWhenHidden = FALSE, priority = 30)
 
   Sys.sleep(1)
   waiter::waiter_hide()
