@@ -1147,7 +1147,11 @@ output$H2HPlotC <- renderPlotly({
   }
 
   output$H2HPlotM <- renderPlotly({
+    # comps <- competitors(Entries(), division = "M")
+    # print(comps)
     H2HM() |>
+      # filter(key_name %in% comps) |>
+      # filter(other_name %in% comps) |>
       mutate(
         perc = round(100 * prop, 2),
         hovertext =
@@ -1191,7 +1195,11 @@ output$H2HPlotC <- renderPlotly({
                })
 
   output$H2HPlotW <- renderPlotly({
+    # comps <- competitors(Entries(), division = "W")
+    # print(comps)
     H2HW() |>
+      # filter(key_name %in% comps) |>
+      # filter(other_name %in% comps) |>
       mutate(
         perc = round(100 * prop, 2),
         hovertext =

@@ -164,6 +164,33 @@ all_games <-
     res[(!unplayed.only | is.na(tournament[1:n])) & (!determined.only | !grepl("TBD", names))]
   }
 
+#' List of entries with teams
+#'
+#' Some entrants don't select teams in all brackets. This determines list of true
+#' competetitors.
+#'
+#' @export
+
+competitors <- function(entries, division = c("M", "W"), by = c("email", "name")) {
+  division = match.arg(division)
+  by = match.arg(by)
+  points_field <-
+    switch(division,
+           "M" = "points",
+           "W" = "pointsW"
+    )
+
+  print(by)
+  print(length(entries))
+  print(entries[[1]][[by]])
+
+  res <- entries |> sapply(function(x) x[[by]])
+  is_competitor <- sapply(entries, function(x) x[[points_field]] > 0)
+  res[is_competitor]
+}
+
+#'
+#'
 #' Tabular report of contest standings
 
 #' Tabular report of contest standings
