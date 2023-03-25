@@ -240,43 +240,40 @@ shinyUI(
           condition = 'true || output.showCrystalBallM || output.showCrystalBallW',
           tabsetPanel(
             type = "pills",
-              tabPanel(
-                "Women's Bracket",
-                h3("Who can win?"),
-                plotOutput('WhoCanWinPlotW') |> withSpinner(),
-                br(),
-                h3('Head to Head'),
-                p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
-                plotlyOutput('H2HPlotW', height = "600px") |> withSpinner(),
-                br(),
-                h3('Score Histograms'),
-                plotOutput('ScoreHistogramsW') |> withSpinner(),
-                br()
+            tabPanel(
+              "Women's Bracket",
+              h3("Who can win?"),
+              plotOutput('WhoCanWinPlotW') |> withSpinner(),
+              br(),
+              h3('Head to Head'),
+              p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
+              plotlyOutput('H2HPlotW', height = "600px") |> withSpinner(),
+              br(),
+              h3('Score Histograms'),
+              plotOutput('ScoreHistogramsW') |> withSpinner(),
+              br()
             ),
-              tabPanel(
-                "Men's Bracket",
-                h3("Who can win?"),
-                plotOutput('WhoCanWinPlotM') |> withSpinner(),
-                br(),
-                h3('Head to Head'),
-                p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
-                plotlyOutput('H2HPlotM', height = "600px") |> withSpinner(),
-                br(),
-                h3('Score Histograms'),
-                plotOutput('ScoreHistogramsM') |> withSpinner(),
-                br()
+            tabPanel(
+              "Men's Bracket",
+              h3("Who can win?"),
+              plotOutput('WhoCanWinPlotM') |> withSpinner(),
+              br(),
+              h3('Head to Head'),
+              p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
+              plotlyOutput('H2HPlotM', height = "600px") |> withSpinner(),
+              br(),
+              h3('Score Histograms'),
+              plotOutput('ScoreHistogramsM') |> withSpinner(),
+              br()
             ),
-            conditionalPanel(
-              condition = 'false', # 'output.showCrystalBallC',
-              tabPanel(
-                "Combined",
-                h3('Who can win?'),
-                plotOutput('WhoCanWinPlotC') |> withSpinner(),
-                br(),
-                h3('Head to Head'),
-                p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
-                plotlyOutput('H2HPlotC', height = "600px") |> withSpinner()
-              )
+            tabPanel(
+              "Combined",
+              h3('Who can win?'),
+              plotOutput('WhoCanWinPlotC') |> withSpinner(),
+              br(),
+              h3('Head to Head'),
+              p('Read across rows for wins. Read up columns for losses. A red column indicates that some has clinced victory. A red row, that someone has clinced defeat.'),
+              plotlyOutput('H2HPlotC', height = "600px") |> withSpinner()
             )
           )
         )
