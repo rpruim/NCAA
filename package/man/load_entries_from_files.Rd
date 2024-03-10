@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_utils.R
 \name{load_entries_from_files}
 \alias{load_entries_from_files}
-\title{Load Entries From Files}
+\title{Load Entries From Local Files}
 \usage{
 load_entries_from_files(
   tournament,
