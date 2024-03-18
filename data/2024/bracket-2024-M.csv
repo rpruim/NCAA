@@ -1,4 +1,4 @@
-﻿gender,region,seed,team
+gender,region,seed,team
 mens,East,1,Connecticut
 mens,East,16,Stetson
 mens,East,8,Florida Atlantic
@@ -8,7 +8,7 @@ mens,East,12,Alabama Birmingham
 mens,East,4,Auburn
 mens,East,13,Yale
 mens,East,6,Brigham Young
-mens,East,11,Duquense
+mens,East,11,Duquesne
 mens,East,3,Illinois
 mens,East,14,Morehead St.
 mens,East,7,Washington St.
@@ -22,7 +22,7 @@ mens,West,9,Michigan St.
 mens,West,5,Saint Mary's
 mens,West,12,Grand Canyon
 mens,West,4,Alabama
-mens,West,13,Charlston
+mens,West,13,Charleston
 mens,West,6,Clemson
 mens,West,11,New Mexico
 mens,West,3,Baylor
