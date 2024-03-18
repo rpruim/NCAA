@@ -1,0 +1,65 @@
+﻿gender,region,seed,team
+mens,East,1,Connecticut
+mens,East,16,Stetson
+mens,East,8,Florida Atlantic
+mens,East,9,Northwestern
+mens,East,5,San Diego St.
+mens,East,12,Alabama Birmingham
+mens,East,4,Auburn
+mens,East,13,Yale
+mens,East,6,Brigham Young
+mens,East,11,Duquense
+mens,East,3,Illinois
+mens,East,14,Morehead St.
+mens,East,7,Washington St.
+mens,East,10,Drake
+mens,East,2,Iowa St.
+mens,East,15,South Dakota St.
+mens,West,1,North Carolina
+mens,West,16,Howard or Wagner
+mens,West,8,Mississippi St.
+mens,West,9,Michigan St.
+mens,West,5,Saint Mary's
+mens,West,12,Grand Canyon
+mens,West,4,Alabama
+mens,West,13,Charlston
+mens,West,6,Clemson
+mens,West,11,New Mexico
+mens,West,3,Baylor
+mens,West,14,Colgate
+mens,West,7,Dayton
+mens,West,10,Nevada
+mens,West,2,Arizona
+mens,West,15,Long Beach St.
+mens,South,1,Houston
+mens,South,16,Longwood
+mens,South,8,Nebraska
+mens,South,9,Texas A&M
+mens,South,5,Wisconsin
+mens,South,12,James Madison
+mens,South,4,Duke
+mens,South,13,Vermont
+mens,South,6,Texas Tech
+mens,South,11,North Carolina St.
+mens,South,3,Kentucky
+mens,South,14,Oakland
+mens,South,7,Florida
+mens,South,10,Boise State or Colorado
+mens,South,2,Marquette
+mens,South,15,Western Kentucky
+mens,Midwest,1,Purdue
+mens,Midwest,16,Montana St. or Grambling
+mens,Midwest,8,Utah St.
+mens,Midwest,9,Texas Christian
+mens,Midwest,5,Gonzaga
+mens,Midwest,12,McNeese
+mens,Midwest,4,Kansas
+mens,Midwest,13,Samford
+mens,Midwest,6,South Carolina
+mens,Midwest,11,Oregon
+mens,Midwest,3,Creighton
+mens,Midwest,14,Akron
+mens,Midwest,7,Texas
+mens,Midwest,10,Virginia or Colorado St.
+mens,Midwest,2,Tennessee
+mens,Midwest,15,St. Peter's

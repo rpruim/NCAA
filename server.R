@@ -51,13 +51,13 @@ my_pin_reactive_read <- function(board, name, default, interval = 60000){
   clean_name <- clean_name(name)
   print(clean_name)
   if (!pin_exists(board, clean_name)) {
-    cat("pin didn't exist, creating with default.")
+    cat(paste0("pin (", name, ") didn't exist, creating with default. "))
     pin_write(board, x = default, name = clean_name)
   }
   pin_reactive_read(board = board, name = clean_name, interval = interval)
 }
 
-config <- yaml::read_yaml('ncaa-2023.yml')
+config <- yaml::read_yaml('ncaa-2024.yml')
 
 maxPoints <- 200
 
@@ -262,7 +262,7 @@ shinyServer(function(input, output, session) {
   })
 
 
-
+  if (FALSE) {
   # todo: deal with crystal ball
   cacheCrystalBallM <- function() {
     tc <- tournament_completions(TM(), max_games_remaining = 15)
@@ -512,6 +512,8 @@ output$H2HPlotC <- renderPlotly({
     plotly::ggplotly(tooltip = "text")
 })
 
+} # turn off stuff that doesn't work until second week.
+
   ############ select teams ###########
 
   TeamsM <- reactive(c( input$regionM1, input$regionM2, input$regionM3, input$regionM4 ))
@@ -695,7 +697,8 @@ output$H2HPlotC <- renderPlotly({
 
   output$acceptingEntries <- reactive({
     # TODO: fix this time-based check
-    FALSE
+    (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
+    # FALSE
     # AdminMode() || (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
   })
   outputOptions(output, "acceptingEntries", suspendWhenHidden = FALSE)

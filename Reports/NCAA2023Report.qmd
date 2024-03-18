@@ -1,0 +1,287 @@
+---
+title: "NCAA Modeling 2023"
+subtitle: "Commissioner's Report"
+title-block-banner: true
+format:
+  html: 
+    theme: yeti
+  pdf: 
+    geometry: 'margin = 0.8in'
+execute: 
+  message: false
+  warning: false
+  fig-height: 3
+  fig-width: 5
+---
+
+
+```{r include=FALSE}
+require(mosaic)
+require(ggformula)
+theme_set(theme_minimal())
+theme_set(theme_bw())
+require(lubridate)
+library(pins)
+board <-
+  board_connect(server = "https://connect.cs.calvin.edu",
+                key = "S2RwoRs5VIkMPCyELvj0mixL6QC4Emx1")
+# require(humanparser)
+require(printr)
+trellis.par.set(theme = theme.mosaic())
+library(madness)
+# source("../Tourny.R")
+# source("../Loaders.R")
+knitr::opts_chunk$set(
+  fig.align = "center", 
+  comment = NA,
+  echo = FALSE,
+  cache = TRUE)
+BracketM <- load_bracket("../data/2023/bracket-2023-M.csv")
+BracketW <- load_bracket("../data/2023/bracket-2023-W.csv")
+E <- board |> load_entries_from_pins(year = 2023)
+EM <- build_entry_matrix(E, ext = "M")
+EW <- build_entry_matrix(E, ext = "W")
+ScoresM <- board |> pin_read("rpruim/NCAA-2023-scores-M")
+ScoresW <- board |> pin_read("rpruim/NCAA-2023-scores-W")
+
+TM <- tournament_init(
+  names = BracketM[['team']], 
+  seeds = BracketM[['seed']], 
+  label = 'M') |>
+  tournament_update(games = ScoresM[['game_number']], 
+                    results = ScoresM[['winner_01']])
+
+TW <- tournament_init(
+  names = BracketW[['team']], 
+  seeds = BracketW[['seed']], 
+  label = 'W') |>
+  tournament_update(games = ScoresW[['game_number']], 
+                    results = ScoresW[['winner_01']])
+
+ContestScoresM <- contest_scores(TM, EM)
+ContestScoresW <- contest_scores(TW, EW)
+
+library(tibble)
+library(dplyr)
+Results <-
+  tibble(
+    name = attr(ContestScoresM, "names"),
+    dept = sapply(E, function(x) x$dept),
+    mens = round(ContestScoresM),
+    mens_raw = ContestScoresM
+  ) |> full_join(
+    tibble(
+      name = attr(ContestScoresW, "names"),
+      womens = round(ContestScoresW),
+      womens_raw = ContestScoresW
+    )
+  ) |>
+  mutate(
+    difference = mens - womens,
+    total = mens + womens
+  )
+
+Results2 <- Results |> filter( mens > 0, womens > 0)
+ResultsW <- Results |> filter( womens > 0)
+ResultsM <- Results |> filter( mens > 0)
+
+# T$dept[T$dept == "Select a department"] <- "Math/Stat"
+# H <- humanparser::parse_names(sapply(E, function(x) x$name))
+# All <-
+#   H |> 
+#   mutate(
+#     email = sapply(E, function(x) x$email),
+#     date  = sapply(E, function(x) as.character(x$time)),
+#     date2 = lubridate::ymd_hms(date) - hours(4)
+#   ) |> 
+#   merge(T, by.x = "fullName", by.y = "name")
+```
+
+# Scores this year
+
+```{r echo=FALSE}
+#| include: false
+#| layout-ncol: 2
+#| fig-width: 8
+ResultsM |>
+  gf_histogram(~ mens, binwidth = 1) 
+ResultsW |>
+  gf_histogram(~ womens, binwidth = 1) 
+```
+
+```{r}
+Results |>
+  # filter(mens > 0, womens > 0) |>
+  gf_jitter(mens ~ womens, alpha = 0.9, width = 0.1, height = 0.1, 
+            # label = ~ name,
+            size = 2,
+            color = ~ (grepl("Pruim|Stob|Bebej|Tals|Horn|Louters", name)), 
+            show.legend = FALSE) |>
+  gf_abline(slope = ~ 1, intercept = ~0, color = 'steelblue', alpha = 0.6) |>
+  gf_lims(x = c(-0.5, 25.5), y = c(-0.5, 25.5)) |>
+  gf_refine(
+    scale_color_manual(values = c('goldenrod', 'maroon'))
+  )
+```
+
+# Winners 
+
+```{r}
+#| include: false
+ResultsM |>
+  arrange(-mens) |> 
+  head(5)
+ResultsW |>
+  arrange(-womens) |> 
+  head(5)
+Results2 |>
+  arrange(-total) |> 
+  head(5)
+ResultsM |>
+  arrange(mens) |> 
+  head(5)
+ResultsW |>
+  arrange(womens) |> 
+  head(5)
+```
+
+* Stob Trophy (Men's): **Gary Talsma** (25); Runner-Up: Mike Stob (23)
+
+* Pruim Trophy (Women's): **Ryan Bebej** (23); Runners-Up: Randy Pruim and Nick Boersma (21)
+
+* Comissioner's Trophy (Combined): **Mike Stob** (43); Runner-Up: Ryan Bebej (42)
+
+* Menninga Trophy (lowest men's): **Larry Louters** (4); Runner-Up: Arie Leegwater
+
+* Lowest Women's: **Jason VanHorn** (8); Runners-Up: Ren Tubergen and Dave Ross (9)
+
+{{< pagebreak >}}
+
+# Feast or Famine
+
+```{r}
+#| include: false
+Results2 |>
+  gf_histogram(~ difference) |>
+  gf_labs(x = 'difference (mens - womens)')
+```
+
+```{r}
+#| fig-height: 7
+#| fig-width: 7
+Results2 |>
+  mutate( 
+    name = reorder(name, difference),
+    better = ifelse(mens > womens, 'mens', 'womens')
+  ) |> 
+  gf_col(name ~ difference, fill = ~ better, # color = "gray50", 
+         show.legend = FALSE) |>
+  gf_labs(x = 'difference (mens - womens)') |>
+  gf_refine(
+    scale_fill_manual(values = c("maroon", "goldenrod"))
+  )
+```
+{{< pagebreak >}}
+
+# How'd we do?
+
+Here's a breakdown of scores by department.
+
+```{r, echo = FALSE}
+#| fig-width: 8
+#| fig-height: 2.8
+#| layout-ncol: 1
+gf_jitter(dept ~ mens, 
+          data = ResultsM |> mutate(dept = reorder(dept, mens, mean)), 
+          width = 0, height = 0.3, alpha = 0.8,
+          shape = 1,
+          size = 3, color = "maroon") |>
+gf_point(
+  dept ~ mens,
+  data = ResultsM |> group_by(dept) |> summarise(mens = mean(mens)),
+  color = "goldenrod",
+  shape = 1,
+  size = 4,
+  alpha = 0.7
+) |>
+gf_point(
+  dept ~ mens,
+  data = ResultsM |> group_by(dept) |> summarise(mens = median(mens)),
+  color = "goldenrod",
+  shape = 2,
+  size = 4,
+  alpha = 0.7
+) |>
+  gf_labs(title = "Performance by Department -- Men",
+          caption = "Gold circles = mean; Gold triangles = median") 
+  # gf_facet_grid( ~ "Men")
+
+  
+gf_jitter(dept ~ womens, 
+          data = ResultsW |> mutate(dept = reorder(dept, womens, mean)), 
+          width = 0, height = 0.3, alpha = 0.8,
+          shape = 1,
+          size = 3, color = "maroon") |>
+gf_point(
+  dept ~ womens,
+  data = ResultsW |> group_by(dept) |> summarise(womens = mean(womens)),
+  color = "goldenrod",
+  shape = 1,
+  size = 4,
+  alpha = 0.7
+) |>
+gf_point(
+  dept ~ womens,
+  data = ResultsW |> group_by(dept) |> summarise(womens = median(womens)),
+  color = "goldenrod",
+  shape = 2,
+  size = 4,
+  alpha = 0.7
+) |>
+  gf_labs(title = "Performance by Department -- Women",
+          caption = "Gold circles = mean; Gold triangles = median") 
+  # gf_facet_grid( ~ "Women")
+
+
+gf_jitter(dept ~ total, 
+          data = Results2 |> mutate(dept = reorder(dept, total, mean)), 
+          width = 0, height = 0.3, alpha = 0.8,
+          shape = 1,
+          size = 3, color = "maroon") |>
+gf_point(
+  dept ~ total,
+  data = Results2 |> group_by(dept) |> summarise(total = mean(total)),
+  color = "goldenrod",
+  shape = 1,
+  size = 4,
+  alpha = 0.7
+) |>
+gf_point(
+  dept ~ total,
+  data = Results2 |> group_by(dept) |> summarise(total = median(total)),
+  color = "goldenrod",
+  shape = 2,
+  size = 4,
+  alpha = 0.7
+) |>
+  gf_labs(title = "Performance by Department -- Total",
+          caption = "Gold circles = mean; Gold triangles = median") 
+  # gf_facet_grid( ~ "Total")
+
+```
+
+```{r, echo = FALSE, results = "asis"}
+#| include: false
+Results |> 
+  group_by(dept) |> 
+  summarise(n=n(), 
+            avg = round(mean(total, na.rm = TRUE), 2), 
+            max = max(total), min = min(total)) |>
+  ungroup() |> 
+  arrange(-avg) |>
+  knitr::kable()
+```
+
+
+
+
