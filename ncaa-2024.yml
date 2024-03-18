@@ -9,7 +9,7 @@ brackets:
 entries_path:
   - entry-
 scores:
-  - scores-2024-M
-  - scores-2024-W
+  - scores-M
+  - scores-W
 crystal_ball_path:
   - data/2024/Crystal-Ball

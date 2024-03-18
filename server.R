@@ -27,7 +27,7 @@ theme_set(theme_bw())
 
 
 clean_name <- function(name) {
-  paste0('rpruim/NCAA-2023-', name) |>
+  paste0('rpruim/NCAA-2024-', name) |>
     stringr::str_replace_all('[@.]', '_')
 }
 
@@ -140,7 +140,7 @@ shinyServer(function(input, output, session) {
     reactivePoll(
       60000,
       session = session,
-      function() pin_search(board, search = "NCAA-2023-entry") |> pull(created) |> max(),
+      function() pin_search(board, search = "NCAA-2024-entry") |> pull(created) |> max(),
       function() {
         board |>
         load_entries_from_pins(
