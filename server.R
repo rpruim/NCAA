@@ -640,7 +640,7 @@ output$H2HPlotC <- renderPlotly({
         p("testing...")
       )
     } else {
-      taglist(html(
+      tagList(HTML(
         paste0("<h4>Thank you, ", isolate(input$name), ", your selections have been submitted.</h4>",
                "<ul>",
                "<li>You spent ", isolate(PointsSpentM()), " points on the following ", isolate(length(TeamsM())),
