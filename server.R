@@ -494,8 +494,8 @@ output$H2HPlotC <- renderPlotly({
     ) |>
     mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
     gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8, text = ~hovertext) |>
-    gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
-    gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
+    gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
+    gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
     gf_labs(title = "head to head winning scenarios",
             subtitle = "read across rows for wins against the other player",
             x = "", y = "", fill = "winning\nscenarios" ) |>
@@ -1163,8 +1163,8 @@ output$H2HPlotC <- renderPlotly({
       mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
       gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
               text = ~hovertext) |>
-      gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
-      gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, size = 0.5) |>
+      gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
+      gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
       gf_labs(title = "head to head winning scenarios",
               subtitle = "read across rows for wins against the other player",
               x = "", y = "", fill = "winning\nscenarios" ) |>
@@ -1211,8 +1211,8 @@ output$H2HPlotC <- renderPlotly({
       mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
       gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
               text = ~hovertext) |>
-      gf_hline(yintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, size = 0.5) |>
-      gf_vline(xintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, size = 0.5) |>
+      gf_hline(yintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
+      gf_vline(xintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
       gf_labs(title = "head to head winning scenarios",
               subtitle = "read across rows for wins against the other player",
               x = "", y = "", fill = "winning\nscenarios" ) |>
