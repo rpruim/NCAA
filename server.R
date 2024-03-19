@@ -641,11 +641,11 @@ output$H2HPlotC <- renderPlotly({
       )
     } else {
       taglist(html(
-        paste0("<h4>thank you, ", isolate(input$name), ", your selections have been submitted.</h4>",
+        paste0("<h4>Thank you, ", isolate(input$name), ", your selections have been submitted.</h4>",
                "<ul>",
-               "<li>you spent ", isolate(PointsSpentM()), " points on the following ", isolate(length(TeamsM())),
+               "<li>You spent ", isolate(PointsSpentM()), " points on the following ", isolate(length(TeamsM())),
                " teams: ", paste( isolate(TeamsM()), collapse=", " ),
-               "</li><li>you spent ", isolate(PointsSpentW()), " points on the following ", isolate(length(TeamsW())),
+               "</li><li>You spent ", isolate(PointsSpentW()), " points on the following ", isolate(length(TeamsW())),
                " teams: ", paste( isolate(TeamsW()), collapse=", " ),
                "</li></ul>"
         )
