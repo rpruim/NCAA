@@ -1003,7 +1003,7 @@ output$H2HPlotC <- renderPlotly({
                  autoWidth=TRUE                       # automatic column width calculation, disable if passing column width via aoColumnDefs
     ),  {
     History <- readr::read_csv("data/historical-winners.csv") # , header=TRUE)
-    History %>% arrange(year, winner)
+    History %>% arrange(desc(year))
   })
 
   ############# game scores table #####################

@@ -55,9 +55,9 @@ shinyUI(
         ),
         h2("Past Winners"),
         fluidRow(
-          column(3),
-          column(6,  DT::DTOutput("PastWinners") |> withSpinner()),
-          column(3)
+          column(2),
+          column(8,  DT::DTOutput("PastWinners") |> withSpinner()),
+          column(2)
         )
       ),
       tabPanel(
