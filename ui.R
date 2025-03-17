@@ -49,15 +49,15 @@ shinyUI(
         ),
         fluidRow(
           column(1),
-          column(4,  dataTableOutput("CostTable1")) |> withSpinner(),
+          column(4,  DT::DTOutput("CostTable1")) |> withSpinner(),
           column(2),
-          column(4,  dataTableOutput("CostTable2")) |> withSpinner(),
+          column(4,  DT::DTOutput("CostTable2")) |> withSpinner(),
           column(1)
         ),
         h2("Past Winners"),
         fluidRow(
           column(3),
-          column(6,  dataTableOutput("PastWinners")) |> withSpinner(),
+          column(6,  DT::DTOutput("PastWinners")) |> withSpinner(),
           column(3)
         )
       ),
@@ -161,7 +161,7 @@ shinyUI(
             ),
             conditionalPanel(
               condition = 'true || output.showStandingsW',
-              dataTableOutput("ScoresTableW") |> withSpinner()
+              DT::DTOutput("ScoresTableW") |> withSpinner()
             )
           ),
           tabPanel(
@@ -173,7 +173,7 @@ shinyUI(
             ),
             conditionalPanel(
               condition = 'true || output.showStandingsM',
-              dataTableOutput("ScoresTableM") |> withSpinner()
+              DT::DTOutput("ScoresTableM") |> withSpinner()
             )
           ) # tabPanel
         ) # tabsetPanel
@@ -194,7 +194,7 @@ shinyUI(
             conditionalPanel(
               condition = 'output.showStandingsW',
               strong(textOutput("tournyStatusW")),
-              dataTableOutput("standingsTableW") |> withSpinner()
+              DT::DTOutput("standingsTableW") |> withSpinner()
             )
           ),
           tabPanel(
@@ -209,7 +209,7 @@ shinyUI(
               conditionalPanel(
                 condition = 'output.showStandingsM',
                 strong(textOutput("tournyStatusM")),
-                dataTableOutput("standingsTableM") |> withSpinner()
+                DT::DTOutput("standingsTableM") |> withSpinner()
               )
             )
           ),
@@ -223,7 +223,7 @@ shinyUI(
             conditionalPanel(
               condition = 'output.showStandingsW && output.showStandingsM',
               # strong(textOutput("tournyStatusW")),
-              dataTableOutput("standingsTableAll") |> withSpinner()
+              DT::DTOutput("standingsTableAll") |> withSpinner()
             )
           )
         )
@@ -296,7 +296,7 @@ shinyUI(
                    condition = 'output.showAdminTab',
                    textInput("passwd", label = h3("Access Code"), value = ""),
                    # h3("System Log"),
-                   # dataTableOutput("logTable") |> withSpinner()
+                   # DT::DTOutput("logTable") |> withSpinner()
                  ) # conditionalPanel
           ),  # column
           column(
