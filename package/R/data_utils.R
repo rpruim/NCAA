@@ -127,14 +127,17 @@ load_entries_from_files <-
 #'
 #' @export
 load_bracket <- function(file) {
-  bracket <- readr::read_csv(file)
+  bracket <- readr::read_csv(file) |>
+    # for play-in games, list both teams in csv and collapse them here.
+    group_by(seed, region) |>
+    summarise(team = paste(team, collapse = " / "))
 
   bracket |>
     dplyr::mutate(
       cost = seedCost[seed],
       cost.old = seedCostOld[seed],
       # which regions play in final 4 is determined by order of appearance in csv
-      slot = ( as.numeric(factor(region, levels = unique(region), # c('east','west','south','midwest'),
+      slot = ( as.numeric(factor(region, levels = unique(region),
                                  ordered=TRUE)) * 100 + order(seedOrder)[seed] )
     ) |>
     dplyr::arrange(slot)
