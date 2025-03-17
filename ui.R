@@ -48,16 +48,15 @@ shinyUI(
           tags$li("Entries are due by the noon Eastern Time on the first day of the round of 64.")
         ),
         fluidRow(
-          column(1),
-          column(4,  DT::DTOutput("CostTable1")) |> withSpinner(),
           column(2),
-          column(4,  DT::DTOutput("CostTable2")) |> withSpinner(),
-          column(1)
+          column(4, DT::DTOutput("CostTable1") |> withSpinner()),
+          column(4, DT::DTOutput("CostTable2") |> withSpinner()),
+          column(2)
         ),
         h2("Past Winners"),
         fluidRow(
           column(3),
-          column(6,  DT::DTOutput("PastWinners")) |> withSpinner(),
+          column(6,  DT::DTOutput("PastWinners") |> withSpinner()),
           column(3)
         )
       ),
