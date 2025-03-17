@@ -8,6 +8,9 @@ library(shiny)
 library(dplyr)
 library(pins)
 
+yaml_file <- yaml::read_yaml('ncaa.yml')$yaml
+config <- yaml::read_yaml(yaml_file)
+
 board <-
   board_connect(server = "https://connect.cs.calvin.edu",
                 key = "S2RwoRs5VIkMPCyELvj0mixL6QC4Emx1")
@@ -27,7 +30,7 @@ theme_set(theme_bw())
 
 
 clean_name <- function(name) {
-  paste0('rpruim/NCAA-2024-', name) |>
+  paste0('rpruim/NCAA-', config[['year']], '-', name) |>
     stringr::str_replace_all('[@.]', '_')
 }
 
@@ -56,8 +59,6 @@ my_pin_reactive_read <- function(board, name, default, interval = 60000){
   }
   pin_reactive_read(board = board, name = clean_name, interval = interval)
 }
-
-config <- yaml::read_yaml('ncaa-2024.yml')
 
 maxPoints <- 200
 
@@ -140,7 +141,7 @@ shinyServer(function(input, output, session) {
     reactivePoll(
       60000,
       session = session,
-      function() pin_search(board, search = "NCAA-2024-entry") |> pull(created) |> max(),
+      function() pin_search(board, search = paste0("NCAA-", config[['year']], "-entry")) |> pull(created) |> max(),
       function() {
         board |>
         load_entries_from_pins(
@@ -697,7 +698,8 @@ output$H2HPlotC <- renderPlotly({
 
   output$acceptingEntries <- reactive({
     # TODO: fix this time-based check
-    (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
+    # (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
+    TRUE
     # FALSE
     # AdminMode() || (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
   })
@@ -959,7 +961,8 @@ output$H2HPlotC <- renderPlotly({
 
   ########## instructions/background info
 
-  output$CostTable1 <- renderDataTable(
+  output$CostTable1 <- DT::renderDT(
+    rownames = FALSE,
     options=list(lengthChange=0,                      # show/hide records per page dropdown
                  searching=0,                         # global search box on/off
                  info=0,                              # information on/off (how many records filtered, etc)
@@ -974,7 +977,8 @@ output$H2HPlotC <- renderPlotly({
     SeedTable %>% head(nrow(SeedTable) / 2)
   })
 
-  output$CostTable2 <- renderDataTable(
+  output$CostTable2 <- DT::renderDT(
+    rownames = FALSE,
     options=list(lengthChange=0,                      # show/hide records per page dropdown
                  searching=0,                         # global search box on/off
                  info=0,                              # information on/off (how many records filtered, etc)
@@ -989,7 +993,8 @@ output$H2HPlotC <- renderPlotly({
     SeedTable %>% tail(-nrow(SeedTable) / 2)
   })
 
-  output$pastWinners <- renderDataTable(
+  output$PastWinners <- DT::renderDT(
+    rownames = FALSE,
     options=list(lengthChange=0,                      # show/hide records per page dropdown
                  searching=0,                         # global search box on/off
                  info=0,                              # information on/off (how many records filtered, etc)
@@ -1004,7 +1009,8 @@ output$H2HPlotC <- renderPlotly({
   ############# game scores table #####################
 
   # todo: turn scoring back on
-  output$ScoresTableM <- renderDataTable(
+  output$ScoresTableM <- DT::renderDT(
+    rownames = FALSE,
     options=list(pageLength = 63,                     # initial number of records
                  lengthMenu=c(5,10,25,50),            # records/page options
                  lengthChange=0,                      # show/hide records per page dropdown
@@ -1015,7 +1021,8 @@ output$H2HPlotC <- renderPlotly({
     ),  {
       CompletedGamesM()
     })
-  output$ScoresTableW <- renderDataTable(
+  output$ScoresTableW <- DT::renderDT(
+    rownames = FALSE,
     options=list(pageLength = 63,                     # initial number of records
                  lengthMenu=c(5,10,25,50),            # records/page options
                  lengthChange=0,                      # show/hide records per page dropdown
@@ -1030,7 +1037,8 @@ output$H2HPlotC <- renderPlotly({
   ############# standings table #####################
 
   # todo: turn standing back on
-  output$standingsTableM <- renderDataTable(
+  output$standingsTableM <- DT::renderDT(
+    rownames = FALSE,
     options=list(pageLength = 35,                     # initial number of records
                  lengthMenu=c(5,10,25,50),            # records/page options
                  lengthChange=0,                      # show/hide records per page dropdown
@@ -1041,7 +1049,8 @@ output$H2HPlotC <- renderPlotly({
       ContestStandingsM()
     })
 
-  output$standingsTableW <- renderDataTable(
+  output$standingsTableW <- DT::renderDT(
+    rownames = FALSE,
     options=list(pageLength = 35,                     # initial number of records
                  lengthMenu=c(5,10,25,50),            # records/page options
                  lengthChange=0,                      # show/hide records per page dropdown
@@ -1052,7 +1061,8 @@ output$H2HPlotC <- renderPlotly({
       ContestStandingsW()
     })
 
-  output$standingsTableAll <- renderDataTable(
+  output$standingsTableAll <- DT::renderDT(
+    rownames = FALSE,
     options=list(pageLength = 35,                     # initial number of records
                  lengthMenu=c(5,10,25,50),            # records/page options
                  lengthChange=0,                      # show/hide records per page dropdown
@@ -1083,7 +1093,8 @@ output$H2HPlotC <- renderPlotly({
   #   teamdata(Entries(), BracketWithteamstatusw())
   # })
 
-  # output$teamData <- renderDataTable(
+  # output$teamData <- DT::renderDT(
+  #   rownames = FALSE,
   #   options=list(pageLength = 64,             # initial number of records
   #                lengthMenu = c(5,10,25,50),  # records/page options
   #                lengthChange = 0,            # show/hide records per page dropdown
