@@ -21,6 +21,7 @@ dim(W)
 bracket <- read_csv("bracket-2025-M-kenpom.csv")
 playoff <- read_csv("playoffstatus-2025-m.csv", col_types = "ccnnnnnnn")
 athletic <- read_csv('athletic-2025.csv')
+athletic |> summarise(across(W1:W6, ~ sum(.x, na.rm  = TRUE)/100))
 
 wp <- bracket |> left_join(athletic) |>
   rowwise() |>
@@ -32,3 +33,4 @@ wp <- bracket |> left_join(athletic) |>
     roi = 200 * ew / cost)
 
 sum(wp$ew, na.rm = TRUE)
+
