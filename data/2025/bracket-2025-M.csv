@@ -1,0 +1,69 @@
+seed,region,team
+1,South,Auburn
+2,South,Michigan State
+3,South,Iowa State
+4,South,Texas A&M
+5,South,Michigan
+6,South,Ole Miss
+7,South,Marquette
+8,South,Louisville
+9,South,Creighton
+10,South,New Mexico
+11,South,San Diego State
+11,South,North Carolina
+12,South,UC San Diego
+13,South,Yale
+14,South,Lipscomb
+15,South,Bryant
+16,South,Alabama
+16,South,Saint Francis
+1,West,Florida
+2,West,St. John's
+3,West,Texas Tech
+4,West,Maryland
+5,West,North Carolina
+6,West,Missouri
+7,West,Kansas
+8,West,U Conn
+9,West,Oklahoma
+10,West,Arkansas
+11,West,Drake
+12,West,Colorado State
+13,West,Grand Canyon
+14,West,UNCW
+15,West,Omaha
+16,West,Norfolk State
+1,East,Duke
+2,East,Alabama
+3,East,Wisconsin
+4,East,Arizona
+5,East,Oregon
+6,East,BYU
+7,East,St. John's
+8,East,Mississippi State
+9,East,Baylor
+10,East,Liberty
+11,East,VCU
+12,East,Liberty
+13,East,Akron
+14,East,Montana
+15,East,Robert Morris
+16,East,Mount St. Mary's
+16,East,American
+1,Midwest,Houston
+2,Midwest,Tennessee
+3,Midwest,Kentucky
+4,Midwest,Purdue
+5,Midwest,Clemson
+6,Midwest,Illinois
+7,Midwest,UCLA
+8,Midwest,Gonzaga
+9,Midwest,Georgia
+10,Midwest,Utah State
+11,Midwest,Texas
+11,Midwest,Xavier
+12,Midwest,McNeese
+13,Midwest,High Point
+14,Midwest,Troy
+15,Midwest,Wofford
+16,Midwest,SIU Edwardsville

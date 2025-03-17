@@ -1,0 +1,69 @@
+Seed,Region,Team,AdjEM,AdjO,AdjD,AdjT
+1,South,Auburn,35.90,120.5,84.6,68.2
+2,South,Michigan State,24.3,115.2,90.9,66.5
+3,South,Iowa State,22.1,113.8,91.7,67.0
+4,South,Texas A&M,20.5,112.9,92.4,65.8
+5,South,Michigan,19.8,112.3,92.5,66.2
+6,South,Ole Miss,18.7,111.7,93.0,67.1
+7,South,Marquette,17.9,111.0,93.1,68.0
+8,South,Louisville,16.5,110.2,93.7,66.8
+9,South,Creighton,15.8,109.6,93.8,67.3
+10,South,New Mexico,14.6,108.9,94.3,65.9
+11,South,San Diego State,13.9,108.2,94.3,66.7
+11,South,North Carolina,13.9,108.2,94.3,66.7
+12,South,UC San Diego,12.7,107.5,94.8,67.5
+13,South,Yale,11.5,106.8,95.3,65.6
+14,South,Lipscomb,10.2,106.0,95.8,66.1
+15,South,Bryant,9.0,105.3,96.3,67.2
+16,South,Alabama,7.8,104.6,96.8,65.7
+16,South,Saint Francis,7.8,104.6,96.8,65.7
+1,West,Florida,34.56,119.5,84.9,68.7
+2,West,St. John's,27.8,116.8,89.0,69.2
+3,West,Texas Tech,26.4,116.0,89.6,69.0
+4,West,Maryland,19.8,112.3,92.5,66.2
+5,West,North Carolina,18.5,111.5,93.0,67.4
+6,West,Missouri,17.1,110.7,93.6,66.8
+7,West,Kansas,15.8,109.9,94.1,67.0
+8,West,U Conn,14.4,109.1,94.7,66.5
+9,West,Oklahoma,13.0,108.3,95.3,67.2
+10,West,Arkansas,11.7,107.5,95.9,66.9
+11,West,Drake,10.5,106.8,96.5,67.3
+12,West,Colorado State,9.2,106.0,97.1,66.1
+13,West,Grand Canyon,8.0,105.3,97.7,67.0
+14,West,UNCW,6.8,104.6,98.3,65.9
+15,West,Omaha,5.5,103.8,98.9,66.4
+16,West,Norfolk State,4.3,103.1,99.5,65.5
+1,East,Duke,39.67,122.0,82.3,68.5
+2,East,Alabama,26.4,116.0,89.6,69.0
+3,East,Wisconsin,24.1,114.7,90.6,66.9
+4,East,Arizona,22.8,113.5,90.7,67.4
+5,East,Oregon,21.6,112.8,91.2,66.3
+6,East,BYU,20.2,111.9,91.7,67.8
+7,East,St. John's,19.0,111.1,92.1,68.1
+8,East,Mississippi State,17.7,110.3,92.6,66.7
+9,East,Baylor,16.3,109.5,93.2,67.0
+10,East,Liberty,15.1,108.8,93.7,66.2
+11,East,VCU,13.8,108.0,94.2,67.5
+12,East,Liberty,12.5,107.3,94.8,65.9
+13,East,Akron,11.2,106.5,95.3,66.4
+14,East,Montana,9.9,105.8,95.9,67.1
+15,East,Robert Morris,8.6,105.0,96.4,66.0
+16,East,Mount St. Mary's,7.3,104.3,96.9,65.5
+16,East,American,7.3,104.3,96.9,65.5
+1,Midwest,Houston,35.23,120.0,84.8,67.6
+2,Midwest,Tennessee,28.9,117.2,88.3,68.3
+3,Midwest,Kentucky,26.7,115.9,89.2,67.2
+4,Midwest,Purdue,25.1,114.6,89.5,66.8
+5,Midwest,Clemson,23.5,113.4,89.9,67.9
+6,Midwest,Illinois,22.0,112.6,90.6,66.4
+7,Midwest,UCLA,20.4,111.8,91.4,67.0
+8,Midwest,Gonzaga,18.9,110.5,91.6,68.1
+9,Midwest,Georgia,17.3,109.7,92.4,66.6
+10,Midwest,Utah State,15.8,108.9,93.1,67.3
+11,Midwest,Texas,14.2,108.1,93.9,66.7
+11,Midwest,Xavier,14.2,108.1,93.9,66.7
+12,Midwest,McNeese,12.6,107.3,94.7,67.5
+13,Midwest,High Point,11.0,106.5,95.5,65.8
+14,Midwest,Troy,9.5,105.8,96.3,66.2
+15,Midwest,Wofford,7.9,104.9,97.0,67.1
+16,Midwest,SIU Edwardsville,6.4,104.1,97.7,65.6
