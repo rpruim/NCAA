@@ -15,13 +15,13 @@ seed,region,team
 13,South,Yale
 14,South,Lipscomb
 15,South,Bryant
-16,South,Alabama St.
+16,South,Alabama State
 16,South,Saint Francis
 1,West,Florida
 2,West,St. John's
 3,West,Texas Tech
 4,West,Maryland
-5,West,North Carolina
+5,West,Memphis
 6,West,Missouri
 7,West,Kansas
 8,West,U Conn
@@ -39,7 +39,7 @@ seed,region,team
 4,East,Arizona
 5,East,Oregon
 6,East,BYU
-7,East,St. John's
+7,East,St. Mary's
 8,East,Mississippi State
 9,East,Baylor
 10,East,Liberty

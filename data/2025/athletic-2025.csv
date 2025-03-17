@@ -1,0 +1,69 @@
+Region,Seed,Team,cost,slot,W1,W2,W3,W4,W5,W6
+East,1,Duke,48,1,99,87,73,53,35,23
+East,16,Mount St. Mary's,1,2,,,,,,
+East,16,American,1,2,,,,,,
+East,8,Mississippi State,11,3,49,6,3,1,0.1,0.01
+East,9,Baylor,10,4,51,6,3,1,0.1,0.01
+East,5,Oregon,17,5,64,25,4,2,0.1,0.01
+East,12,Liberty,7,6,36,10,1,0.1,0.01,0.001
+East,4,Arizona,23,7,87,61,14,7,2,0.1
+East,13,Akron,4,8,13,4,0.1,0.01,0.001,0.0001
+East,6,BYU,15,9,50,23,9,3,0.1,0.01
+East,11,VCU,8,10,50,24,9,3,0.1,0.01
+East,3,Wisconsin,29,11,91,52,23,8,3,1
+East,14,Montana,3,12,9,1,0.1,0.01,0.001,0.0001
+East,7,St. Mary's,13,13,76,35,20,7,3,1
+East,10,Vanderbilt,9,14,24,5,2,0.1,0.01,0.001
+East,2,Alabama,35,15,93,59,37,15,7,3
+East,15,Robert Morris,1,16,7,1,0.1,0.01,0.001,0.0001
+Midwest,1,Houston,48,1,99,71,54,35,20,12
+Midwest,16,SIU Edwardsville,1,2,1,0.1,0.01,0.001,0.0001,0.00001
+Midwest,8,Gonzaga,11,3,72,24,15,8,4,2
+Midwest,9,Georgia,10,4,28,5,2,0.1,0.01,0.001
+Midwest,5,Clemson,17,5,78,49,17,8,3,1
+Midwest,12,McNeese,7,6,22,8,1,0.1,0.01,0.001
+Midwest,4,Purdue,23,7,75,37,11,5,2,0.1
+Midwest,13,High Point,4,8,25,6,0.1,0.01,0.001,0.0001
+Midwest,6,Illinois,15,9,69,40,15,6,2,0.1
+Midwest,11,Texas,8,10,,,,,,
+Midwest,11,Xavier,8,10,,,,,,
+Midwest,3,Kentucky,29,11,79,42,15,5,2,0.1
+Midwest,14,Troy,3,12,21,5,0.1,0.01,0.001,0.0001
+Midwest,7,UCLA,13,13,63,16,7,2,0.1,0.01
+Midwest,10,Utah State,9,14,37,6,2,0.1,0.01,0.001
+Midwest,2,Tennessee,35,15,94,77,55,28,13,7
+Midwest,15,Wofford,1,16,6,1,0.1,0.01,0.001,0.0001
+South,1,Auburn,48,1,99,79,61,40,24,12
+South,16,Alabama State,1,2,,,,,,
+South,16,Saint Francis,1,2,,,,,,
+South,8,Louisville,11,3,61,14,8,4,1,0.1
+South,9,Creighton,10,4,39,7,3,1,0.1,0.01
+South,5,Michigan,17,5,54,20,5,2,0.1,0.01
+South,12,UC San Diego,7,6,46,16,3,1,0.1,0.01
+South,4,Texas A&M,23,7,75,53,18,9,4,1
+South,13,Yale,4,8,25,11,2,0.1,0.01,0.001
+South,6,Ole Miss,15,9,54,18,6,2,0.1,0.01
+South,11,San Diego State,8,10,,,,,,
+South,11,North Carolina,8,10,,,,,,
+South,3,Iowa State,29,11,89,65,35,16,7,3
+South,14,Lipscomb,3,12,12,3,0.1,0.01,0.001,0.0001
+South,7,Marquette,13,13,58,20,9,3,0.1,0.01
+South,10,New Mexico,9,14,42,11,4,2,1,0.1
+South,2,Michigan State,35,15,94,68,41,19,9,4
+South,15,Bryant,1,16,6,0.1,0.01,0.001,0.0001,0.00001
+West,1,Florida,48,1,98,82,61,41,26,14
+West,16,Norfolk State,1,2,2,0.1,0.01,0.001,0.0001,0.00001
+West,8,U Conn,11,3,70,15,7,3,1,0.1
+West,9,Oklahoma,10,4,30,3,1,0.1,0.01,0.001
+West,5,Memphis,17,5,41,13,3,0.1,0.01,0.001
+West,12,Colorado State,7,6,59,24,6,2,0.1,0.01
+West,4,Maryland,23,7,84,58,21,11,5,2
+West,13,Grand Canyon,4,8,16,5,0.1,0.01,0.001,0.0001
+West,6,Missouri,15,9,60,23,10,4,1,0.1
+West,11,Drake,8,10,40,12,4,1,0.1,0.01
+West,3,Texas Tech,29,11,90,62,36,16,8,3
+West,14,UNCW,3,12,10,2,0.1,0.01,0.001,0.0001
+West,7,Kansas,13,13,62,22,9,3,0.1,0.01
+West,10,Arkansas,9,14,38,10,3,0.1,0.01,0.001
+West,2,St. John's,35,15,93,67,37,16,8,3
+West,15,Omaha,1,16,7,1,0.1,0.01,0.001,0.0001

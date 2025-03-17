@@ -17,3 +17,18 @@ W <-
 
 heatmap(W)
 dim(W)
+
+bracket <- read_csv("bracket-2025-M-kenpom.csv")
+playoff <- read_csv("playoffstatus-2025-m.csv", col_types = "ccnnnnnnn")
+athletic <- read_csv('athletic-2025.csv')
+
+wp <- bracket |> left_join(athletic) |>
+  rowwise() |>
+  mutate(ew = sum(c_across(W6:W1))/100) |>
+  ungroup() |>
+  mutate(
+    slot = order(madness::seedOrder)[Seed],
+    cost = madness::seedCost[Seed],
+    roi = 200 * ew / cost)
+
+sum(wp$ew, na.rm = TRUE)
