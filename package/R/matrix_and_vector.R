@@ -216,6 +216,7 @@ contest_standings <- function(tournament, entries, bracket) {
     )
   }
   Bracket <- bracket |>
+    ungroup() |>
     mutate(
       cost = seedCost[seed],
       alive = alive(tournament)
