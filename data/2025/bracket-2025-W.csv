@@ -1,69 +1,69 @@
-seed,region,team
-1,Spokane 1,UCLA
-16,Spokane 1,UC San Diego
-16,Spokane 1,Southern U.
-8,Spokane 1,Richmond
-9,Spokane 1,Georgia Tech
-5,Spokane 1,Ole Miss
-12,Spokane 1,Ball St.
-4,Spokane 1,Baylor
-13,Spokane 1,Grand Canyon
-6,Spokane 1,Florida St.
-11,Spokane 1,George Mason
-3,Spokane 1,LSU
-14,Spokane 1,San Diego St.
-7,Spokane 1,Michigan St.
-10,Spokane 1,Harvard
-2,Spokane 1,NC State
-15,Spokane 1,Vermont
-1,Spokane 4,Southern California
-16,Spokane 4,UNC Greensboro
-8,Spokane 4,California
-9,Spokane 4,Mississippi St.
-5,Spokane 4,Kansas St.
-12,Spokane 4,Fairfield
-4,Spokane 4,Kentucky
-13,Spokane 4,Liberty
-6,Spokane 4,Iowa
-11,Spokane 4,Murray St.
-3,Spokane 4,Oklahoma
-14,Spokane 4,FGCU
-7,Spokane 4,Oklahoma St.
-10,Spokane 4,South Dakota St.
-2,Spokane 4,UConn
-15,Spokane 4,Arkansas St.
-1,Birmingham 2,South Carolina
-16,Birmingham 2,Tennessee Tech
-8,Birmingham 2,Utah
-9,Birmingham 2,Indiana
-5,Birmingham 2,Alabama
-12,Birmingham 2,Green Bay
-4,Birmingham 2,Maryland
-13,Birmingham 2,Norfolk St.
-6,Birmingham 2,West Virginia
-11,Birmingham 2,Columbia
-11,Birmingham 2,Washington
-3,Birmingham 2,North Carolina
-14,Birmingham 2,Oregon St.
-7,Birmingham 2,Vanderbilt
-10,Birmingham 2,Oregon
-2,Birmingham 2,Duke
-15,Birmingham 2,Lehigh
-1,Birmingham 3,Texas
-16,Birmingham 3,High Point
-16,Birmingham 3,William & Mary
-8,Birmingham 3,Illinois
-9,Birmingham 3,Creighton
-5,Birmingham 3,Tennessee
-12,Birmingham 3,South Fla.
-4,Birmingham 3,Ohio St.
-13,Birmingham 3,Montana St.
-6,Birmingham 3,Michigan
-11,Birmingham 3,Iowa St.
-11,Birmingham 3,Princeton
-3,Birmingham 3,Notre Dame
-14,Birmingham 3,SFA
-7,Birmingham 3,Louisville
-10,Birmingham 3,Nebraska
-2,Birmingham 3,TCU
-15,Birmingham 3,FDU
+seed,region,team,W1,W2,W3,W4,W5,W6
+1,Spokane 1,UCLA,98.4,80.5,51.8,33.5,17.3,9.1
+16,Spokane 1,UC San Diego,0,0,0,0,0,0
+16,Spokane 1,Southern U.,1.6,0,0,0,0,0
+8,Spokane 1,Richmond,42.5,7.4,2.7,0.8,0.1,0.1
+9,Spokane 1,Georgia Tech,57.5,12.1,4.4,1.8,0.5,0.2
+5,Spokane 1,Ole Miss,84.2,45.8,19.8,10.8,4.1,1.4
+12,Spokane 1,Ball St.,15.8,3.4,0.6,0.1,0,0
+4,Spokane 1,Baylor,79.1,45.1,20,11.5,4.6,1.8
+13,Spokane 1,Grand Canyon,20.9,5.7,0.7,0.2,0,0
+6,Spokane 1,Florida St.,6.9,28.6,14.6,5.3,1.7,0.7
+11,Spokane 1,George Mason,33.1,8.6,2.9,0.8,0.2,0
+3,Spokane 1,LSU,91.1,60.8,37.4,18.3,6.9,2.3
+14,Spokane 1,San Diego St.,8.9,2,0.2,0,0,0
+7,Spokane 1,Michigan St.,72.1,46.4,23.8,10.1,4.1,1.3
+10,Spokane 1,Harvard,27.9,11.5,3.3,0.8,0,0
+2,Spokane 1,NC State,81.7,39.1,17.2,6.1,1.5,0.3
+15,Spokane 1,Vermont,18.3,2.9,0.5,0,0,0
+1,Spokane 4,Southern California,96.8,77.6,52.9,27.7,17.2,8.4
+16,Spokane 4,UNC Greensboro,3.2,0.5,0,0,0,0
+8,Spokane 4,California,51,11.3,3.9,1.1,0.2,0
+9,Spokane 4,Mississippi St.,49,10.7,4,0.7,0.2,0.1
+5,Spokane 4,Kansas St.,82.7,47.5,20.3,8.8,4.6,1.7
+12,Spokane 4,Fairfield,17.3,4.3,0.6,0.1,0,0
+4,Spokane 4,Kentucky,82.5,44.4,17.6,6.8,2.6,0.9
+13,Spokane 4,Liberty,17.5,3.8,0.5,0.1,0,0
+6,Spokane 4,Iowa,70.6,30.1,8.7,3.3,1.2,0.3
+11,Spokane 4,Murray St.,29.4,7.5,1.4,0.2,0,0
+3,Spokane 4,Oklahoma,82.2,57,22.1,10.5,5.9,2.3
+14,Spokane 4,FGCU,17.8,5.4,0.7,0.1,0,0
+7,Spokane 4,Oklahoma St.,62.60,12.8,5.4,1.7,0.2,0.1
+10,Spokane 4,South Dakota St.,37.4,4.6,1.2,0.1,0,0
+2,Spokane 4,UConn,96.8,82.1,60.4,38.7,25.9,14.4
+15,Spokane 4,Arkansas St.,3.2,0.5,0.1,0,0,0
+1,Birmingham 2,South Carolina,98.3,85.7,70.9,55,35.9,23.6
+16,Birmingham 2,Tennessee Tech,1.7,0.3,0,0,0,0
+8,Birmingham 2,Utah,56.3,8.9,4.4,2,0.6,0.1
+9,Birmingham 2,Indiana,43.7,5.1,2.6,0.7,0.2,0.1
+5,Birmingham 2,Alabama,84.9,54.7,14.1,6.8,2.6,0.9
+12,Birmingham 2,Green Bay,15.1,4.2,0.3,0.1,0,0
+4,Birmingham 2,Maryland,78.7,37,7.5,3.2,1,0.2
+13,Birmingham 2,Norfolk St.,21.3,4.1,0.2,0,0,0
+6,Birmingham 2,West Virginia,77.4,54.7,31.5,11.3,4.8,2
+11,Birmingham 2,Columbia,0,0,0,0,0,0
+11,Birmingham 2,Washington,24.6,10.5,3.3,0.5,0.2,0.1
+3,Birmingham 2,North Carolina,86.2,33.6,12.6,2.7,0.5,0.1
+14,Birmingham 2,Oregon St.,13.8,1.2,0.1,0,0,0
+7,Birmingham 2,Vanderbilt,69.7,35,18.3,6.1,2.7,1
+10,Birmingham 2,Oregon,30.3,10.6,4.2,0.7,0.1,0
+2,Birmingham 2,Duke,89.5,52.9,29.9,10.8,4.2,1.8
+15,Birmingham 2,Lehigh,10.5,1.5,0.2,0,0,0
+1,Birmingham 3,Texas,98,82.7,54.1,32.2,16.9,10
+16,Birmingham 3,High Point,2,0.3,0,0,0,0
+16,Birmingham 3,William & Mary,0,0,0,0,0,0
+8,Birmingham 3,Illinois,54.1,9.5,3.2,0.8,0,0
+9,Birmingham 3,Creighton,45.9,7.5,2.1,0.5,0.1,0
+5,Birmingham 3,Tennessee,89.5,59.6,27,13.3,6,2.9
+12,Birmingham 3,South Fla.,10.5,1.6,0.2,0,0,0
+4,Birmingham 3,Ohio St.,77.1,34,12.7,4.9,1.5,0.7
+13,Birmingham 3,Montana St.,22.9,4.8,0.6,0.1,0,0
+6,Birmingham 3,Michigan,65.4,21.3,11.3,3.9,1.4,0.4
+11,Birmingham 3,Iowa St.,34.6,6.8,2.7,0.6,0,0
+11,Birmingham 3,Princeton,0,0,0,0,0,0
+3,Birmingham 3,Notre Dame,93.7,70.7,50.9,29.8,15.6,8
+14,Birmingham 3,SFA,6.3,1.2,0.3,0,0,0
+7,Birmingham 3,Louisville,46.3,12.1,1.8,0.3,0.1,0
+10,Birmingham 3,Nebraska,53.7,15.2,2.6,0.7,0.2,0.1
+2,Birmingham 3,TCU,95.4,72,30.3,13,5.3,2.1
+15,Birmingham 3,FDU,4.6,0.7,0,0,0,0
