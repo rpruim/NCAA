@@ -18,7 +18,8 @@
 build_entry_matrix <- function(E, ext = c("M", "W")){
   ext <- match.arg(ext)
   if (ext == "M") ext <- ""
-  res <- sapply(E, function(x) x[[paste0('teamsLogical', ext)]] |> as.numeric()) |> t()
+  ext <- tolower(ext)
+  res <- sapply(E, function(x) x[[paste0('teamslogical', ext)]] |> as.numeric()) |> t()
   for (a in c("name", "email", "dept", "time", "points")) {
     attr(res, a) <- sapply(E, function(x) x[[a]])
   }
