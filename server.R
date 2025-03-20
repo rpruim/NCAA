@@ -698,8 +698,8 @@ output$H2HPlotC <- renderPlotly({
 
   output$acceptingEntries <- reactive({
     # TODO: fix this time-based check
-    # (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
-    TRUE
+    (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
+    # TRUE
     # FALSE
     # AdminMode() || (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
   })
@@ -1277,3 +1277,4 @@ output$H2HPlotC <- renderPlotly({
   waiter::waiter_hide()
 
 })
+
