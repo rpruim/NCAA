@@ -1134,21 +1134,25 @@ output$H2HPlotC <- renderPlotly({
   })
 
 
-
-  output$WhoCanWinPlotM <- renderVegawidget({
-    WinnersTableM() |>
-      mutate(winner2 = abbreviate(winner, minlength = 20)) |>
+  who_can_win_plot <- function(data) {
+    data |>
+      # mutate(winner2 = abbreviate(winner, minlength = 20)) |>
       vl_chart() |>
       vl_mark_bar(fill = "steelblue") |>
       vl_encode_x("p:Q") |>
-      vl_encode_y("winner2:O", sort = "-x", title = "Winner") |>
+      vl_encode_y("winner:O", sort = "-x", title = "Winner") |>
       vl_axis_x(format = "%", title = "") |>
       vl_add_properties(width = 600)
       # gf_col(winner ~ p, fill = "steelblue") |>
       # gf_labs(x = "percent of scenarios that win") |>
       # gf_refine(scale_x_continuous(labels = scales::label_percent()))
-  })
+  }
 
+
+  output$WhoCanWinPlotM <- renderVegawidget({
+    WinnersTableM() |>
+      who_can_win_plot()
+  })
 
   output$ScoreHistogramsM <-
     renderPlot(height = 600,
@@ -1253,16 +1257,7 @@ output$H2HPlotC <- renderPlotly({
 
   output$WhoCanWinPlotW <- renderVegawidget({
     WinnersTableW() |>
-      mutate(winner2 = abbreviate(winner, minlength = 20)) |>
-      vl_chart() |>
-      vl_mark_bar(fill = "steelblue") |>
-      vl_encode_x("p:Q") |>
-      vl_encode_y("winner2:O", sort = "-x", title = "Winner") |>
-      vl_axis_x(format = "%", title = "") |>
-      vl_add_properties(width = 600)
-      # gf_col(winner ~ p, fill = "steelblue") |>
-      # gf_labs(x = "percent of scenarios that win") |>
-      # gf_refine(scale_x_continuous(labels = scales::label_percent()))
+      who_can_win_plot()
   })
 
   output$ScoreHistogramsW <-
