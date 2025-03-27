@@ -1,0 +1,303 @@
+---
+title: 2025 Team selection
+date: last-modified
+format: 
+  html: 
+    theme: yeti
+    code-fold: true
+---
+
+## Loading data
+
+```{r}
+#| include: false
+library(lpSolve)
+library(tidyverse)
+library(gt)
+library(vegabrite)
+library(ggformula)
+library(pins)
+library(madness)
+```
+
+```{r}
+# Ken Pom win probabilities
+winprob <- function(e1, t1, e2, t2) {
+
+  pts <- (e1 - e2) * (t1 + t2) / 200
+  pnorm(pts, mean = 0, sd = 11)
+
+}
+
+# load data
+ 
+ken <- read_csv("bracket-2025-M-kenpom.csv")
+bracket <- read_csv("bracket-2025-M-kenpom.csv")
+playoff <- read_csv("playoffstatus-2025-m.csv", col_types = "ccnnnnnnn")
+athletic <- read_csv('athletic-2025.csv')
+athletic |> summarise(across(W1:W6, ~ sum(.x, na.rm  = TRUE)/100))
+
+wp <- bracket |> left_join(athletic) |>
+  rowwise() |>
+  mutate(athletic_ew = sum(c_across(W6:W1))/100) |>
+  ungroup() |>
+  mutate(
+    slot = order(madness::seedOrder)[Seed],
+    cost = madness::seedCost[Seed],
+    athletic_roi = 200 * athletic_ew / cost) |>
+  filter(athletic_ew > 0) |>  # drop play-in losers
+  arrange(Region,slot)
+
+dim(wp)
+
+W <-
+  outer(
+  1:64, 1:64,
+  function(a, b) {
+    winprob(
+      wp[a, "AdjEM"][[1]], wp[a,"AdjT"][[1]],
+      wp[b, "AdjEM"][[1]], wp[b,"AdjT"][[1]])
+  }
+)
+
+W[1:4, 1:4]
+
+# Function to calculate round-by-round win probabilities
+calculate_round_probs <- function(win_prob_matrix) {
+  num_teams <- nrow(win_prob_matrix)
+  num_rounds <- log2(num_teams)
+
+  # Initialize with equal probabilities for all teams in the first round
+  round_probs <- matrix(0, nrow = num_teams, ncol = num_rounds + 1)
+  round_probs[, 1] <- 1
+
+  # Calculate probabilities for each round
+  for (round in 1:num_rounds) {
+    num_matches <- num_teams / (2^round)
+
+    for (match in 1:num_matches) {
+      team1 <- (match - 1) * 2^round + 1
+      team2 <- team1 + 2^(round-1)
+
+      for (i in team1:(team1 + 2^(round-1) - 1)) {
+        for (j in team2:(team2 + 2^(round-1) - 1)) {
+          prob_matchup <- round_probs[i, round] * round_probs[j, round]
+          prob_i_wins <- prob_matchup * win_prob_matrix[i, j]
+          prob_j_wins <- prob_matchup * win_prob_matrix[j, i]
+
+          # Normalize and update probabilities for the next round
+          # total_prob <- prob_i_wins + prob_j_wins
+          round_probs[i, round + 1] <- round_probs[i, round + 1] + prob_i_wins # / total_prob) * total_prob
+          round_probs[j, round + 1] <- round_probs[j, round + 1] + prob_j_wins # / total_prob) * total_prob
+        }
+      }
+    }
+  }
+
+  return(round_probs[, -1])
+}
+
+KenPomRbyR <- calculate_round_probs(W)
+KenPomRbyR |> apply(2, sum)
+KenPomRbyR |>  heatmap(Rowv = NA, Colv = NA)
+KenPomRbyR |> as_tibble() |> setNames(paste0("KP", 1:6))
+
+wp <-
+  wp |>
+  mutate(
+    kp_ew = apply(KenPomRbyR, 1, sum),
+    kp_roi = 200 * kp_ew / cost,
+    combined_ew = (athletic_ew + kp_ew) / 2,
+    combined_roi = 200 * combined_ew / cost
+    )
+
+Women <- read_csv('bracket-2025-W.csv') |>
+  rowwise() |>
+  mutate(ew = sum(c_across(W1:W6))/100) |>
+  ungroup() |>
+  mutate(
+    slot = order(madness::seedOrder)[seed],
+    cost = madness::seedCost[seed],
+    roi = 200 * ew / cost) |>
+  filter(ew > 0) |>  # drop play-in losers
+  arrange(region,slot)
+
+Women |> summarise(across(W1:W6, ~ sum(.x, na.rm  = TRUE)/100))
+
+```
+
+## Selection by integer programming
+
+```{r}
+
+athletic_teams <-
+  lp(direction = "max", all.bin = TRUE,
+   objective.in = wp$athletic_ew,
+   const.mat = matrix(wp$cost, nrow = 1),
+   const.dir = "<=",
+   const.rhs = 200
+   )
+wp$cost[athletic_teams$solution |> as.logical()] |> sum()
+
+kp_teams <-
+  lp(direction = "max", all.bin = TRUE,
+   objective.in = wp$kp_ew,
+   const.mat = matrix(wp$cost, nrow = 1),
+   const.dir = "<=",
+   const.rhs = 200
+   )
+wp$cost[kp_teams$solution |> as.logical()] |> sum()
+
+combined_teams <-
+  lp(direction = "max", all.bin = TRUE,
+   objective.in = wp$combined_ew,
+   const.mat = matrix(wp$cost, nrow = 1),
+   const.dir = "<=",
+   const.rhs = 200
+   )
+wp$cost[combined_teams$solution |> as.logical()] |> sum()
+
+```
+
+### The Athletic
+
+```{r}
+wp[athletic_teams$solution |> as.logical(), ] |>
+  select(Team, Region, Seed, slot, cost, kp_roi, kp_ew, athletic_roi, athletic_ew) |>
+  arrange(- athletic_roi) |>
+  mutate(cum_cost = cumsum(cost)) |>
+  gt() |> opt_interactive(page_size_default = 25) |> 
+  data_color(alpha = 0.4, palette = "Blues")
+
+```
+
+### Ken Pomeroy
+
+```{r}
+wp[kp_teams$solution |> as.logical(), ] |>
+  select(Team, Region, Seed, slot, cost, kp_roi, kp_ew, athletic_roi, athletic_ew) |>
+  arrange(- kp_roi) |>
+  mutate(cum_cost = cumsum(cost)) |>
+  gt() |> opt_interactive(page_size_default = 25) |> 
+  data_color(alpha = 0.4, palette = "Blues")
+```
+
+### Combined
+
+```{r}
+wp[combined_teams$solution |> as.logical(), ] |>
+  select(Team, Region, Seed, slot, cost, kp_roi, kp_ew, athletic_roi, athletic_ew) |>
+  arrange(- kp_roi) |>
+  mutate(cum_cost = cumsum(cost)) |> 
+  gt() |> opt_interactive(page_size_default = 25) |> 
+  data_color(alpha = 0.4, palette = "Blues")
+```
+
+### Comparison
+
+```{r}
+A <-
+  wp[athletic_teams$solution |> as.logical(), ] |>
+  select(Team, Region, Seed, slot) |>
+  mutate(athletic = 1)
+K <-
+  wp[kp_teams$solution |> as.logical(), ] |>
+  select(Team, Region, Seed, slot) |>
+  mutate(kp = 1)
+C <-
+  wp[combined_teams$solution |> as.logical(), ] |>
+  select(Team, Region, Seed, slot) |>
+  mutate(combined = 1)
+
+A |> full_join(K) |> full_join(C) |>
+  mutate_all(~replace(., is.na(.), 0)) |>
+  mutate(chosen = athletic +  kp + combined) |>
+  gt() |> opt_interactive(page_size_default = 30) |> 
+  data_color(alpha = 0.4, palette = "Blues")
+
+```
+
+### Women 
+
+**Source**: <https://theanalyst.com/na/ncaa-march-madness-predictions>
+
+```{r}
+w_teams <-
+  lp(direction = "max", all.bin = TRUE,
+   objective.in = Women$ew,
+   const.mat = matrix(Women$cost, nrow = 1),
+   const.dir = "<=",
+   const.rhs = 200
+   )
+Women$cost[w_teams$solution |> as.logical()] |> sum()
+
+Women[w_teams$solution |> as.logical(), ] |>
+  select(team, region, seed, slot, cost, roi, ew) |>
+  arrange(roi) |>
+  arrange(- roi) |>
+  mutate(cum_cost = cumsum(cost)) |>
+  gt() |> opt_interactive(page_size_default = 25) |> 
+  data_color(alpha = 0.4, palette = "Blues")
+  
+```
+
+## Entries Info
+
+```{r}
+
+board <- board_connect(
+  server = "https://connect.cs.calvin.edu",
+  key = "S2RwoRs5VIkMPCyELvj0mixL6QC4Emx1")
+
+E <- load_entries_from_pins(board, 2025)
+
+E2 <- tibble(
+ name = sapply(E, \(x) x$name),
+ time = sapply(E, \(x) x$time) |> as_datetime() - hours(4),
+ dept = sapply(E, \(x) x$dept),
+ email = sapply(E, \(x) x$email),
+ points = sapply(E, \(x) x$points),
+ pointsw = sapply(E, \(x) x$pointsw),
+ teams = lapply(E, \(x) x$teams),
+ count = lapply(teams, length),
+ teamsW = lapply(E, \(x) x$TeamsW),
+ countW = lapply(teamsW, length)
+)
+
+n_entries <- nrow(E2)
+
+vl_chart() |>
+  vl_add_data(E2) |>
+  vl_encode_x("count:Q") |>
+  vl_encode_y("countW:Q") |>
+  vl_mark_circle(opacity = 0.6) |>
+  vl_encode_tooltip_array(c("name", "count", "countW")) 
+
+vl_chart() |>
+  vl_add_data(wp) |>
+  vl_encode_x("kp_roi:Q") |>
+  vl_encode_y("athletic_roi:Q") |>
+  vl_mark_circle(opacity = 0.6) |>
+  vl_encode_tooltip_array(c("Team", "Region", "Seed", "cost", "athletic_roi", "kp_roi", "athletic_ew", "kp_ew"))
+
+vl_chart() |>
+  vl_add_data(E2) |>
+  vl_timeunit(timeUnit = "hoursminutes", field = "time", as = "hour") |>
+  vl_timeunit(timeUnit = "yearmonthdate", field = "time", as = "day") |>
+  vl_mark_bar() |>
+  vl_encode_x("hour:T") |>
+  # vl_bin_x(maxbins = 100) |>
+  # vl_bin_x(step = list(unit = 1, timeUnit = "hours")) |>
+  # vl_scale_x(nice = "hours") |>
+  # vl_axis_x(tickCount = "hour", title = "") |>
+  vl_encode_y(type = "quantitative", aggregate = "count") |>
+  vl_axis_y(title = "", labels = FALSE, ticks = FALSE) |>
+  vl_encode_row("day:T", title = NA) |>
+  vl_add_properties(width = 600, height = 50, title = paste("Number of entries:", n_entries))
+
+E2 |> filter(count == 0 | countW == 0) |> pull(email)
+
+
+gf_histogram(~ time, data = E2)
+```
+
