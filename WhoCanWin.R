@@ -1,9 +1,15 @@
 
 # Run this once when Sweet16 is set and before any other games
+# This appears to be superceded by WhoCanWin-setup.R
+
+source('server.R')
+source('loaders.R')
+
+Entries <- load_entries_from_pins(board = board, year = config$year)
 
 saveStandings <- function() {
   Sweet16Standings <-
-      resultsTable(entries = LoadEntries(), bracket = LoadBracket(),
+      resultsTable(entries = Entries, bracket = LoadBracket(),
                    games = LoadGameScores(),
                    matchups = possibleMatchups(Bracket))
   saveRDS(Sweet16Standings, file = "data/Sweet16Standings.rds")

@@ -3,8 +3,18 @@
 
 # use reactive functions here with isolate().
 
+# Set this true when ready to save as pins
+
+write_pins <- FALSE
+
 source('server.R')
+
+# need to also run come code from inside
+# shinyServer(function(input, output, session) { }
+
 source('Tourny.R')
+
+Entries <- load_entries_from_pins(board = board, year = config$year)
 
 # B = total number of bits
 
@@ -87,14 +97,14 @@ WhoCanWin <- function(Entries, M, Standings,
 
 Sweet16StandingsM <-
   isolate(
-    resultsTable(entries = Entries(), bracket = BracketM(),
+    resultsTable(entries = Entries, bracket = BracketM(),
                  games = GameScoresM(),
                  matchups = possibleMatchups(BracketM()))
   )
 
 Sweet16StandingsW <-
   isolate(
-    resultsTable(entries = Entries(), bracket = BracketW(),
+    resultsTable(entries = Entries, bracket = BracketW(),
                  games = GameScoresW(),
                  matchups = possibleMatchups(BracketW()))
   )
@@ -102,7 +112,8 @@ Sweet16StandingsW <-
 
 # Save Men's Sweet16 to pins
 
-if (FALSE) {
+
+if (write_pins) {
   Sweet16StandingsM |>
     my_pin_write(board = board, name = 'Sweet16StandingsM')
 
@@ -114,7 +125,7 @@ if (FALSE) {
     my_pin_write(board = board, name = "WM-M")
 }
 
-if (FALSE) {
+if (write_pins) {
   Sweet16StandingsW |>
     my_pin_write(board = board, name = 'Sweet16StandingsW')
   WM <- winsMatrix(rounds = 4)
