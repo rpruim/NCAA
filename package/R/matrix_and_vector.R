@@ -177,12 +177,12 @@ competitors <- function(entries, division = c("M", "W"), by = c("email", "name")
   points_field <-
     switch(division,
            "M" = "points",
-           "W" = "pointsW"
+           "W" = "pointsw"
     )
 
-  print(by)
-  print(length(entries))
-  print(entries[[1]][[by]])
+  # print(by)
+  # print(length(entries))
+  # print(entries[[1]][[by]])
 
   res <- entries |> sapply(function(x) x[[by]])
   is_competitor <- sapply(entries, function(x) x[[points_field]] > 100)
