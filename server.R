@@ -7,6 +7,7 @@
 library(shiny)
 library(dplyr)
 library(pins)
+library(vegabrite)
 
 yaml_file <- yaml::read_yaml('ncaa.yml')$yaml
 config <- yaml::read_yaml(yaml_file)
@@ -263,7 +264,7 @@ shinyServer(function(input, output, session) {
   })
 
 
-  if (FALSE) {
+  if (TRUE) {
   # todo: deal with crystal ball
   cacheCrystalBallM <- function() {
     tc <- tournament_completions(TM(), max_games_remaining = 15)
@@ -296,7 +297,7 @@ shinyServer(function(input, output, session) {
 
 
   TCM <-
-    my_pin_reactive_read(board, name = 'TCM', default = NULL)
+    my_pin_reactive_read(board, name = 'TCM', default = matrix(numeric(0), nrow = 0))
 
   h2h_default <-
     tibble(
@@ -890,7 +891,7 @@ output$H2HPlotC <- renderPlotly({
     if (as.numeric(input$saveScoreButtonM) > 0 &&
         AdminMode() &&
         n_games_remaining(TM()) <= 16) {
-      # cacheCrystalBallM() # TODO: turn on crystal ball
+        cacheCrystalBallM() # TODO: turn on crystal ball
     }
   })
 
@@ -933,7 +934,7 @@ output$H2HPlotC <- renderPlotly({
     if (as.numeric(input$saveScoreButtonW) > 0 &&
         AdminMode() &&
         n_games_remaining(TW()) <= 16) {
-      # cacheCrystalballW()  # TODO: turn crystal ball back on
+        cacheCrystalballW()  # TODO: turn crystal ball back on
     }
   })
 
@@ -1134,11 +1135,18 @@ output$H2HPlotC <- renderPlotly({
 
 
 
-  output$WhoCanWinPlotM <- renderPlot({
+  output$WhoCanWinPlotM <- renderVegawidget({
     WinnersTableM() |>
-      gf_col(winner ~ p, fill = "steelblue") |>
-      gf_labs(x = "percent of scenarios that win") |>
-      gf_refine(scale_x_continuous(labels = scales::label_percent()))
+      mutate(winner2 = abbreviate(winner, minlength = 20)) |>
+      vl_chart() |>
+      vl_mark_bar(fill = "steelblue") |>
+      vl_encode_x("p:Q") |>
+      vl_encode_y("winner2:O", sort = "-x", title = "Winner") |>
+      vl_axis_x(format = "%", title = "") |>
+      vl_add_properties(width = 600)
+      # gf_col(winner ~ p, fill = "steelblue") |>
+      # gf_labs(x = "percent of scenarios that win") |>
+      # gf_refine(scale_x_continuous(labels = scales::label_percent()))
   })
 
 
@@ -1159,20 +1167,18 @@ output$H2HPlotC <- renderPlotly({
       "(" , round(100 * m / denom,2) , "%)") |>
       matrix(nrow = nrow(m))
   }
-
-  output$H2HPlotM <- renderPlotly({
-    # comps <- competitors(Entries(), division = "M")
-    # print(comps)
-    H2HM() |>
-      # filter(key_name %in% comps) |>
-      # filter(other_name %in% comps) |>
+  oldh2hplot <- function(data) {
+    data |>
       mutate(
         perc = round(100 * prop, 2),
-        hovertext =
-          glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
+        hovertext1 = glue::glue('{key_name}'),
+        hovertext2 = glue::glue('defeats'),
+        hovertext3 = glue::glue('{other_name}'),
+        hovertext4 = glue::glue('in {scenarios} scenarios.'),
+        hovertext5 = glue::glue('({perc} %)'),
+        scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)
       ) |>
-      mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
-      gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
+    gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
               text = ~hovertext) |>
       gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
       gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
@@ -1189,14 +1195,72 @@ output$H2HPlotC <- renderPlotly({
         axis.text.x = element_text(angle = 45, hjust = 1),
         panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
       ) |>
-      plotly::ggplotly(tooltip = "text")
+      plotly::ggplotly(tooltip = "text")  # failing with error "undefined columns selected" in 2025
+  }
+
+  h2hplot <- function(data) {
+    sorted_abbrev <-
+      data |>
+      group_by(key_abbrv) |>
+      summarise(avg_win_p = mean(prop, na.rm = TRUE)) |>
+      arrange(desc(avg_win_p)) |>
+      pull(key_abbrv) |>
+      as.character()
+
+    vl_chart() |>
+      vl_add_data_frame(
+        data |>
+          # filter(prop > 0) |>
+          mutate(
+            perc = round(100 * prop, 2),
+            hovertext1 = glue::glue('{key_name}'),
+            hovertext2 = glue::glue('defeats'),
+            hovertext3 = glue::glue('{other_name}'),
+            hovertext4 = glue::glue('in {scenarios} scenarios.'),
+            hovertext5 = glue::glue('({perc} %)'),
+            scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)
+          )
+      ) |>
+      vl_mark_rect(opacity = 0.7) |>
+      vl_encode_y("key_abbrv:N", title = FALSE, sort = sorted_abbrev) |>
+      vl_encode_x("other_abbrv:N", title = FALSE, sort = sorted_abbrev) |>
+      vl_encode_fill("prop:Q", legend = FALSE) |>
+      vl_condition_fill(test = "datum['scenarios'] === null", value = "salmon") |>
+      vl_scale_fill(scheme = "blues") |>
+      vl_encode_tooltip("hovertext1", title = " ") |>
+      vl_encode_tooltip("hovertext2", title = "  ") |>
+      vl_encode_tooltip("hovertext3", title = "    ") |>
+      vl_encode_tooltip("hovertext4", title = "     ") |>
+      vl_encode_tooltip("hovertext5", title = "      ") |>
+      vl_add_properties(
+        title =
+          list(text = "head to head winning scenarios",
+               subtitle = "read across rows for wins against the other player"
+          )
+      )
+  }
+
+  output$H2HPlotM <- vegabrite::renderVegawidget({
+    comps <- competitors(Entries(), division = "M", by = "name")
+    # print(comps)
+    H2HM() |>
+      filter(key_name %in% comps) |>
+      filter(other_name %in% comps) |>
+      h2hplot()
   })
 
-  output$WhoCanWinPlotW <- renderPlot({
+  output$WhoCanWinPlotW <- renderVegawidget({
     WinnersTableW() |>
-      gf_col(winner ~ p, fill = "steelblue") |>
-      gf_labs(x = "percent of scenarios that win") |>
-      gf_refine(scale_x_continuous(labels = scales::label_percent()))
+      mutate(winner2 = abbreviate(winner, minlength = 20)) |>
+      vl_chart() |>
+      vl_mark_bar(fill = "steelblue") |>
+      vl_encode_x("p:Q") |>
+      vl_encode_y("winner2:O", sort = "-x", title = "Winner") |>
+      vl_axis_x(format = "%", title = "") |>
+      vl_add_properties(width = 600)
+      # gf_col(winner ~ p, fill = "steelblue") |>
+      # gf_labs(x = "percent of scenarios that win") |>
+      # gf_refine(scale_x_continuous(labels = scales::label_percent()))
   })
 
   output$ScoreHistogramsW <-
@@ -1208,36 +1272,12 @@ output$H2HPlotC <- renderPlotly({
                    gf_labs(x = "score")
                })
 
-  output$H2HPlotW <- renderPlotly({
-    # comps <- competitors(Entries(), division = "W")
-    # print(comps)
+  output$H2HPlotW <- vegabrite::renderVegawidget({
+    comps <- competitors(Entries(), division = "W", by = "name")
     H2HW() |>
-      # filter(key_name %in% comps) |>
-      # filter(other_name %in% comps) |>
-      mutate(
-        perc = round(100 * prop, 2),
-        hovertext =
-          glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
-      ) |>
-      mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
-      gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
-              text = ~hovertext) |>
-      gf_hline(yintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
-      gf_vline(xintercept = 0.5 + (0:nrow(EW())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
-      gf_labs(title = "head to head winning scenarios",
-              subtitle = "read across rows for wins against the other player",
-              x = "", y = "", fill = "winning\nscenarios" ) |>
-      gf_refine(
-        coord_cartesian(expand = FALSE),
-        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8)
-      ) |>
-      gf_theme(
-        panel.grid.major.x = element_blank(),
-        panel.grid.major.y = element_blank(),
-        axis.text.x = element_text(angle = 45, hjust = 1),
-        panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
-      ) |>
-      plotly::ggplotly(tooltip = "text")
+      filter(key_name %in% comps) |>
+      filter(other_name %in% comps) |>
+      h2hplot()
   })
 
 
