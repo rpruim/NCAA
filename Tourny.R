@@ -265,8 +265,8 @@ resultsTable <- function(entries, bracket, games, matchups = possibleMatchups(br
     "teams remaining" =
       sapply( E,
               function(x) {
-                BracketLeft <- Bracket %>% filter(x$teamsLogical & alive) %>% arrange(seed)
-                numberLeft <- sum( x$teamsLogical * Bracket$alive )
+                BracketLeft <- Bracket |> ungroup() %>% filter(x$teamslogical & alive) %>% arrange(seed)
+                numberLeft <- sum( x$teamslogical * Bracket$alive )
                 paste(
                   sprintf("%02d", numberLeft), ": ",
                   paste(BracketLeft$team, " (", BracketLeft$seed, ")",
@@ -278,15 +278,15 @@ resultsTable <- function(entries, bracket, games, matchups = possibleMatchups(br
     "points remaining" =
       sapply( E,
               function(x) {
-                pointsLeft <- sum(x$teamsLogical * Bracket$cost * Bracket$alive)
+                pointsLeft <- sum(x$teamslogical * Bracket$cost * Bracket$alive)
                 pointsLeft
               }
       ),
     "teams lost" =
       sapply( E,
               function(x) {
-                BracketLost <- Bracket %>% filter(x$teamsLogical & !alive) %>% arrange(seed)
-                numberLost <- sum( x$teamsLogical * (!Bracket$alive) )
+                BracketLost <- Bracket |> ungroup() %>% filter(x$teamslogical & !alive) %>% arrange(seed)
+                numberLost <- sum( x$teamslogical * (!Bracket$alive) )
                 paste(
                   sprintf("%02d", numberLost), ": ",
                   paste(BracketLost$team, " (", BracketLost$seed, ")",
