@@ -1199,13 +1199,15 @@ output$H2HPlotC <- renderPlotly({
   }
 
   h2hplot <- function(data) {
-    sorted_abbrev <-
+    sorted_data <-
       data |>
-      group_by(key_abbrv) |>
+      group_by(key_name, key_abbrv) |>
       summarise(avg_win_p = mean(prop, na.rm = TRUE)) |>
       arrange(desc(avg_win_p)) |>
-      pull(key_abbrv) |>
-      as.character()
+      mutate(
+        key_name = as.character(key_name),
+        key_abbrv = as.character(key_abbrv)
+      )
 
     vl_chart() |>
       vl_add_data_frame(
@@ -1222,8 +1224,8 @@ output$H2HPlotC <- renderPlotly({
           )
       ) |>
       vl_mark_rect(opacity = 0.7) |>
-      vl_encode_y("key_abbrv:N", title = FALSE, sort = sorted_abbrev) |>
-      vl_encode_x("other_abbrv:N", title = FALSE, sort = sorted_abbrev) |>
+      vl_encode_y("key_name:N", title = FALSE, sort = sorted_data |> pull(key_name)) |>
+      vl_encode_x("other_abbrv:N", title = FALSE, sort = sorted_data |> pull(key_abbrv)) |>
       vl_encode_fill("prop:Q", legend = FALSE) |>
       vl_condition_fill(test = "datum['scenarios'] === null", value = "salmon") |>
       vl_scale_fill(scheme = "blues") |>
