@@ -1136,12 +1136,14 @@ output$H2HPlotC <- renderPlotly({
 
   who_can_win_plot <- function(data) {
     data |>
+      mutate(chances = paste0(scenarios, "/", sum(scenarios), " = ", round(100*p, 2), "%")) |>
       # mutate(winner2 = abbreviate(winner, minlength = 20)) |>
       vl_chart() |>
       vl_mark_bar(fill = "steelblue") |>
       vl_encode_x("p:Q") |>
       vl_encode_y("winner:O", sort = "-x", title = "Winner") |>
       vl_axis_x(format = "%", title = "") |>
+      vl_encode_tooltip("chances:N", title = "") |>
       vl_add_properties(width = 600)
       # gf_col(winner ~ p, fill = "steelblue") |>
       # gf_labs(x = "percent of scenarios that win") |>
