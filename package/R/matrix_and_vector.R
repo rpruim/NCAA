@@ -253,6 +253,8 @@ contest_standings <- function(tournament, entries, bracket) {
                    collapse="")
                }
         ),
+      `points_spent` =
+        apply(entries, 1, function(x) { sum(x * Bracket[['cost']]) } ),
       `points remaining` =
         apply(entries, 1, function(x) { sum(x * Bracket[['cost']] * Bracket[['alive']]) } ),
       `teams lost` =
@@ -269,9 +271,12 @@ contest_standings <- function(tournament, entries, bracket) {
               }
         )
     )
-  Results <- Results %>% arrange(desc(dusty_score))
   # rownames(Results) <- Results[['email']]
-  Results %>% select(-dusty_score)
+  Results |>
+    arrange(desc(dusty_score)) |>
+    filter( points_spent > 100 ) |>
+    select(-dusty_score) |>
+    select(-points_spent)
 }
 # Store tournament with 2^n teams as vector of length 2^n - 1
 #   * initialize as rep(NA,2^n - 1)
