@@ -25,16 +25,25 @@ shinyUI(
       tabPanel(
         "Rules & History",
         h2("History"),
-        p(paste(
-          "Calvin faculty and staff have been participating in this NCAA modeling contest since 1995",
-          "when Mike Stob introduced the contest.  In his honor, each year's winner is presented the",
-          "traveling Mike Stob Trophy which they display proudly until presenting it to the next winner.",
-          "Past winners are listed at the bottom of this page.")),
-        p(paste(
-          "The Clarence Menninga Trophy was named after the first person to win it twice and is",
-          "presented each year to the contestant with the lowest score.",
-          "The recipients of this trophy are not listed at the bottom of this page."
-        )),
+        p(
+          "Calvin faculty and staff have been participating in this NCAA basketball modeling contest since
+          1995 when it was introduced by Mike Stob (Professor Emeritus of Mathematics and Statistics).
+          In his honor, each year's winner is presented the Stob Trophy, which they display proudly until
+          presenting it to the next winner.
+          In 2022, contest commissioner Randall Pruim (Professor of Mathematics and Statistics) incorporated
+          the women's NCAA basketball tournament into the competition for the first time.
+          The winner of the women's contest each year is presented with the Pruim Trophy.
+          The competition in 2022 also saw the introduction of the Commissioner's Trophy,
+          which is awarded each year to the individual with the highest combined score from the men's
+          and women's tournaments who did not win either of the other contests.
+          Past winners of all three trophies are listed at the bottom of this page."
+        ),
+        p(
+          "The Clarence Menninga Trophy is presented each year to the contestant with the lowest
+          score in the men's contest, while the Stan Haan Trophy is given to the individual with the
+          lowest score in the women's contest.
+          Each trophy is named after the first person to earn each of these distinctions twice.
+          The recipients of this trophy are not listed at the bottom of this page."),
         h2("Official Rules"),
         tags$ol(
           tags$li("Each team has an integer cost determined by its seed in its region (see table below).  Periodically costs are revised.  The most recent revision was in 2019."),
