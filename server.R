@@ -448,11 +448,12 @@ shinyServer(function(input, output, session) {
   WinnersTableC <-
     my_pin_reactive_read(name = 'WinnersTableC', board = board, default = tibble())
 
-output$WhoCanWinPlotC <- renderPlot({
+output$WhoCanWinPlotC <- renderVegawidget({
   WinnersTableC() |>
-    gf_col(winner ~ p, fill = "steelblue") |>
-    gf_labs(x = "percent of scenarios that win") |>
-    gf_refine(scale_x_continuous(labels = scales::label_percent()))
+    who_can_win_plot()
+    # gf_col(winner ~ p, fill = "steelblue") |>
+    # gf_labs(x = "percent of scenarios that win") |>
+    # gf_refine(scale_x_continuous(labels = scales::label_percent()))
 })
 
 
@@ -487,31 +488,32 @@ H2HC <- reactive({
     )
 })
 
-output$H2HPlotC <- renderPlotly({
+output$H2HPlotC <- renderVegawidget({
   H2HC() |>
-    mutate(
-      perc = round(100 * prop, 2),
-      hovertext =
-        glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
-    ) |>
-    mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
-    gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8, text = ~hovertext) |>
-    gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
-    gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
-    gf_labs(title = "head to head winning scenarios",
-            subtitle = "read across rows for wins against the other player",
-            x = "", y = "", fill = "winning\nscenarios" ) |>
-    gf_refine(
-      scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
-      coord_cartesian(expand = FALSE)
-    ) |>
-    gf_theme(
-      panel.grid.major.x = element_blank(),
-      panel.grid.major.y = element_blank(),
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
-    ) |>
-    plotly::ggplotly(tooltip = "text")
+    h2h_plot()
+    # mutate(
+    #   perc = round(100 * prop, 2),
+    #   hovertext =
+    #     glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
+    # ) |>
+    # mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
+    # gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8, text = ~hovertext) |>
+    # gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
+    # gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
+    # gf_labs(title = "head to head winning scenarios",
+    #         subtitle = "read across rows for wins against the other player",
+    #         x = "", y = "", fill = "winning\nscenarios" ) |>
+    # gf_refine(
+    #   scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
+    #   coord_cartesian(expand = FALSE)
+    # ) |>
+    # gf_theme(
+    #   panel.grid.major.x = element_blank(),
+    #   panel.grid.major.y = element_blank(),
+    #   axis.text.x = element_text(angle = 45, hjust = 1),
+    #   panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
+    # ) |>
+    # plotly::ggplotly(tooltip = "text")
 })
 
 } # turn off stuff that doesn't work until second week.
@@ -1204,7 +1206,7 @@ output$H2HPlotC <- renderPlotly({
       plotly::ggplotly(tooltip = "text")  # failing with error "undefined columns selected" in 2025
   }
 
-  h2hplot <- function(data) {
+  h2h_plot <- function(data) {
     sorted_data <-
       data |>
       group_by(key_name, key_abbrv) |>
@@ -1254,7 +1256,7 @@ output$H2HPlotC <- renderPlotly({
     H2HM() |>
       filter(key_name %in% comps) |>
       filter(other_name %in% comps) |>
-      h2hplot()
+      h2h_plot()
   })
 
   output$WhoCanWinPlotW <- renderVegawidget({
@@ -1276,7 +1278,7 @@ output$H2HPlotC <- renderPlotly({
     H2HW() |>
       filter(key_name %in% comps) |>
       filter(other_name %in% comps) |>
-      h2hplot()
+      h2h_plot()
   })
 
 
