@@ -410,6 +410,17 @@ shinyServer(function(input, output, session) {
   cacheCrystalBallC <- function() {
     psm <- PossibleScoresM()
     psw <- PossibleScoresW()
+
+    ## individual bracket winners removed from competition
+    mm <- apply(psm, 2, max)
+    mw <- apply(psw, 2, max)
+
+    zerom <- apply(psm, 1, function(x) x == mm) |> t()
+    zerow <- apply(psm, 1, function(x) x == mm) |> t()
+
+    psm[zerom] <- 0
+    psw[zerow] <- 0
+
     denom <- ncol(psm) * ncol(psw)
     n <- nrow(EM())
     ps <-

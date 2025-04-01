@@ -12,7 +12,7 @@ BracketW <- load_bracket('data/2023/bracket-2023-W.csv')
 TMinit <- tournament_init(names = BracketM[['team']], seeds = BracketM[['seed']], label = "M")
 TWinit <- tournament_init(names = BracketW[['team']], seeds = BracketW[['seed']], label = "W")
 
-Entries <- load_entries_from_pins(board = board, year = 2023)
+Entries <- load_entries_from_pins(board = board, year = 2025)
 
 EM <- build_entry_matrix(Entries, ext = "M")
 EW <- build_entry_matrix(Entries, ext = "W")
