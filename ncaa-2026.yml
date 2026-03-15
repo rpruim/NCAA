@@ -1,0 +1,15 @@
+year: 2026
+deadline: "2026-03-19 11:30"
+names:
+  - "Men's Bracket"
+  - "Women's Bracket"
+brackets:
+  - data/2026/bracket-2026-M.csv
+  - data/2026/bracket-2026-W.csv
+entries_path:
+  - entry-
+scores:
+  - scores-M
+  - scores-W
+crystal_ball_path:
+  - data/2026/Crystal-Ball

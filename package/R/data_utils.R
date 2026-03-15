@@ -1,4 +1,23 @@
 
+#' Compute tie-breaking dust
+#'
+#' Add a small amount to the number of wins so that summing the dusted wins
+#' will correctly sort participants with tie-breaking rules accounted for.
+#' The total amount of dust in any round is less than the dust for one team
+#' in the next round.
+#'
+#' @param x a numeric vector of numbers between 0 and 6 (inclusive)
+#' @return a vector the same length of `x` with a bit of "dust" added to the values.
+#'
+#' @export
+dust <- function(x) {
+  stopifnot(x %in% 0:6)
+  eps <- c(0, rev(1/cumprod(5 * c(1, 2, 5, 10, 20, 50))))
+  x + eps[1 + x]
+}
+
+#'
+#'
 #' Create Entry Matrix
 #'
 #' Convert a list of lists into a matrix representing each entrants selections.

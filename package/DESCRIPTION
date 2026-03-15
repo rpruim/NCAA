@@ -1,6 +1,6 @@
 Package: madness
 Title: Utilities for NCAA March Madness
-Version: 0.1.0.9006
+Version: 0.1.0.9007
 Authors@R: 
     person("Randall", "Pruim", , "rpruim@gmail.com", role = c("aut", "cre"))
 Description: Used for modeling contest at Calvin University
@@ -14,7 +14,7 @@ Imports:
   bitops
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Depends: 
     R (>= 2.10)
 LazyData: true

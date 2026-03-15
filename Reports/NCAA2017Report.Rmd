@@ -16,29 +16,31 @@ require(mosaic)
 require(ggformula)
 theme_set(theme_minimal())
 require(lubridate)
-require(humanparser)
+# require(humanparser)
 require(printr)
 trellis.par.set(theme = theme.mosaic())
 source("Tourny.R")
 source("Loaders.R")
 knitr::opts_chunk$set(
-  fig.align = "center", 
+  fig.align = "center",
   comment = NA,
   echo = FALSE,
-  cache = TRUE)
+  cache = TRUE
+)
 Bracket <- LoadBracket()
 E <- LoadEntries()
 G <- LoadGameScores()
 T <- resultsTable(E, Bracket, G)
 T$dept[T$dept == "Select a department"] <- "Math/Stat"
-H <- humanparser::parse_names(sapply(E, function(x) x$name))
+# H <- humanparser::parse_names(sapply(E, function(x) x$name))
+H <- tibble(name = sapply(E, function(x) x$name))
 All <-
-  H %>% 
+  H %>%
   mutate(
     email = sapply(E, function(x) x$email),
-    date  = sapply(E, function(x) as.character(x$time)),
+    date = sapply(E, function(x) as.character(x$time)),
     date2 = lubridate::ymd_hms(date) - hours(4)
-  ) %>% 
+  ) %>%
   merge(T, by.x = "fullName", by.y = "name")
 ```
 

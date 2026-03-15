@@ -297,11 +297,8 @@ contest_standings <- function(tournament, entries, bracket) {
 #' @export
 contest_scores <- function(tournament, entries, dust = TRUE) {
   W <- wins(tournament)
-  if (dust) {
-    # 7 dust amounts for wins 0 through 6
-    eps = c(0, rev(1 / cumprod(5 * c(1, 2, 5, 10, 20, 100))))
-    W <- W + eps[1 + W]
-  }
+  if (dust) { W <- dust(W) }
+
   entries %*% W |>
     as.vector() |>
     setNames(rownames(entries))

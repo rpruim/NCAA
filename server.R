@@ -416,7 +416,7 @@ shinyServer(function(input, output, session) {
     mw <- apply(psw, 2, max)
 
     zerom <- apply(psm, 1, function(x) x == mm) |> t()
-    zerow <- apply(psm, 1, function(x) x == mm) |> t()
+    zerow <- apply(psw, 1, function(x) x == mw) |> t()
 
     psm[zerom] <- 0
     psw[zerow] <- 0
