@@ -24,12 +24,12 @@ T$dept[T$dept == "Select a department"] <- "Math/Stat"
 # H <- humanparser::parse_names(sapply(E, function(x) x$name))
 H <- tibble(name = sapply(E, function(x) x$name))
 All <-
-  H %>%
+  H |>
   mutate(
     email = sapply(E, function(x) x$email),
     date = sapply(E, function(x) as.character(x$time)),
     date2 = lubridate::ymd_hms(date) - hours(4)
-  ) %>%
+  ) |>
   merge(T, by.x = "fullName", by.y = "name")
 ```
 
@@ -65,10 +65,10 @@ dotplot(dept ~ score, data = T,
 ```
 
 ```{r, echo = FALSE}
-T %>% 
-  group_by(dept) %>% 
-  summarise(n=n(), avg_score = round(mean(score, na.rm = TRUE), 2), max_score = max(score), min_score = min(score)) %>%
-  ungroup() %>% 
+T |> 
+  group_by(dept) |> 
+  summarise(n=n(), avg_score = round(mean(score, na.rm = TRUE), 2), max_score = max(score), min_score = min(score)) |>
+  ungroup() |> 
   arrange(avg_score)
 ```
 

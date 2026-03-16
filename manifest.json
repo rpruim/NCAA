@@ -2558,6 +2558,53 @@
         "Built": "R 4.5.1; aarch64-apple-darwin23.6.0; 2026-03-15 20:13:42 UTC; unix"
       }
     },
+    "madness": {
+      "Source": "github",
+      "Repository": null,
+      "description": {
+        "Package": "madness",
+        "Title": "Utilities for NCAA March Madness",
+        "Version": "0.1.0.9007",
+        "Authors@R": "person(\"Randall\", \"Pruim\", , \"rpruim@gmail.com\", role = c(\"aut\", \"cre\"))",
+        "Description": "Used for modeling contest at Calvin University",
+        "License": "`use_mit_license()`, `use_gpl3_license()` or friends to pick a\nlicense",
+        "Imports": "dplyr,\ntibble,\npurrr,\nreadr,\nbitops",
+        "Encoding": "UTF-8",
+        "Roxygen": "list(markdown = TRUE)",
+        "RoxygenNote": "7.3.3",
+        "Depends": "R (>= 2.10)",
+        "LazyData": "true"
+      }
+    },
+    "magrittr": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Type": "Package",
+        "Package": "magrittr",
+        "Title": "A Forward-Pipe Operator for R",
+        "Version": "2.0.4",
+        "Authors@R": "c(\n    person(\"Stefan Milton\", \"Bache\", , \"stefan@stefanbache.dk\", role = c(\"aut\", \"cph\"),\n           comment = \"Original author and creator of magrittr\"),\n    person(\"Hadley\", \"Wickham\", , \"hadley@posit.co\", role = \"aut\"),\n    person(\"Lionel\", \"Henry\", , \"lionel@posit.co\", role = \"cre\"),\n    person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"),\n            comment = c(ROR = \"03wc8by49\"))\n  )",
+        "Description": "Provides a mechanism for chaining commands with a new\n    forward-pipe operator, %>%. This operator will forward a value, or the\n    result of an expression, into the next function call/expression.\n    There is flexible support for the type of right-hand side expressions.\n    For more information, see package vignette.  To quote Rene Magritte,\n    \"Ceci n'est pas un pipe.\"",
+        "License": "MIT + file LICENSE",
+        "URL": "https://magrittr.tidyverse.org,\nhttps://github.com/tidyverse/magrittr",
+        "BugReports": "https://github.com/tidyverse/magrittr/issues",
+        "Depends": "R (>= 3.4.0)",
+        "Suggests": "covr, knitr, rlang, rmarkdown, testthat",
+        "VignetteBuilder": "knitr",
+        "ByteCompile": "Yes",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.3",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-09-11 16:45:15 UTC; lionel",
+        "Author": "Stefan Milton Bache [aut, cph] (Original author and creator of\n    magrittr),\n  Hadley Wickham [aut],\n  Lionel Henry [cre],\n  Posit Software, PBC [cph, fnd] (ROR: <https://ror.org/03wc8by49>)",
+        "Maintainer": "Lionel Henry <lionel@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-09-12 07:20:14 UTC",
+        "Built": "R 4.5.1; aarch64-apple-darwin23.6.0; 2025-09-18 03:00:12 UTC; unix"
+      }
+    },
     "markdown": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -3834,7 +3881,7 @@
         "Maintainer": "Hadley Wickham <hadley@posit.co>",
         "Repository": "CRAN",
         "Date/Publication": "2025-11-04 14:00:02 UTC",
-        "Built": "R 4.5.1; ; 2026-01-16 21:12:37 UTC; unix"
+        "Built": "R 4.5.1; ; 2026-03-16 22:23:16 UTC; unix"
       }
     },
     "sys": {
@@ -6370,7 +6417,7 @@
       "checksum": "a70919432cadd4216e3210619478bc75"
     },
     "Loaders.R": {
-      "checksum": "5fc4f61b9da7c7f1844c2fff99037b4e"
+      "checksum": "3a6dfcad0bd2cb41b2c2177bdc19303f"
     },
     "ncaa-2022.yml": {
       "checksum": "1f9fce1ece3d8e2388dc1dc900177f50"
@@ -6478,13 +6525,13 @@
       "checksum": "4b36b9961d600894979b734a77dfd3e2"
     },
     "package/R/matrix_and_vector.R": {
-      "checksum": "ae36dc300175c85b2c4376596513334c"
+      "checksum": "b2ce9eb9bc4a96a62e04e2efec8d747f"
     },
     "package/R/scenarios.R": {
       "checksum": "2ddb49da6a6b2670f69a3201e2e90970"
     },
     "package/Rbuildignore/code-experiments.R": {
-      "checksum": "04e5b2634e131d43a3d5c2707387c3dd"
+      "checksum": "22b07d1a0956ab5531838f840a2c748e"
     },
     "Reports/NCAA2016Report.html": {
       "checksum": "61e84062e17d028e2474f759d3d1b2a1"
@@ -6493,13 +6540,13 @@
       "checksum": "edc2ea2bab2474dfb6e38ac5790a9653"
     },
     "Reports/NCAA2016Report.Rmd": {
-      "checksum": "2b8ca040f3809489a9e49e584eb0d4f2"
+      "checksum": "965824cb12f9a508e17bf735cbd70936"
     },
     "Reports/NCAA2017Report.html": {
       "checksum": "ca88c4385f431add9a7754f06e8bfb05"
     },
     "Reports/NCAA2017Report.Rmd": {
-      "checksum": "5b95e0ebdd3197c5298a27a409a78159"
+      "checksum": "4adb5575d675cec3ead9b9a7d26e7827"
     },
     "Reports/NCAA2019Report_files/figure-html/unnamed-chunk-2-1.png": {
       "checksum": "a1f1791d3701a06cca9578e78fd4e285"
@@ -6520,7 +6567,7 @@
       "checksum": "e12b6a4507ac5ad8b1d7db9904afe81a"
     },
     "Reports/NCAA2019Report.Rmd": {
-      "checksum": "cdb01406566a51e320142789fb82c758"
+      "checksum": "98723da4a66605731a99007bbc5d50a6"
     },
     "Reports/NCAA2023Report.html": {
       "checksum": "1dd8e8e6e431a3cbba99d901697e13d7"
@@ -6859,13 +6906,13 @@
       "checksum": "98b3c1635a7d3147eef1c783618898be"
     },
     "server.R": {
-      "checksum": "b3d63592847994e2d6570886a449b896"
+      "checksum": "d6baef6721ac71f07407b74711b4f3b2"
     },
     "teamData.Rds": {
       "checksum": "830fba3178bf3fd4464be990f87a10ed"
     },
     "Tourny.R": {
-      "checksum": "70a7d2b767a212fc1fa3ef9bcf01ed34"
+      "checksum": "e66e446fca3a15475d7e188df6442909"
     },
     "ui.R": {
       "checksum": "f159de8a88384d42210ca4c624d2e4b6"
@@ -6874,10 +6921,10 @@
       "checksum": "a68ed45e7f3c43dedb18a689e54ebacc"
     },
     "WhoCanWin-setup.R": {
-      "checksum": "d7b15eac96414293f1c9254ddb7ae9dc"
+      "checksum": "dcc59cb88db575cd17b0d2ab8eb89021"
     },
     "WhoCanWin.R": {
-      "checksum": "474aeda92f2b0dd814a318c1e26b817a"
+      "checksum": "0ef41351c67f315db27429e7228514ac"
     }
   },
   "users": null

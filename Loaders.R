@@ -62,8 +62,19 @@ LoadEntries <-
 
 LoadGameScores <- function(path = "data/Scores/2022/Mens/", pattern = "M-.*2022.*\\.csv") {
   gfiles <- dir(path, pattern = pattern, full.names = TRUE)
-  if (length(gfiles) < 1)
-    return(tibble(game_number = NA, winner_01 = NA, home = NA, away = NA, hscore = NA, ascore = NA) %>% head(0))
+  if (length(gfiles) < 1) {
+    return(
+      tibble(
+        game_number = NA,
+        winner_01 = NA,
+        home = NA,
+        away = NA,
+        hscore = NA,
+        ascore = NA
+      ) |>
+        head(0)
+    )
+  }
 
   res <- list()
   # read files in order; newer entries with same email will clobber older ones
@@ -71,7 +82,7 @@ LoadGameScores <- function(path = "data/Scores/2022/Mens/", pattern = "M-.*2022.
     g <- readr::read_csv(f)
     res[[paste0(g$home, "-", g$away)]] <- g
   }
-  bind_rows(res) %>% addWL()
+  bind_rows(res) |> addWL()
 }
 
 ### Read in bracket data
@@ -87,27 +98,34 @@ LoadBracket <- function(file = NULL) {
       }
   }
 
-  bracket %>%
-    mutate(cost = seedCost[seed],
-           cost.old = seedCostOld[seed],
-           # which regions play in final 4 is determined by order of appearence in bracket.csv
-           slot = ( as.numeric(factor(region, levels = unique(region), # c('east','west','south','midwest'),
-                                      ordered=TRUE)) * 100 + order(seedOrder)[seed] )
-    ) %>%
+  bracket |>
+    mutate(
+      cost = seedCost[seed],
+      cost.old = seedCostOld[seed],
+      # which regions play in final 4 is determined by order of appearence in bracket.csv
+      slot = (as.numeric(factor(
+        region,
+        levels = unique(region), # c('east','west','south','midwest'),
+        ordered = TRUE
+      )) *
+        100 +
+        order(seedOrder)[seed])
+    ) |>
     arrange(slot)
 }
 
 completedGames <- function(scores, bracket) {
   if (nrow(scores) < 1) return(scores)
 
-  scores %>%
-    scheduledGames(bracket) %>%
-    filter(!is.na(hscore) & !is.na(ascore)) %>%
-    mutate(wscore = ifelse(hscore > ascore, hscore, ascore),
-           lscore = ifelse(hscore < ascore, hscore, ascore),
-           score = paste(wscore, "-", lscore),
-           result = paste(winner, wscore, "over", loser, lscore)
-    ) %>%
+  scores |>
+    scheduledGames(bracket) |>
+    filter(!is.na(hscore) & !is.na(ascore)) |>
+    mutate(
+      wscore = ifelse(hscore > ascore, hscore, ascore),
+      lscore = ifelse(hscore < ascore, hscore, ascore),
+      score = paste(wscore, "-", lscore),
+      result = paste(winner, wscore, "over", loser, lscore)
+    ) |>
     arrange(game)
 }
 

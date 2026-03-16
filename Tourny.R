@@ -31,9 +31,11 @@ winner_ <- function(id, bracket, results) {
   if (id > nGames(bracket)) {
     return(bracket[id - nGames(bracket), "team"])
   }
-  Score <- results %>%
-    filter(home == homeTeam(id, bracket, results),
-           away == awayTeam(id, bracket, results))
+  Score <- results |>
+    filter(
+      home == homeTeam(id, bracket, results),
+      away == awayTeam(id, bracket, results)
+    )
   if (nrow(Score) != 1) {
     return(NA)
   }
@@ -44,9 +46,11 @@ winner_ <- function(id, bracket, results) {
 gameScore_ <- function(id, bracket, results) {
   if (id > nGames(bracket)) { return(NA) }
 
-  Score <- results %>%
-    filter(home == homeTeam(id, bracket, results),
-           away == awayTeam(id, bracket, results))
+  Score <- results |>
+    filter(
+      home == homeTeam(id, bracket, results),
+      away == awayTeam(id, bracket, results)
+    )
   if (nrow(Score) != 1) { return(" - ") }
   paste(Score$ascore, "-", Score$hscore, sep="")
 }
@@ -54,9 +58,11 @@ gameScore_ <- function(id, bracket, results) {
 homeScore_ <- function(id, bracket, results) {
     if (id > nGames(bracket)) { return(NA) }
 
-    Score <- results %>%
-    filter(home == homeTeam(id, bracket, results),
-           away == awayTeam(id, bracket, results))
+    Score <- results |>
+      filter(
+        home == homeTeam(id, bracket, results),
+        away == awayTeam(id, bracket, results)
+      )
     if (nrow(Score) != 1) {return(NA)}
     Score$hscore
   }
@@ -64,18 +70,22 @@ homeScore_ <- function(id, bracket, results) {
 awayScore_ <- function(id, bracket, results) {
     if (id > nGames(bracket)) { return(NA) }
 
-    Score <- results %>%
-    filter(home == homeTeam(id, bracket, results),
-           away == awayTeam(id, bracket, results))
+    Score <- results |>
+      filter(
+        home == homeTeam(id, bracket, results),
+        away == awayTeam(id, bracket, results)
+      )
     if (nrow(Score) != 1) {return(NA)}
     Score$ascore
   }
 
 
 loser_ <- function(id, bracket, results) {
-  Score <- results %>%
-    filter(home == homeTeam(id, bracket, results),
-           away == awayTeam(id, bracket, results))
+  Score <- results |>
+    filter(
+      home == homeTeam(id, bracket, results),
+      away == awayTeam(id, bracket, results)
+    )
   if (nrow(Score) != 1) {
     return(NA)
   }
@@ -265,7 +275,10 @@ resultsTable <- function(entries, bracket, games, matchups = possibleMatchups(br
     "teams remaining" =
       sapply( E,
               function(x) {
-                BracketLeft <- Bracket |> ungroup() %>% filter(x$teamslogical & alive) %>% arrange(seed)
+                BracketLeft <- Bracket |>
+                  ungroup() |>
+                  filter(x$teamslogical & alive) |>
+                  arrange(seed)
                 numberLeft <- sum( x$teamslogical * Bracket$alive )
                 paste(
                   sprintf("%02d", numberLeft), ": ",
@@ -285,7 +298,10 @@ resultsTable <- function(entries, bracket, games, matchups = possibleMatchups(br
     "teams lost" =
       sapply( E,
               function(x) {
-                BracketLost <- Bracket |> ungroup() %>% filter(x$teamslogical & !alive) %>% arrange(seed)
+                BracketLost <- Bracket |>
+                  ungroup() |>
+                  filter(x$teamslogical & !alive) |>
+                  arrange(seed)
                 numberLost <- sum( x$teamslogical * (!Bracket$alive) )
                 paste(
                   sprintf("%02d", numberLost), ": ",
@@ -296,27 +312,27 @@ resultsTable <- function(entries, bracket, games, matchups = possibleMatchups(br
               }
       )
   )
-  Results <- Results %>% arrange(desc(score))
+  Results <- Results |> arrange(desc(score))
   rownames(Results) <- Results$email
-  Results %>% select(-email)
+  Results |> select(-email)
 }
 
 if (FALSE) {
   Bracket <- read.file("data/bracket2014.csv", as.is=TRUE)
   # Below orders things properly IF regions are in correct order
   # Else need to reorder regions first
-  # Bracket %>% sample() %>% arrange(region, order(seedOrder)[seed])
-  Results <- read.file("data/Results.csv", as.is=TRUE)
+  # Bracket |> sample() |> arrange(region, order(seedOrder)[seed])
+  Results <- read.file("data/Results.csv", as.is = TRUE)
 
   nRounds(Bracket)
-  homeTeam( 63, Bracket, Results)
-  awayTeam( 63, Bracket, Results)
-  winner( 63, Bracket, Results)
-  homeTeam( 31, Bracket, Results)
-  awayTeam( 31, Bracket, Results)
-  winner( 31, Bracket, Results)
-  Results %>% tail(4)
-  allGames( Bracket, Results %>% head(30), TBA = FALSE)
+  homeTeam(63, Bracket, Results)
+  awayTeam(63, Bracket, Results)
+  winner(63, Bracket, Results)
+  homeTeam(31, Bracket, Results)
+  awayTeam(31, Bracket, Results)
+  winner(31, Bracket, Results)
+  Results |> tail(4)
+  allGames(Bracket, Results |> head(30), TBA = FALSE)
 }
 
 updateGameScores <- function(GS, home, away, hscore, ascore) {
@@ -326,15 +342,21 @@ updateGameScores <- function(GS, home, away, hscore, ascore) {
   )
 }
 
-teamData <- function(E = LoadEntries(), B = LoadBracket() %>% addTeamStatus(LoadGameScores())) {
-  M <- do.call(rbind, lapply( E, function(x) x$teamsLogical ) )
+teamData <- function(
+  E = LoadEntries(),
+  B = LoadBracket() |> addTeamStatus(LoadGameScores())
+) {
+  M <- do.call(rbind, lapply(E, function(x) x$teamsLogical))
   if (length(E) > 0) {
-    row.names(M) <- sapply( E, function(x) x$name)
+    row.names(M) <- sapply(E, function(x) x$name)
   }
 
-  data.frame(check.names=FALSE,
-             Team = colnames(M),
-             Seed = B$seed, Region = B$region,
-             "Number of players selecting" = apply(M,2,sum),
-             Wins = B$wins)
+  data.frame(
+    check.names = FALSE,
+    Team = colnames(M),
+    Seed = B$seed,
+    Region = B$region,
+    "Number of players selecting" = apply(M, 2, sum),
+    Wins = B$wins
+  )
 }

@@ -243,7 +243,7 @@ contest_standings <- function(tournament, entries, bracket) {
       `teams remaining` =
         apply( entries, 1,
                function(x) {
-                 BracketLeft <- Bracket %>% filter(x & alive) %>% arrange(seed)
+                 BracketLeft <- Bracket |> filter(x & alive) |> arrange(seed)
                  numberLeft <- sum( x * Bracket[['alive']] )
                  paste(
                    sprintf("%02d", numberLeft), ": ",
@@ -260,7 +260,7 @@ contest_standings <- function(tournament, entries, bracket) {
       `teams lost` =
         apply(entries, 1,
               function(x) {
-                BracketLost <- Bracket %>% filter(x & !alive) %>% arrange(seed)
+                BracketLost <- Bracket |> filter(x & !alive) |> arrange(seed)
                 numberLost <- sum( x * (!Bracket[['alive']]) )
                 paste(
                   sprintf("%02d", numberLost), ": ",
@@ -499,7 +499,7 @@ winners_table <-
     max_games_remaining = 15)
   {
     ScoresM |>
-      apply(2, which.max) %>%
+      apply(2, which.max) |>
       tibble(winner = .) |>
       group_by(winner) |>
       summarise(scenarios = n()) |>

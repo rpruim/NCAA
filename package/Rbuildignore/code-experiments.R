@@ -71,7 +71,7 @@ PossibleScoresM <-
 
 WinnersTableM <-
   PossibleScoresM |>
-  apply(2, which.max) %>%
+  apply(2, which.max) |>
   tibble(winner = .) |>
   group_by(winner) |>
   summarise(scenarios = n()) |>
@@ -92,7 +92,7 @@ WinnersTableM <-
 WinningScoreM <-
   PossibleScoresM |>
   round() |>
-  apply(2, max) %>%
+  apply(2, max) |>
   tibble(score = .)
 
 WinningScoreM |>

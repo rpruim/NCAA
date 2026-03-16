@@ -49,7 +49,9 @@ winsMatrix <- function(rounds) {
   sapply(0:(2^(2^rounds-1) - 1), function(x) winsObtained(1:(2^rounds), rounds, x) )
 }
 
-aliveTeams <- function(bracket = LoadBracket() %>% addTeamStatus(LoadGameScores())) {
+aliveTeams <- function(
+  bracket = LoadBracket() |> addTeamStatus(LoadGameScores())
+) {
   bracket[bracket$alive, "team"]
 }
 
@@ -61,78 +63,101 @@ aliveTeams <- function(bracket = LoadBracket() %>% addTeamStatus(LoadGameScores(
 # first two rounds) and is used to remove scenaries from M that
 # are no longer possible.
 
-WhoCanWin <- function(Entries, M, Standings,
-                      results = (teamData() %>% filter(Team %in% rownames(M)))$Wins - 2,
-                      break.ties = TRUE) {
+WhoCanWin <- function(
+  Entries,
+  M,
+  Standings,
+  results = (teamData() |> filter(Team %in% rownames(M)))$Wins - 2,
+  break.ties = TRUE
+) {
   scores <- Standings$score
   names(scores) <- rownames(Standings)
   if (break.ties) {
-    M <- M + 1/10^(5-M)
+    M <- M + 1 / 10^(5 - M)
   }
   M <- M[, apply(M, 2, function(x) all(x >= results)), drop = FALSE]
   L <- lapply(
     Entries,
-    function(e) colSums(
-      M[intersect(e$teams, rownames(M)), , drop = FALSE], na.rm = TRUE) +
-      scores[e$email]
+    function(e) {
+      colSums(
+        M[intersect(e$teams, rownames(M)), , drop = FALSE],
+        na.rm = TRUE
+      ) +
+        scores[e$email]
+    }
   )
   Outcomes <- do.call(rbind, L)
   # rownames(Outcomes) <- rownames(Standings)
   WinningScores <-
-    Outcomes %>% apply(2, base::max, na.rm = TRUE)
+    Outcomes |> apply(2, base::max, na.rm = TRUE)
   LosingScores <-
-    Outcomes %>% apply(2, base::min, na.rm = TRUE)
+    Outcomes |> apply(2, base::min, na.rm = TRUE)
 
   res <- tibble(
     name = Standings$name,
     email = row.names(Standings)
   )
   res[["winning scenarios"]] <-
-    sapply(res$email, function(em)
-      sum( WinningScores == Outcomes[em, ], na.rm = TRUE ))
+    sapply(res$email, function(em) {
+      sum(WinningScores == Outcomes[em, ], na.rm = TRUE)
+    })
   res[["losing scenarios"]] <-
-    sapply(res$email, function(em)
-      sum( LosingScores == Outcomes[em, ], na.rm = TRUE ))
-  res %>% mutate(
-    `win percent` = round(100 * `winning scenarios` / dim(M)[2], 2),
-    `lose percent` = round(100 * `losing scenarios` / dim(M)[2], 2),
-  )
+    sapply(res$email, function(em) {
+      sum(LosingScores == Outcomes[em, ], na.rm = TRUE)
+    })
+  res |>
+    mutate(
+      `win percent` = round(100 * `winning scenarios` / dim(M)[2], 2),
+      `lose percent` = round(100 * `losing scenarios` / dim(M)[2], 2),
+    )
 }
 
-WhoCanWinOld <- function(Entries, M, Standings, results = (teamData() %>% filter(Team %in% rownames(M)))$Wins - 2,
-                      break.ties = TRUE) {
+WhoCanWinOld <- function(
+  Entries,
+  M,
+  Standings,
+  results = (teamData() |> filter(Team %in% rownames(M)))$Wins - 2,
+  break.ties = TRUE
+) {
   scores <- Standings$score
   names(scores) <- row.names(Standings)
   if (break.ties) {
-    M <- M + 1/10^(5-M)
+    M <- M + 1 / 10^(5 - M)
   }
   M <- M[, apply(M, 2, function(x) all(x >= results)), drop = FALSE]
   L <- lapply(
     Entries,
-    function(e) colSums(
-      M[intersect(e$teams, rownames(M)), , drop = FALSE], na.rm = TRUE) +
-      scores[e$email]
+    function(e) {
+      colSums(
+        M[intersect(e$teams, rownames(M)), , drop = FALSE],
+        na.rm = TRUE
+      ) +
+        scores[e$email]
+    }
   )
   Outcomes <- do.call(rbind, L)
   rownames(Outcomes) <- rownames(Standings)
   WinningScores <-
-    Outcomes %>% apply(2, base::max, na.rm = TRUE)
+    Outcomes |> apply(2, base::max, na.rm = TRUE)
   LosingScores <-
-    Outcomes %>% apply(2, base::min, na.rm = TRUE)
+    Outcomes |> apply(2, base::min, na.rm = TRUE)
 
   res <- tibble(
     name = Standings$name,
     email = row.names(Standings)
   )
   res[["winning scenarios"]] <-
-    sapply(res$email, function(em)
-      sum( WinningScores == Outcomes[em, ], na.rm = TRUE ))
+    sapply(res$email, function(em) {
+      sum(WinningScores == Outcomes[em, ], na.rm = TRUE)
+    })
   res[["losing scenarios"]] <-
-    sapply(res$email, function(em)
-      sum( LosingScores == Outcomes[em, ], na.rm = TRUE ))
-  res %>% mutate(
-    `win percent` = round(100 * `winning scenarios` / dim(M)[2], 2),
-    `lose percent` = round(100 * `losing scenarios` / dim(M)[2], 2),
+    sapply(res$email, function(em) {
+      sum(LosingScores == Outcomes[em, ], na.rm = TRUE)
+    })
+  res |>
+    mutate(
+      `win percent` = round(100 * `winning scenarios` / dim(M)[2], 2),
+      `lose percent` = round(100 * `losing scenarios` / dim(M)[2], 2),
     )
 }
 

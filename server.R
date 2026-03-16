@@ -113,9 +113,9 @@ the_year <- function() {
 }
 
 regionChoices <- function(region, bracket) {
-  region <- bracket %>%
-    rename(regn = region) %>%
-    filter(regn == region) %>%
+  region <- bracket |>
+    rename(regn = region) |>
+    filter(regn == region) |>
     rename(region = regn)
 
   res <- as.character(region$team)
@@ -352,7 +352,7 @@ function(input, output, session) {
       ps |> round(12) |> my_pin_write(name = 'PossibleScoresM', board = board)
 
       ps |>
-        apply(2, which.max) %>%
+        apply(2, which.max) |>
         tibble(winner = .) |>
         group_by(winner) |>
         summarise(scenarios = n()) |>
@@ -435,7 +435,7 @@ function(input, output, session) {
       ps |> round(12) |> my_pin_write(name = 'PossibleScoresW', board = board)
 
       ps |>
-        apply(2, which.max) %>%
+        apply(2, which.max) |>
         tibble(winner = .) |>
         group_by(winner) |>
         summarise(scenarios = n()) |>
@@ -516,7 +516,7 @@ function(input, output, session) {
       }
       ps |> round(12) |> my_pin_write(name = 'PossibleScoresC', board = board)
       ps |>
-        apply(2, which.max) %>%
+        apply(2, which.max) |>
         tibble(winner = .) |>
         group_by(winner) |>
         summarise(scenarios = n()) |>
@@ -1189,11 +1189,11 @@ function(input, output, session) {
     ),
     {
       SeedTable <-
-        BracketM() %>%
-        group_by(seed) %>%
-        summarise(cost = max(cost), `pre-2019 cost` = max(cost.old)) %>%
+        BracketM() |>
+        group_by(seed) |>
+        summarise(cost = max(cost), `pre-2019 cost` = max(cost.old)) |>
         arrange(seed)
-      SeedTable %>% head(nrow(SeedTable) / 2)
+      SeedTable |> head(nrow(SeedTable) / 2)
     }
   )
 
@@ -1209,11 +1209,11 @@ function(input, output, session) {
     ),
     {
       SeedTable <-
-        BracketM() %>%
-        group_by(seed) %>%
-        summarise(cost = max(cost), `pre-2019 cost` = max(cost.old)) %>%
+        BracketM() |>
+        group_by(seed) |>
+        summarise(cost = max(cost), `pre-2019 cost` = max(cost.old)) |>
         arrange(seed)
-      SeedTable %>% tail(-nrow(SeedTable) / 2)
+      SeedTable |> tail(-nrow(SeedTable) / 2)
     }
   )
 
@@ -1229,7 +1229,7 @@ function(input, output, session) {
     ),
     {
       History <- readr::read_csv("data/historical-winners.csv") # , header=TRUE)
-      History %>% arrange(desc(year))
+      History |> arrange(desc(year))
     }
   )
 
@@ -1583,11 +1583,11 @@ function(input, output, session) {
   #   d <- as.data.frame(m)
   #   d <- as.data.frame(lapply(d, function(x) as.numeric(x)))
   #   rownames(d) <- rownames(m)
-  #   rowv  <- d %>% dist(method = "euclidean") %>% hclust %>% as.dendrogram %>%
-  #     set("branches_k_color", k = 5) %>% set("branches_lwd", 2) %>%
+  #   rowv  <- d |> dist(method = "euclidean") |> hclust |> as.dendrogram |>
+  #     set("branches_k_color", k = 5) |> set("branches_lwd", 2) |>
   #     ladderize()
-  #   colv  <- d %>% t %>% dist(method = "euclidean") %>% hclust %>% as.dendrogram %>%
-  #     set("branches_k_color", k = 7) %>% set("branches_lwd", 2) %>%
+  #   colv  <- d |> t |> dist(method = "euclidean") |> hclust |> as.dendrogram |>
+  #     set("branches_k_color", k = 7) |> set("branches_lwd", 2) |>
   #     ladderize()
   #   d3heatmap(d, rowv = rowv, colv = colv, color="blues")
   # })
