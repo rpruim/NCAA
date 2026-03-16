@@ -20,9 +20,21 @@ config <- yaml::read_yaml(yaml_file)
 #     key = "EMd26Xic4zetNHlf0QyoIu9JIVzBJAspFVzf4xf1"
 #   )
 
-# Set the path to your service account JSON file
-Sys.setenv("GCS_AUTH_FILE" = "/Users/rpruim/.positron/gcs2.json")
-# Authenticate (optional if GCS_AUTH_FILE is set)
+############################################################
+### Connect to pin board on Google Cloud Storage
+
+# GCS_SERVICE_ACCOUNT_JSON is stored on posit connect cloud
+
+if (Sys.getenv("GCS_SERVICE_ACCOUNT_JSON") != "") {
+  # Write the secret to a temporary file for authentication
+  temp_path <- tempfile(fileext = ".json")
+  writeLines(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"), temp_path)
+  # Authenticate with the temporary file
+  gcs_auth(scope = c("https://www.googleapis.com"), json_file = temp_path)
+} else {
+  # grab local file when running locally
+  Sys.setenv("GCS_AUTH_FILE" = "/Users/rpruim/.positron/gcs2.json")
+}
 
 scope <- "https://www.googleapis.com/auth/cloud-platform"
 token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
@@ -30,10 +42,8 @@ googleCloudStorageR::gcs_auth(token = token)
 
 board <- board_gcs("bucket-ncaa")
 
-# board |>
-#   pins::pin_write(lubridate::now(), "testing123")
+####################################
 
-# board |> pin_search()
 # library(madness)
 source('package/R/data_utils.R')
 source('package/R/matrix_and_vector.R')
