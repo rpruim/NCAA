@@ -1131,35 +1131,6 @@
         "Built": "R 4.5.1; ; 2025-09-11 19:56:57 UTC; unix"
       }
     },
-    "expm": {
-      "Source": "CRAN",
-      "Repository": "https://cran.rstudio.com",
-      "description": {
-        "Package": "expm",
-        "Type": "Package",
-        "Title": "Matrix Exponential, Log, 'etc'",
-        "Version": "1.0-0",
-        "Date": "2024-08-19",
-        "Authors@R": "c(person(\"Martin\", \"Maechler\", role=c(\"aut\",\"cre\"),\n                    email=\"maechler@stat.math.ethz.ch\", comment = c(ORCID = \"0000-0002-8685-9910\"))\n  , person(\"Christophe\",\"Dutang\", role = \"aut\", comment = c(ORCID = \"0000-0001-6732-1501\"))\n  , person(\"Vincent\",   \"Goulet\", role = \"aut\", comment = c(ORCID = \"0000-0002-9315-5719\"))\n  , person(\"Douglas\",   \"Bates\",      role = \"ctb\", comment = \"cosmetic clean up, in svn r42\")\n  , person(\"David\",     \"Firth\",      role = \"ctb\", comment = \"expm(method= \\\"PadeO\\\" and \\\"TaylorO\\\")\")\n  , person(\"Marina\",    \"Shapira\",    role = \"ctb\", comment = \"expm(method= \\\"PadeO\\\" and \\\"TaylorO\\\")\")\n  , person(\"Michael\",   \"Stadelmann\", role = \"ctb\", comment = \"\\\"Higham08*\\\" methods, see ?expm.Higham08...\")\n  \t     )",
-        "Contact": "expm-developers@lists.R-forge.R-project.org",
-        "Description": "Computation of the matrix exponential, logarithm, sqrt,\n  and related quantities, using traditional and modern methods.",
-        "Depends": "Matrix",
-        "Imports": "methods",
-        "Suggests": "RColorBrewer, sfsmisc, Rmpfr",
-        "BuildResaveData": "no",
-        "License": "GPL (>= 2)",
-        "URL": "https://R-Forge.R-project.org/projects/expm/",
-        "BugReports": "https://R-forge.R-project.org/tracker/?atid=472&group_id=107",
-        "Encoding": "UTF-8",
-        "NeedsCompilation": "yes",
-        "Packaged": "2024-08-19 09:24:41 UTC; maechler",
-        "Author": "Martin Maechler [aut, cre] (<https://orcid.org/0000-0002-8685-9910>),\n  Christophe Dutang [aut] (<https://orcid.org/0000-0001-6732-1501>),\n  Vincent Goulet [aut] (<https://orcid.org/0000-0002-9315-5719>),\n  Douglas Bates [ctb] (cosmetic clean up, in svn r42),\n  David Firth [ctb] (expm(method= \"PadeO\" and \"TaylorO\")),\n  Marina Shapira [ctb] (expm(method= \"PadeO\" and \"TaylorO\")),\n  Michael Stadelmann [ctb] (\"Higham08*\" methods, see ?expm.Higham08...)",
-        "Maintainer": "Martin Maechler <maechler@stat.math.ethz.ch>",
-        "Repository": "CRAN",
-        "Date/Publication": "2024-08-19 15:20:07 UTC",
-        "Built": "R 4.5.1; aarch64-apple-darwin23.6.0; 2026-03-15 19:42:57 UTC; unix"
-      }
-    },
     "farver": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -1723,6 +1694,63 @@
         "Repository": "CRAN",
         "Date/Publication": "2024-09-30 22:30:01 UTC",
         "Built": "R 4.5.1; aarch64-apple-darwin23.6.0; 2025-07-25 17:50:32 UTC; unix"
+      }
+    },
+    "googleAuthR": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "googleAuthR",
+        "Type": "Package",
+        "Version": "2.0.2.1",
+        "Title": "Authenticate and Create Google APIs",
+        "Description": "Create R functions that interact with OAuth2 Google APIs \n    <https://developers.google.com/apis-explorer/> easily,\n    with auto-refresh and Shiny compatibility.",
+        "Authors@R": "c(person(\"Mark\", \"Edmondson\",email = \"m@sunholo.com\",\n                  role = \"aut\",\n                  comment = c(ORCID = \"0000-0002-8434-3881\")),\n           person(\"Erik\", \"Grönroos\", email = \"erik.gronroos@8-bit-sheep.com\",\n                  role = \"cre\"),\n           person(\"Jennifer\", \"Bryan\", email=\"jenny@stat.ubc.ca\", role = \"ctb\"),\n           person(\"Johann\", \"deBoer\", email=\"johanndeboer@gmail.com\", role = \"ctb\"),\n           person(\"Neal\", \"Richardson\", email=\"neal.p.richardson@gmail.com\", role = \"ctb\"),\n           person(\"David\",\"Kulp\", email=\"dkulp@cs.umass.edu\", role = \"ctb\"),\n           person(\"Joe\",\"Cheng\", email = \"joe@rstudio.com\", role = \"ctb\"))",
+        "URL": "https://code.markedmondson.me/googleAuthR/",
+        "BugReports": "https://github.com/MarkEdmondson1234/googleAuthR/issues",
+        "Depends": "R (>= 3.3.0)",
+        "Imports": "assertthat (>= 0.2.0), cli (>= 2.0.2), digest, gargle (>=\n1.2.0), httr (>= 1.4.0), jsonlite (>= 1.6), memoise (>= 1.1.0),\nrlang, utils",
+        "Suggests": "covr, devtools (>= 1.12.0), formatR (>= 1.4),\ngoogleAnalyticsR, knitr, miniUI (>= 0.1.1), rmarkdown, roxygen2\n(>= 5.0.0), rstudioapi, shiny (>= 0.13.2), testthat, usethis\n(>= 1.6.0)",
+        "License": "MIT + file LICENSE",
+        "VignetteBuilder": "knitr",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.1",
+        "NeedsCompilation": "no",
+        "Packaged": "2026-01-09 08:46:10 UTC; hornik",
+        "Author": "Mark Edmondson [aut] (ORCID: <https://orcid.org/0000-0002-8434-3881>),\n  Erik Grönroos [cre],\n  Jennifer Bryan [ctb],\n  Johann deBoer [ctb],\n  Neal Richardson [ctb],\n  David Kulp [ctb],\n  Joe Cheng [ctb]",
+        "Maintainer": "Erik Grönroos <erik.gronroos@8-bit-sheep.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2026-01-09 09:00:22 UTC",
+        "Built": "R 4.5.1; ; 2026-03-16 03:06:58 UTC; unix"
+      }
+    },
+    "googleCloudStorageR": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "googleCloudStorageR",
+        "Type": "Package",
+        "Version": "0.7.0",
+        "Title": "Interface with Google Cloud Storage API",
+        "Description": "Interact with Google Cloud Storage <https://cloud.google.com/storage/> \n  API in R. Part of the 'cloudyr' <https://cloudyr.github.io/> project.",
+        "Authors@R": "c(person(\"Mark\", \"Edmondson\",email = \"r@sunholo.com\",\n                  role = c(\"aut\", \"cre\"),\n                  comment = c(ORCID = \"0000-0002-8434-3881\")))",
+        "URL": "https://code.markedmondson.me/googleCloudStorageR/",
+        "BugReports": "https://github.com/cloudyr/googleCloudStorageR/issues",
+        "Depends": "R (>= 3.2.0)",
+        "Imports": "assertthat (>= 0.2.0), cli, curl, googleAuthR (>= 1.4.0), httr\n(>= 1.2.1), jsonlite (>= 1.0), openssl, utils, yaml, zip (>=\n2.0.3)",
+        "Suggests": "fs, googleComputeEngineR, knitr, readr, rmarkdown, sodium,\ntestthat, usethis",
+        "License": "MIT + file LICENSE",
+        "VignetteBuilder": "knitr",
+        "RoxygenNote": "7.1.2",
+        "Config/testthat/edition": "3",
+        "Config/testthat/parallel": "false",
+        "NeedsCompilation": "no",
+        "Packaged": "2021-12-15 09:46:05 UTC; mark",
+        "Author": "Mark Edmondson [aut, cre] (<https://orcid.org/0000-0002-8434-3881>)",
+        "Maintainer": "Mark Edmondson <r@sunholo.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2021-12-16 09:50:02 UTC",
+        "Built": "R 4.5.1; ; 2026-03-16 03:07:01 UTC; unix"
       }
     },
     "googledrive": {
@@ -2531,32 +2559,21 @@
       }
     },
     "madness": {
-      "Source": "CRAN",
-      "Repository": "https://cran.rstudio.com",
+      "Source": "github",
+      "Repository": null,
       "description": {
         "Package": "madness",
-        "Maintainer": "Steven E. Pav <shabbychef@gmail.com>",
-        "Authors@R": "c(person(c(\"Steven\", \"E.\"), \"Pav\", \n    role=c(\"aut\",\"cre\"),\n    email=\"shabbychef@gmail.com\",\n    comment = c(ORCID = \"0000-0002-4197-6195\")))",
-        "Version": "0.2.8",
-        "Date": "2023-08-20",
-        "License": "LGPL-3",
-        "Title": "Automatic Differentiation of Multivariate Operations",
-        "BugReports": "https://github.com/shabbychef/madness/issues",
-        "Description": "An object that supports automatic differentiation\n    of matrix- and multidimensional-valued functions with \n    respect to multidimensional independent variables. \n    Automatic differentiation is via 'forward accumulation'.",
-        "Depends": "R (>= 3.2.0)",
-        "Imports": "Matrix, matrixcalc, expm, methods",
-        "Suggests": "testthat, dplyr, tidyr, lubridate, SharpeR, sandwich,\nformatR, knitr",
-        "URL": "https://github.com/shabbychef/madness",
-        "LazyData": "true",
-        "VignetteBuilder": "knitr",
-        "Collate": "'AllClass.r' 'utils.r' 'Ops.r' 'bind.r' 'blockrep.r'\n'coerce.r' 'data.r' 'det.r' 'diag.r' 'eigen.r' 'elwise.r'\n'madness_pkg.r' 'matwise.r' 'max.r' 'norm.r' 'numderiv.r'\n'reshape.r' 'solve.r' 'sum.r' 'sums.r' 'theta.r'\n'to_objective.r' 'trace.r' 'twomoments.r' 'vcov.r' 'vec.r'",
-        "RoxygenNote": "7.1.1",
-        "NeedsCompilation": "no",
-        "Packaged": "2023-08-21 04:59:53 UTC; spav",
-        "Author": "Steven E. Pav [aut, cre] (<https://orcid.org/0000-0002-4197-6195>)",
-        "Repository": "CRAN",
-        "Date/Publication": "2023-08-21 07:42:32 UTC",
-        "Built": "R 4.5.1; ; 2026-03-15 20:13:48 UTC; unix"
+        "Title": "Utilities for NCAA March Madness",
+        "Version": "0.1.0.9007",
+        "Authors@R": "person(\"Randall\", \"Pruim\", , \"rpruim@gmail.com\", role = c(\"aut\", \"cre\"))",
+        "Description": "Used for modeling contest at Calvin University",
+        "License": "`use_mit_license()`, `use_gpl3_license()` or friends to pick a\nlicense",
+        "Imports": "dplyr,\ntibble,\npurrr,\nreadr,\nbitops",
+        "Encoding": "UTF-8",
+        "Roxygen": "list(markdown = TRUE)",
+        "RoxygenNote": "7.3.3",
+        "Depends": "R (>= 2.10)",
+        "LazyData": "true"
       }
     },
     "magrittr": {
@@ -2619,28 +2636,6 @@
         "RemoteRepos": "https://cran.rstudio.com/",
         "RemotePkgPlatform": "source",
         "RemoteSha": "2.0"
-      }
-    },
-    "matrixcalc": {
-      "Source": "CRAN",
-      "Repository": "https://cran.rstudio.com",
-      "description": {
-        "Package": "matrixcalc",
-        "Version": "1.0-6",
-        "Date": "2022-09-10",
-        "Title": "Collection of Functions for Matrix Calculations",
-        "Author": "Frederick Novomestky <fnovomes@poly.edu>",
-        "Maintainer": "S. Thomas Kelly <tomkellygenetics@gmail.com>",
-        "Depends": "R (>= 2.0.1)",
-        "Description": "A collection of functions to support matrix calculations\n        for probability, econometric and numerical analysis. There are\n        additional functions that are comparable to APL functions which\n        are useful for actuarial models such as pension mathematics.\n        This package is used for teaching and research purposes at the\n        Department of Finance and Risk Engineering, New York\n        University, Polytechnic Institute, Brooklyn, NY 11201.\n        Horn, R.A. (1990) Matrix Analysis. ISBN 978-0521386326.\n        Lancaster, P. (1969) Theory of Matrices. ISBN 978-0124355507.\n        Lay, D.C. (1995) Linear Algebra: And Its Applications. ISBN 978-0201845563.",
-        "License": "GPL (>= 2)",
-        "BugReports": "https://github.com/TomKellyGenetics/matrixcalc/issues",
-        "Packaged": "2022-09-14 20:41:38 UTC; tom",
-        "Repository": "CRAN",
-        "Date/Publication": "2022-09-14 21:20:02 UTC",
-        "RoxygenNote": "7.1.2",
-        "NeedsCompilation": "no",
-        "Built": "R 4.5.1; ; 2026-03-15 19:42:54 UTC; unix"
       }
     },
     "memoise": {
@@ -5773,11 +5768,20 @@
     "data/2025/winprobs-2025-m-chatgpt.csv": {
       "checksum": "1cee5c02e34c7493fe37877dec7ad4f8"
     },
+    "data/2026/bracket-2026-M-gemini.txt": {
+      "checksum": "895230de1af917eab905c9f0ce0b47cf"
+    },
     "data/2026/bracket-2026-M.csv": {
-      "checksum": "47431281832bc7efbdf387306b22216b"
+      "checksum": "051977e2f869f9cce66ee4f3cc2f8afe"
+    },
+    "data/2026/bracket-2026-W-gemini.txt": {
+      "checksum": "5cbbf519902b50d58dce7879e8b3390f"
     },
     "data/2026/bracket-2026-W.csv": {
-      "checksum": "5bd8c74788059d6b1684c8b911ac97f0"
+      "checksum": "3bf6b33cab430001cec834186a9854a2"
+    },
+    "data/2026/round-by-round-2026-M-gemini.csv": {
+      "checksum": "b745a0294d4885566309b32c29bb3ce9"
     },
     "data/538.R": {
       "checksum": "67e8e1096067066d01a119613a3c56ce"
@@ -6446,7 +6450,7 @@
       "checksum": "9c7cf47a8797186f5f44cb1373ccfbf6"
     },
     "package/DESCRIPTION": {
-      "checksum": "3dd1d49e2c2161c21c9153de7eec0a51"
+      "checksum": "508352b437064603e7328fb93cd07a05"
     },
     "package/man/alive.Rd": {
       "checksum": "8c1cd7ffce217cc9a7df9a8104ec8f75"
@@ -6518,7 +6522,7 @@
       "checksum": "9e740c395d02e84c211c657d18029b4d"
     },
     "package/R/data_utils.R": {
-      "checksum": "1a2b71f2e52d94de2bea8d29696356cb"
+      "checksum": "4b36b9961d600894979b734a77dfd3e2"
     },
     "package/R/matrix_and_vector.R": {
       "checksum": "ae36dc300175c85b2c4376596513334c"
@@ -6902,7 +6906,7 @@
       "checksum": "98b3c1635a7d3147eef1c783618898be"
     },
     "server.R": {
-      "checksum": "dbf48682fa0ebdbc189f72e5246b865e"
+      "checksum": "b3d63592847994e2d6570886a449b896"
     },
     "teamData.Rds": {
       "checksum": "830fba3178bf3fd4464be990f87a10ed"
@@ -6911,7 +6915,7 @@
       "checksum": "70a7d2b767a212fc1fa3ef9bcf01ed34"
     },
     "ui.R": {
-      "checksum": "02b5dce2d59ab1ef281d6b4c90f034d0"
+      "checksum": "f159de8a88384d42210ca4c624d2e4b6"
     },
     "WhoCanWin-doublecheck.txt": {
       "checksum": "a68ed45e7f3c43dedb18a689e54ebacc"
