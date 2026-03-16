@@ -1,4 +1,3 @@
-
 #' Compute tie-breaking dust
 #'
 #' Add a small amount to the number of wins so that summing the dusted wins
@@ -12,7 +11,7 @@
 #' @export
 dust <- function(x) {
   stopifnot(x %in% 0:6)
-  eps <- c(0, rev(1/cumprod(5 * c(1, 2, 5, 10, 20, 50))))
+  eps <- c(0, rev(1 / cumprod(5 * c(1, 2, 5, 10, 20, 50))))
   x + eps[1 + x]
 }
 
@@ -34,11 +33,16 @@ dust <- function(x) {
 #' EM <- build_entry_matrix(Ent, "M")
 #' EW <- build_entry_matrix(Ent, "W")
 
-build_entry_matrix <- function(E, ext = c("M", "W")){
+build_entry_matrix <- function(E, ext = c("M", "W")) {
   ext <- match.arg(ext)
-  if (ext == "M") ext <- ""
+  if (ext == "M") {
+    ext <- ""
+  }
   ext <- tolower(ext)
-  res <- sapply(E, function(x) x[[paste0('teamslogical', ext)]] |> as.numeric()) |> t()
+  res <- sapply(E, function(x) {
+    x[[paste0('teamslogical', ext)]] |> as.numeric()
+  }) |>
+    t()
   for (a in c("name", "email", "dept", "time", "points")) {
     attr(res, a) <- sapply(E, function(x) x[[a]])
   }
@@ -50,7 +54,6 @@ build_entry_matrix <- function(E, ext = c("M", "W")){
 
   res
 }
-
 
 
 #' Load Entries From Pins
@@ -65,8 +68,11 @@ build_entry_matrix <- function(E, ext = c("M", "W")){
 
 load_entries_from_pins <-
   function(
-    board, year = 2023,
-    pattern = paste0("NCAA-", year, "-entry-"), keep.all = FALSE) {
+    board,
+    year = 2023,
+    pattern = paste0("NCAA-", year, "-entry-"),
+    keep.all = FALSE
+  ) {
     epin_names <- board |> pins::pin_search(pattern) |> dplyr::pull(name)
 
     res <- list()
@@ -79,7 +85,9 @@ load_entries_from_pins <-
   }
 
 pin_write_entry <- function(board, entry, year = entry$year, name = NULL, ...) {
-  if (is.null(year)) { year <- 2023 }
+  if (is.null(year)) {
+    year <- 2023
+  }
   if (is.null(name)) {
     email_name <- entry$email |>
       stringr::str_replace_all("[@.]", "_")
@@ -91,7 +99,6 @@ pin_write_entry <- function(board, entry, year = entry$year, name = NULL, ...) {
 # board |> pin_write_entry(ee)
 # board |> load_entries_from_pins(year = 2022)
 
-
 #' Load Entries From Local Files
 #'
 #' Load entries from files in a directory that match a specified pattern.
@@ -102,8 +109,13 @@ pin_write_entry <- function(board, entry, year = entry$year, name = NULL, ...) {
 #' @param year used to create the default value of pattern.
 #' @export
 load_entries_from_files <-
-  function(tournament, path, year = 2022, pattern =  paste0("Entry-", year, ".*rds"), keep.all = FALSE)
-  {
+  function(
+    tournament,
+    path,
+    year = 2022,
+    pattern = paste0("Entry-", year, ".*rds"),
+    keep.all = FALSE
+  ) {
     efiles <- dir(path, pattern = pattern, full.names = TRUE)
     res <- list()
     # read files in order; newer entries with same email will clobber older ones
@@ -121,12 +133,18 @@ load_entries_from_files <-
         res[[paste0(sprintf("%03d", 1 + length(res)), "-", e$email)]] <- e
       } else {
         if (!is.null(res[[e$email]])) {
-          if (purrr::pluck(e, 'points') < 190 && purrr::pluck(res, e$email, 'points') >= 190) {
+          if (
+            purrr::pluck(e, 'points') < 190 &&
+              purrr::pluck(res, e$email, 'points') >= 190
+          ) {
             e[['points']] <- NULL
             e[['teams']] <- NULL
             e[['teamsLogical']] <- NULL
           }
-          if (purrr::pluck(e, 'pointsW') < 190 && purrr::pluck(res, e$email, 'pointsW') >= 190) {
+          if (
+            purrr::pluck(e, 'pointsW') < 190 &&
+              purrr::pluck(res, e$email, 'pointsW') >= 190
+          ) {
             e[['pointsW']] <- NULL
             e[['teamsW']] <- NULL
             e[['teamsLogicalW']] <- NULL
@@ -147,18 +165,28 @@ load_entries_from_files <-
 #'
 #' @export
 load_bracket <- function(file) {
-  bracket <- readr::read_csv(file) |>
+  bracket <-
+    readr::read_csv(file)
+  regions <- unique(bracket[["region"]])
+
+  bracket <-
+    bracket |>
+    mutate(region = factor(region, levels = regions), ordered = TRUE) |>
     # for play-in games, list both teams in csv and collapse them here.
-    group_by(seed, region) |>
-    summarise(team = paste(team, collapse = " / "))
+    # dplyr::group_by(seed, region) |>
+    dplyr::summarise(
+      .by = c(seed, region),
+      team = paste(team, collapse = " / ")
+    ) |>
+    dplyr::ungroup()
 
   bracket |>
     dplyr::mutate(
       cost = seedCost[seed],
       cost.old = seedCostOld[seed],
       # which regions play in final 4 is determined by order of appearance in csv
-      slot = ( as.numeric(factor(region, levels = unique(region),
-                                 ordered=TRUE)) * 100 + order(seedOrder)[seed] )
+      slot = as.numeric(region) * 100 + order(seedOrder)[seed],
+      region = as.character(region)
     ) |>
     dplyr::arrange(slot)
 }
@@ -180,11 +208,19 @@ load_bracket <- function(file) {
 #' @importFrom tibble tibble
 
 load_game_scores <- function(files) {
-  if (length(files) < 1)
+  if (length(files) < 1) {
     return(
-      tibble::tibble(game_number = NA, winner_01 = NA,
-             home = NA, away = NA, hscore = NA, ascore = NA) |>
-        head(0))
+      tibble::tibble(
+        game_number = NA,
+        winner_01 = NA,
+        home = NA,
+        away = NA,
+        hscore = NA,
+        ascore = NA
+      ) |>
+        head(0)
+    )
+  }
 
   res <- list()
   # read files in order; newer entries with same teams will clobber older ones
@@ -196,4 +232,3 @@ load_game_scores <- function(files) {
       loser = ifelse(hscore < ascore, home, away)
     )
 }
-

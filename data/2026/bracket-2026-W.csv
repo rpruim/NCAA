@@ -1,65 +1,65 @@
-team,region,seed
-South Carolina,Greensboro,1
-Iowa,Greensboro,2
-Iowa State,Greensboro,3
-Arizona,Greensboro,4
-North Carolina,Greensboro,5
-Georgia,Greensboro,6
-Colorado,Greensboro,7
-Miami (FL),Greensboro,8
-South Florida,Greensboro,9
-Creighton,Greensboro,10
-Dayton/DePaul,Greensboro,11
-Stephen F. Austin,Greensboro,12
-Nevada-Las Vegas,Greensboro,13
-Texas-Arlington,Greensboro,14
-Illinois State,Greensboro,15
-Howard/Incarnate Word,Greensboro,16
-Louisville,Wichita,1
-Baylor,Wichita,2
-Michigan,Wichita,3
-Tennessee,Wichita,4
-Oregon,Wichita,5
-Brigham Young,Wichita,6
-Mississippi,Wichita,7
-Nebraska,Wichita,8
-Gonzaga,Wichita,9
-South Dakota,Wichita,10
-Villanova,Wichita,11
-Belmont,Wichita,12
-Buffalo,Wichita,13
-American,Wichita,14
-Hawaii,Wichita,15
-Albany (NY),Wichita,16
-Stanford,Spokane,1
-Texas,Spokane,2
-Louisiana State,Spokane,3
-Maryland,Spokane,4
-Virginia Tech,Spokane,5
-Ohio State,Spokane,6
-Utah,Spokane,7
-Kansas,Spokane,8
-Georgia Tech,Spokane,9
-Arkansas,Spokane,10
-Florida State/Missouri State,Spokane,11
-Florida Gulf Coast,Spokane,12
-Delaware,Spokane,13
-Jackson State,Spokane,14
-Fairfield,Spokane,15
-Montana State,Spokane,16
-North Carolina State,Bridgeport,1
-Connecticut,Bridgeport,2
-Indiana,Bridgeport,3
-Oklahoma,Bridgeport,4
-Notre Dame,Bridgeport,5
-Kentucky,Bridgeport,6
-Central Florida,Bridgeport,7
-Washington State,Bridgeport,8
-Kansas State,Bridgeport,9
-Florida,Bridgeport,10
-Princeton,Bridgeport,11
-Massachusetts,Bridgeport,12
-IUPUI,Bridgeport,13
-Charlotte,Bridgeport,14
-Mercer,Bridgeport,15
-Longwood/Mount St. Mary's,Bridgeport,16
+tournament,team,region,seed
+Women's,UConn,Fort Worth 1,1
+Women's,Vanderbilt,Fort Worth 1,2
+Women's,Ohio State,Fort Worth 1,3
+Women's,North Carolina,Fort Worth 1,4
+Women's,Maryland,Fort Worth 1,5
+Women's,Notre Dame,Fort Worth 1,6
+Women's,Illinois,Fort Worth 1,7
+Women's,Iowa State,Fort Worth 1,8
+Women's,Syracuse,Fort Worth 1,9
+Women's,Colorado,Fort Worth 1,10
+Women's,Fairfield,Fort Worth 1,11
+Women's,Murray State,Fort Worth 1,12
+Women's,Western Illinois,Fort Worth 1,13
+Women's,Howard,Fort Worth 1,14
+Women's,High Point,Fort Worth 1,15
+Women's,UTSA,Fort Worth 1,16
+Women's,South Carolina,Sacramento 4,1
+Women's,Iowa,Sacramento 4,2
+Women's,TCU,Sacramento 4,3
+Women's,Oklahoma,Sacramento 4,4
+Women's,Michigan State,Sacramento 4,5
+Women's,Washington,Sacramento 4,6
+Women's,Georgia,Sacramento 4,7
+Women's,Clemson,Sacramento 4,8
+Women's,USC,Sacramento 4,9
+Women's,Virginia/Arizona State,Sacramento 4,10
+Women's,South Dakota State,Sacramento 4,11
+Women's,Colorado State,Sacramento 4,12
+Women's,Idaho,Sacramento 4,13
+Women's,UC San Diego,Sacramento 4,14
+Women's,Fairleigh Dickinson,Sacramento 4,15
+Women's,Samford/Southern,Sacramento 4,16
+Women's,UCLA,Sacramento 2,1
+Women's,LSU,Sacramento 2,2
+Women's,Duke,Sacramento 2,3
+Women's,Minnesota,Sacramento 2,4
+Women's,Ole Miss,Sacramento 2,5
+Women's,Baylor,Sacramento 2,6
+Women's,Texas Tech,Sacramento 2,7
+Women's,Oklahoma State,Sacramento 2,8
+Women's,Princeton,Sacramento 2,9
+Women's,Villanova,Sacramento 2,10
+Women's,Nebraska/Richmond,Sacramento 2,11
+Women's,Gonzaga,Sacramento 2,12
+Women's,Green Bay,Sacramento 2,13
+Women's,Charleston,Sacramento 2,14
+Women's,Jacksonville,Sacramento 2,15
+Women's,Cal Baptist,Sacramento 2,16
+Women's,Texas,Fort Worth 3,1
+Women's,Michigan,Fort Worth 3,2
+Women's,Louisville,Fort Worth 3,3
+Women's,West Virginia,Fort Worth 3,4
+Women's,Kentucky,Fort Worth 3,5
+Women's,Alabama,Fort Worth 3,6
+Women's,NC State,Fort Worth 3,7
+Women's,Oregon,Fort Worth 3,8
+Women's,Virginia Tech,Fort Worth 3,9
+Women's,Tennessee,Fort Worth 3,10
+Women's,Rhode Island,Fort Worth 3,11
+Women's,James Madison,Fort Worth 3,12
+Women's,Miami (OH),Fort Worth 3,13
+Women's,Vermont,Fort Worth 3,14
+Women's,Holy Cross,Fort Worth 3,15
+Women's,Missouri State/SFA,Fort Worth 3,16
