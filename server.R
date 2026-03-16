@@ -12,9 +12,26 @@ library(vegabrite)
 yaml_file <- yaml::read_yaml('ncaa.yml')$yaml
 config <- yaml::read_yaml(yaml_file)
 
-board <-
-  board_connect(server = "https://connect.cs.calvin.edu",
-                key = "S2RwoRs5VIkMPCyELvj0mixL6QC4Emx1")
+# board <-
+#   board_connect(
+#     # auth = "manual",
+#     # server = "https://connect.posit.cloud",
+#     server = "https://shinyapps.io",
+#     key = "EMd26Xic4zetNHlf0QyoIu9JIVzBJAspFVzf4xf1"
+#   )
+
+# Set the path to your service account JSON file
+Sys.setenv("GCS_AUTH_FILE" = "/Users/rpruim/.positron/gcs2.json")
+# Authenticate (optional if GCS_AUTH_FILE is set)
+
+scope <- "https://www.googleapis.com/auth/cloud-platform"
+token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
+googleCloudStorageR::gcs_auth(token = token)
+
+board <- board_gcs("bucket-ncaa")
+
+# board |>
+#   pins::pin_write(lubridate::now(), "testing123")
 
 # board |> pin_search()
 # library(madness)
@@ -31,7 +48,8 @@ theme_set(theme_bw())
 
 
 clean_name <- function(name) {
-  paste0('rpruim/NCAA-', config[['year']], '-', name) |>
+  # removed rpruim/ from this since trying to use gcs instead of connect server.
+  paste0('NCAA-', config[['year']], '-', name) |>
     stringr::str_replace_all('[@.]', '_')
 }
 
@@ -97,12 +115,12 @@ regionChoices <- function(region, bracket) {
   res
 }
 
-shinyServer(function(input, output, session) {
-
-  Query <- reactive( parseQueryString(session$clientData$url_search) )
+# shinyServer(
+function(input, output, session) {
+  Query <- reactive(parseQueryString(session$clientData$url_search))
 
   AdminMode <- reactive({
-    tolower(Query()["admin"]) %in% c("yes","y") || file.exists('admin.txt')
+    tolower(Query()["admin"]) %in% c("yes", "y") || file.exists('admin.txt')
   })
 
   ##############################
@@ -142,28 +160,35 @@ shinyServer(function(input, output, session) {
     reactivePoll(
       60000,
       session = session,
-      function() pin_search(board, search = paste0("NCAA-", config[['year']], "-entry")) |> pull(created) |> max(),
+      function() {
+        pin_search(
+          board,
+          search = paste0("NCAA-", config[['year']], "-entry")
+        ) |>
+          pull(created) |>
+          max()
+      },
       function() {
         board |>
-        load_entries_from_pins(
-          year = config[['year']]
+          load_entries_from_pins(
+            year = config[['year']]
           )
       }
     )
 
   BracketM <- reactiveFileReader(
-      60000,
-      session = session,
-      config[["brackets"]][1],    # "data/bracket2022.csv",
-      load_bracket
-    )
+    60000,
+    session = session,
+    config[["brackets"]][1], # "data/bracket2022.csv",
+    load_bracket
+  )
 
   BracketW <- reactiveFileReader(
-      60000,
-      session = session,
-      config[["brackets"]][2],    #  "data/bracket2022w.csv",
-      load_bracket
-    )
+    60000,
+    session = session,
+    config[["brackets"]][2], #  "data/bracket2022w.csv",
+    load_bracket
+  )
 
   empty_scores_df <-
     tibble(
@@ -178,20 +203,24 @@ shinyServer(function(input, output, session) {
 
   GameScoresM <-
     my_pin_reactive_read(
-      board, name = config[['scores']][1],
-      default = empty_scores_df)
+      board,
+      name = config[['scores']][1],
+      default = empty_scores_df
+    )
 
   GameScoresW <-
     my_pin_reactive_read(
-      board, name = config[['scores']][2],
-      default = empty_scores_df)
+      board,
+      name = config[['scores']][2],
+      default = empty_scores_df
+    )
 
   ##############################
   # entry matrices
 
   EM <- reactive({
     build_entry_matrix(Entries(), ext = "M")
-    })
+  })
   EW <- reactive({
     build_entry_matrix(Entries(), ext = "W")
   })
@@ -199,14 +228,30 @@ shinyServer(function(input, output, session) {
   ##############################
   # brackets and tournament
 
-  TMinit <- reactive({tournament_init(names = BracketM()[['team']], seeds = BracketM()[['seed']], label = "M")})
-  TWinit <- reactive({tournament_init(names = BracketW()[['team']], seeds = BracketW()[['seed']], label = "W")})
+  TMinit <- reactive({
+    tournament_init(
+      names = BracketM()[['team']],
+      seeds = BracketM()[['seed']],
+      label = "M"
+    )
+  })
+  TWinit <- reactive({
+    tournament_init(
+      names = BracketW()[['team']],
+      seeds = BracketW()[['seed']],
+      label = "W"
+    )
+  })
 
   # todo: deal with scores
   TM <- reactive({
     scores <- GameScoresM()
     if (nrow(scores) > 0) {
-      TMinit() |> tournament_update(games = scores[['game_number']], results = scores[['winner_01']])
+      TMinit() |>
+        tournament_update(
+          games = scores[['game_number']],
+          results = scores[['winner_01']]
+        )
     } else {
       TMinit()
     }
@@ -215,7 +260,11 @@ shinyServer(function(input, output, session) {
   TW <- reactive({
     scores <- GameScoresW()
     if (nrow(scores) > 0) {
-      TWinit() |> tournament_update( games = scores[['game_number']], results = scores[['winner_01']])
+      TWinit() |>
+        tournament_update(
+          games = scores[['game_number']],
+          results = scores[['winner_01']]
+        )
     } else {
       TWinit()
     }
@@ -249,7 +298,12 @@ shinyServer(function(input, output, session) {
   ContestStandingsAll <- reactive({
     csm <- ContestStandingsM()
     csw <- ContestStandingsW()
-    cs <- csm |> dplyr::full_join(csw, by = c('email' = 'email'), suffix = c('_m', '_w')) |>
+    cs <- csm |>
+      dplyr::full_join(
+        csw,
+        by = c('email' = 'email'),
+        suffix = c('_m', '_w')
+      ) |>
       filter(score_m > 0 & score_w > 0)
     cs |>
       mutate(
@@ -260,336 +314,391 @@ shinyServer(function(input, output, session) {
       ) |>
       arrange(desc(total)) |>
       rename(`men's wins` = score_m, `women's wins` = score_w) |>
-      select(name, `men's wins`, `women's wins`, total, `guaranteed wins`, `max possible`)
+      select(
+        name,
+        `men's wins`,
+        `women's wins`,
+        total,
+        `guaranteed wins`,
+        `max possible`
+      )
   })
 
+  if (FALSE) {
+    # todo: deal with crystal ball
+    cacheCrystalBallM <- function() {
+      tc <- tournament_completions(TM(), max_games_remaining = 15)
+      tc |>
+        my_pin_write(name = 'TCM', board = board)
 
-  if (TRUE) {
-  # todo: deal with crystal ball
-  cacheCrystalBallM <- function() {
-    tc <- tournament_completions(TM(), max_games_remaining = 15)
-    tc |>
-      my_pin_write(name = 'TCM', board = board)
+      h2h <- head2head(TM(), EM(), tc, result = "data.frame")
+      h2h |>
+        my_pin_write(name = "H2HM", board = board)
 
-    h2h <- head2head(TM(), EM() , tc, result = "data.frame")
-    h2h |>
-      my_pin_write(name = "H2HM", board = board)
+      ps <- tc |>
+        apply(2, function(x, e = EM()) {
+          contest_scores(x, e)
+        })
+      ps |> round(12) |> my_pin_write(name = 'PossibleScoresM', board = board)
 
-    ps <- tc |>
-      apply(2, function(x, e = EM()) { contest_scores(x, e)} )
-    ps |> round(12) |>
-      my_pin_write(name = 'PossibleScoresM', board = board)
+      ps |>
+        apply(2, which.max) %>%
+        tibble(winner = .) |>
+        group_by(winner) |>
+        summarise(scenarios = n()) |>
+        mutate(
+          winner = rownames(EM())[winner],
+          p = scenarios / sum(scenarios)
+        ) |>
+        mutate(
+          winner = reorder(winner, scenarios)
+        ) |>
+        my_pin_write(name = "WinnersTableM", board = board)
+    }
 
-    ps |>
-      apply(2, which.max) %>%
-      tibble(winner = .) |>
-      group_by(winner) |>
-      summarise(scenarios = n()) |>
-      mutate(
-        winner = rownames(EM())[winner],
-        p = scenarios / sum(scenarios)
-      ) |>
-      mutate(
-        winner = reorder(winner, scenarios)
-      ) |>
-      my_pin_write(name = "WinnersTableM", board = board)
-  }
+    TCM <-
+      my_pin_reactive_read(
+        board,
+        name = 'TCM',
+        default = matrix(numeric(0), nrow = 0)
+      )
 
+    h2h_default <-
+      tibble(
+        key = factor(integer(0)),
+        other = factor(integer(0)),
+        scenarios = integer(0),
+        key_name = factor(character(0)),
+        other_name = factor(character(0)),
+        prop = numeric(0),
+        key_abbrev = factor(character(0)),
+        other_abbrev = factor(character(0))
+      )
 
-  TCM <-
-    my_pin_reactive_read(board, name = 'TCM', default = matrix(numeric(0), nrow = 0))
+    H2HM <-
+      my_pin_reactive_read(board, name = 'H2HM', default = h2h_default)
 
-  h2h_default <-
-    tibble(
-      key = factor(integer(0)),
-      other = factor(integer(0)),
+    possible_scores_default <-
+      isolate(matrix(numeric(0), nrow = nrow(EM())))
+
+    PossibleScoresM <-
+      my_pin_reactive_read(
+        board,
+        name = 'PossibleScoresM',
+        default = possible_scores_default
+      )
+
+    winners_table_default <- tibble(
+      winner = factor(character(0)),
       scenarios = integer(0),
-      key_name = factor(character(0)),
-      other_name = factor(character(0)),
-      prop = numeric(0),
-      key_abbrev = factor(character(0)),
-      other_abbrev = factor(character(0))
+      p = numeric(0)
     )
 
-  H2HM <-
-    my_pin_reactive_read(board, name = 'H2HM', default = h2h_default)
+    WinnersTableM <-
+      my_pin_reactive_read(
+        board,
+        name = "WinnersTableM",
+        default = winners_table_default
+      )
 
-  possible_scores_default <-
-    isolate(matrix(numeric(0), nrow = nrow(EM())))
+    PossibleScoresTableM <- reactive({
+      PossibleScoresM() |>
+        as.table() |>
+        as.data.frame() |>
+        setNames(c('name', 'sceneario', 'score')) |>
+        group_by(name, score) |>
+        tally()
+    })
 
-  PossibleScoresM <-
-    my_pin_reactive_read(board, name = 'PossibleScoresM', default = possible_scores_default)
+    cacheCrystalBallW <- function() {
+      tc <- tournament_completions(TW(), max_games_remaining = 15)
+      tc |> my_pin_write(board, name = 'TCW')
 
-  winners_table_default <- tibble(
-    winner = factor(character(0)),
-    scenarios = integer(0),
-    p = numeric(0)
-  )
+      h2h <- head2head(TW(), EW(), tc, result = "data.frame")
+      h2h |>
+        my_pin_write(name = 'H2HW', board = board)
 
-  WinnersTableM <-
-    my_pin_reactive_read(board, name = "WinnersTableM", default = winners_table_default)
+      ps <- tc |>
+        apply(2, function(x, e = EW()) {
+          contest_scores(x, e)
+        })
+      ps |> round(12) |> my_pin_write(name = 'PossibleScoresW', board = board)
 
-  PossibleScoresTableM <- reactive({
-    PossibleScoresM() |>
-      as.table() |>
-      as.data.frame() |>
-      setNames(c('name', 'sceneario', 'score')) |>
-      group_by(name, score) |>
-      tally()
-  })
+      ps |>
+        apply(2, which.max) %>%
+        tibble(winner = .) |>
+        group_by(winner) |>
+        summarise(scenarios = n()) |>
+        mutate(
+          winner = rownames(EW())[winner],
+          p = scenarios / sum(scenarios)
+        ) |>
+        mutate(
+          winner = reorder(winner, scenarios)
+        ) |>
+        my_pin_write(name = 'WinnersTableW', board = board)
+    }
 
-  cacheCrystalBallW <- function() {
-    tc <- tournament_completions(TW(), max_games_remaining = 15)
-    tc |> my_pin_write(board, name = 'TCW')
+    TCW <-
+      my_pin_reactive_read(board, name = 'TCW', default = matrix())
 
-    h2h <- head2head(TW(), EW(), tc, result = "data.frame")
-    h2h |>
-      my_pin_write(name = 'H2HW', board = board)
+    H2HW <-
+      my_pin_reactive_read(board, name = 'H2HW', default = tibble())
 
-    ps <- tc |>
-      apply(2, function(x, e = EW()) { contest_scores(x, e)} )
-    ps |> round(12) |>
-      my_pin_write(name = 'PossibleScoresW', board = board)
+    PossibleScoresW <-
+      my_pin_reactive_read(board, name = 'PossibleScoresW', default = matrix())
 
-    ps |>
-      apply(2, which.max) %>%
-      tibble(winner = .) |>
-      group_by(winner) |>
-      summarise(scenarios = n()) |>
-      mutate(
-        winner = rownames(EW())[winner],
-        p = scenarios / sum(scenarios)
-      ) |>
-      mutate(
-        winner = reorder(winner, scenarios)
-      ) |>
-      my_pin_write(name = 'WinnersTableW', board = board)
-  }
+    WinnersTableW <-
+      my_pin_reactive_read(board, name = 'WinnersTableW', default = tibble())
 
+    PossibleScoresTableW <- reactive({
+      PossibleScoresW() |>
+        as.table() |>
+        as.data.frame() |>
+        setNames(c('name', 'sceneario', 'score')) |>
+        group_by(name, score) |>
+        tally()
+    })
 
-  TCW <-
-    my_pin_reactive_read(board, name = 'TCW', default = matrix())
-
-  H2HW <-
-    my_pin_reactive_read(board, name = 'H2HW', default = tibble())
-
-  PossibleScoresW <-
-    my_pin_reactive_read(board, name = 'PossibleScoresW', default = matrix())
-
-  WinnersTableW <-
-    my_pin_reactive_read(board, name = 'WinnersTableW', default = tibble())
-
-  PossibleScoresTableW <- reactive({
-    PossibleScoresW() |>
-      as.table() |>
-      as.data.frame() |>
-      setNames(c('name', 'sceneario', 'score')) |>
-      group_by(name, score) |>
-      tally()
-  })
-
-  observeEvent(
-    input$reCacheButton,
-    {
-      if (as.numeric(input$reCacheButton) > 0 && AdminMode()) {
-        if (n_games_remaining(TW()) <= 15) {
-          cacheCrystalBallW()
-        }
-        if (n_games_remaining(TM()) <= 15) {
-          cacheCrystalBallM()
-        }
-        if (n_games_remaining(TM()) + n_games_remaining(TW()) <= 15) {
-          cacheCrystalBallC()
+    observeEvent(
+      input$reCacheButton,
+      {
+        if (as.numeric(input$reCacheButton) > 0 && AdminMode()) {
+          if (n_games_remaining(TW()) <= 15) {
+            cacheCrystalBallW()
+          }
+          if (n_games_remaining(TM()) <= 15) {
+            cacheCrystalBallM()
+          }
+          if (n_games_remaining(TM()) + n_games_remaining(TW()) <= 15) {
+            cacheCrystalBallC()
+          }
         }
       }
-    })
-
-  PossibleScoresC <-
-    my_pin_reactive_read(board, name = 'PossibleScoresC', default = matrix())
-
-  cacheCrystalBallC <- function() {
-    psm <- PossibleScoresM()
-    psw <- PossibleScoresW()
-
-    ## individual bracket winners removed from competition
-    mm <- apply(psm, 2, max)
-    mw <- apply(psw, 2, max)
-
-    zerom <- apply(psm, 1, function(x) x == mm) |> t()
-    zerow <- apply(psw, 1, function(x) x == mw) |> t()
-
-    psm[zerom] <- 0
-    psw[zerow] <- 0
-
-    denom <- ncol(psm) * ncol(psw)
-    n <- nrow(EM())
-    ps <-
-      sapply(1:n,
-             function(x) {
-               outer(psm[x, ], psw[x, ], "+")
-             }
-      ) |> t()
-    if (nrow(ps) != n) {ps <- t(ps)}
-    ps |> round(12) |>
-      my_pin_write(name = 'PossibleScoresC', board = board)
-    ps |>
-      apply(2, which.max) %>%
-      tibble(winner = .) |>
-      group_by(winner) |>
-      summarise(scenarios = n()) |>
-      mutate(
-        winner = rownames(EM())[winner],
-        p = scenarios / sum(scenarios)
-      ) |>
-      mutate(
-        winner = reorder(winner, scenarios)
-      ) |>
-      my_pin_write(name = 'WinnersTableC', board = board)
-  }
-
-  PossibleScoresTableC <- reactive({
-    PossibleScoresC() |>
-      as.table() |>
-      as.data.frame() |>
-      setNames(c('name', 'sceneario', 'score')) |>
-      group_by(name, score) |>
-      tally()
-  })
-
-  WinnersTableC <-
-    my_pin_reactive_read(name = 'WinnersTableC', board = board, default = tibble())
-
-output$WhoCanWinPlotC <- renderVegawidget({
-  WinnersTableC() |>
-    who_can_win_plot()
-    # gf_col(winner ~ p, fill = "steelblue") |>
-    # gf_labs(x = "percent of scenarios that win") |>
-    # gf_refine(scale_x_continuous(labels = scales::label_percent()))
-})
-
-
-H2HC <- reactive({
-  n <- nrow(EM())
-  psc <- PossibleScoresC()
-  denom <- ncol(psc)
-  res <-
-    outer(1:n, 1:n, Vectorize(function(r, c) {
-      sum(psc[r,] > psc[c, ])
-    })
     )
 
-  rownames(res) <- attr(EM(), "name")
-  colnames(res) <- attr(EM(), "name")
+    PossibleScoresC <-
+      my_pin_reactive_read(board, name = 'PossibleScoresC', default = matrix())
 
-  res |>
-    as.table() |> as.data.frame() |>
-    setNames(c('key', 'other', 'scenarios')) |>
-    mutate(
-      prop = scenarios / denom,
-      key_name = attr(EM(), 'name')[key],
-      other_name = attr(EM(), 'name')[other],
-      key_abbrv = abbreviate(key_name, 6),
-      other_abbrv = abbreviate(other_name, 6)
-    ) |>
-    mutate(
-      key_name = reorder(key_name, scenarios),
-      key_abbrv = reorder(key_abbrv, scenarios),
-      other_name = reorder(other_name, scenarios, function(x) - mean(x)),
-      other_abbrv = reorder(other_abbrv, scenarios, function(x) - mean(x))
-    )
-})
+    cacheCrystalBallC <- function() {
+      psm <- PossibleScoresM()
+      psw <- PossibleScoresW()
 
-output$H2HPlotC <- renderVegawidget({
-  H2HC() |>
-    h2h_plot()
-    # mutate(
-    #   perc = round(100 * prop, 2),
-    #   hovertext =
-    #     glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
-    # ) |>
-    # mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
-    # gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8, text = ~hovertext) |>
-    # gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
-    # gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
-    # gf_labs(title = "head to head winning scenarios",
-    #         subtitle = "read across rows for wins against the other player",
-    #         x = "", y = "", fill = "winning\nscenarios" ) |>
-    # gf_refine(
-    #   scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
-    #   coord_cartesian(expand = FALSE)
-    # ) |>
-    # gf_theme(
-    #   panel.grid.major.x = element_blank(),
-    #   panel.grid.major.y = element_blank(),
-    #   axis.text.x = element_text(angle = 45, hjust = 1),
-    #   panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
-    # ) |>
-    # plotly::ggplotly(tooltip = "text")
-})
+      ## individual bracket winners removed from competition
+      mm <- apply(psm, 2, max)
+      mw <- apply(psw, 2, max)
 
-} # turn off stuff that doesn't work until second week.
+      zerom <- apply(psm, 1, function(x) x == mm) |> t()
+      zerow <- apply(psw, 1, function(x) x == mw) |> t()
+
+      psm[zerom] <- 0
+      psw[zerow] <- 0
+
+      denom <- ncol(psm) * ncol(psw)
+      n <- nrow(EM())
+      ps <-
+        sapply(1:n, function(x) {
+          outer(psm[x, ], psw[x, ], "+")
+        }) |>
+        t()
+      if (nrow(ps) != n) {
+        ps <- t(ps)
+      }
+      ps |> round(12) |> my_pin_write(name = 'PossibleScoresC', board = board)
+      ps |>
+        apply(2, which.max) %>%
+        tibble(winner = .) |>
+        group_by(winner) |>
+        summarise(scenarios = n()) |>
+        mutate(
+          winner = rownames(EM())[winner],
+          p = scenarios / sum(scenarios)
+        ) |>
+        mutate(
+          winner = reorder(winner, scenarios)
+        ) |>
+        my_pin_write(name = 'WinnersTableC', board = board)
+    }
+
+    PossibleScoresTableC <- reactive({
+      PossibleScoresC() |>
+        as.table() |>
+        as.data.frame() |>
+        setNames(c('name', 'sceneario', 'score')) |>
+        group_by(name, score) |>
+        tally()
+    })
+
+    WinnersTableC <-
+      my_pin_reactive_read(
+        name = 'WinnersTableC',
+        board = board,
+        default = tibble()
+      )
+
+    output$WhoCanWinPlotC <- renderVegawidget({
+      WinnersTableC() |>
+        who_can_win_plot()
+      # gf_col(winner ~ p, fill = "steelblue") |>
+      # gf_labs(x = "percent of scenarios that win") |>
+      # gf_refine(scale_x_continuous(labels = scales::label_percent()))
+    })
+
+    H2HC <- reactive({
+      n <- nrow(EM())
+      psc <- PossibleScoresC()
+      denom <- ncol(psc)
+      res <-
+        outer(
+          1:n,
+          1:n,
+          Vectorize(function(r, c) {
+            sum(psc[r, ] > psc[c, ])
+          })
+        )
+
+      rownames(res) <- attr(EM(), "name")
+      colnames(res) <- attr(EM(), "name")
+
+      res |>
+        as.table() |>
+        as.data.frame() |>
+        setNames(c('key', 'other', 'scenarios')) |>
+        mutate(
+          prop = scenarios / denom,
+          key_name = attr(EM(), 'name')[key],
+          other_name = attr(EM(), 'name')[other],
+          key_abbrv = abbreviate(key_name, 6),
+          other_abbrv = abbreviate(other_name, 6)
+        ) |>
+        mutate(
+          key_name = reorder(key_name, scenarios),
+          key_abbrv = reorder(key_abbrv, scenarios),
+          other_name = reorder(other_name, scenarios, function(x) -mean(x)),
+          other_abbrv = reorder(other_abbrv, scenarios, function(x) -mean(x))
+        )
+    })
+
+    output$H2HPlotC <- renderVegawidget({
+      H2HC() |>
+        h2h_plot()
+      # mutate(
+      #   perc = round(100 * prop, 2),
+      #   hovertext =
+      #     glue::glue('{key_name}<br>defeats<br>{other_name}<br>in {scenarios} scenarios.<br>({perc} %)')
+      # ) |>
+      # mutate(scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)) |>
+      # gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8, text = ~hovertext) |>
+      # gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
+      # gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
+      # gf_labs(title = "head to head winning scenarios",
+      #         subtitle = "read across rows for wins against the other player",
+      #         x = "", y = "", fill = "winning\nscenarios" ) |>
+      # gf_refine(
+      #   scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
+      #   coord_cartesian(expand = FALSE)
+      # ) |>
+      # gf_theme(
+      #   panel.grid.major.x = element_blank(),
+      #   panel.grid.major.y = element_blank(),
+      #   axis.text.x = element_text(angle = 45, hjust = 1),
+      #   panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
+      # ) |>
+      # plotly::ggplotly(tooltip = "text")
+    })
+  } # turn off stuff that doesn't work until second week.
 
   ############ select teams ###########
 
-  TeamsM <- reactive(c( input$regionM1, input$regionM2, input$regionM3, input$regionM4 ))
-  TeamsW <- reactive(c( input$regionW1, input$regionW2, input$regionW3, input$regionW4 ))
+  TeamsM <- reactive(c(
+    input$regionM1,
+    input$regionM2,
+    input$regionM3,
+    input$regionM4
+  ))
+  TeamsW <- reactive(c(
+    input$regionW1,
+    input$regionW2,
+    input$regionW3,
+    input$regionW4
+  ))
 
-  RegionsM <- reactive({unique(BracketM()$region)})
-  RegionsW <- reactive({unique(BracketW()$region)})
+  RegionsM <- reactive({
+    unique(BracketM()$region)
+  })
+  RegionsW <- reactive({
+    unique(BracketW()$region)
+  })
 
-  output$RegionNameM1 <- renderText({RegionsM()[1]})
-  output$RegionNameM2 <- renderText({RegionsM()[2]})
-  output$RegionNameM3 <- renderText({RegionsM()[3]})
-  output$RegionNameM4 <- renderText({RegionsM()[4]})
+  output$RegionNameM1 <- renderText({
+    RegionsM()[1]
+  })
+  output$RegionNameM2 <- renderText({
+    RegionsM()[2]
+  })
+  output$RegionNameM3 <- renderText({
+    RegionsM()[3]
+  })
+  output$RegionNameM4 <- renderText({
+    RegionsM()[4]
+  })
 
-  output$RegionNameW1 <- renderText({RegionsW()[1]})
-  output$RegionNameW2 <- renderText({RegionsW()[2]})
-  output$RegionNameW3 <- renderText({RegionsW()[3]})
-  output$RegionNameW4 <- renderText({RegionsW()[4]})
+  output$RegionNameW1 <- renderText({
+    RegionsW()[1]
+  })
+  output$RegionNameW2 <- renderText({
+    RegionsW()[2]
+  })
+  output$RegionNameW3 <- renderText({
+    RegionsW()[3]
+  })
+  output$RegionNameW4 <- renderText({
+    RegionsW()[4]
+  })
 
   output$TeamsSelectorM1 <- renderUI({
-    checkboxGroupInput("regionM1","",regionChoices(RegionsM()[1], BracketM()))
+    checkboxGroupInput("regionM1", "", regionChoices(RegionsM()[1], BracketM()))
   })
 
   output$TeamsSelectorM2 <- renderUI({
-    checkboxGroupInput("regionM2","",regionChoices(RegionsM()[2], BracketM()))
+    checkboxGroupInput("regionM2", "", regionChoices(RegionsM()[2], BracketM()))
   })
 
   output$TeamsSelectorM3 <- renderUI({
-    checkboxGroupInput("regionM3","",regionChoices(RegionsM()[3], BracketM()))
+    checkboxGroupInput("regionM3", "", regionChoices(RegionsM()[3], BracketM()))
   })
 
   output$TeamsSelectorM4 <- renderUI({
-    checkboxGroupInput("regionM4","",regionChoices(RegionsM()[4], BracketM()))
+    checkboxGroupInput("regionM4", "", regionChoices(RegionsM()[4], BracketM()))
   })
 
   output$TeamsSelectorW1 <- renderUI({
-    checkboxGroupInput("regionW1","",regionChoices(RegionsW()[1], BracketW()))
+    checkboxGroupInput("regionW1", "", regionChoices(RegionsW()[1], BracketW()))
   })
 
   output$TeamsSelectorW2 <- renderUI({
-    checkboxGroupInput("regionW2","",regionChoices(RegionsW()[2], BracketW()))
+    checkboxGroupInput("regionW2", "", regionChoices(RegionsW()[2], BracketW()))
   })
 
   output$TeamsSelectorW3 <- renderUI({
-    checkboxGroupInput("regionW3","",regionChoices(RegionsW()[3], BracketW()))
+    checkboxGroupInput("regionW3", "", regionChoices(RegionsW()[3], BracketW()))
   })
 
   output$TeamsSelectorW4 <- renderUI({
-    checkboxGroupInput("regionW4","",regionChoices(RegionsW()[4], BracketW()))
+    checkboxGroupInput("regionW4", "", regionChoices(RegionsW()[4], BracketW()))
   })
 
   # timeoflastentry <- reactive( lasttimestamp )
   # entrystatus <- renderText( paste("most recent entry: ", timeoflastentry() ) )
 
-  totalTeamsM <- reactive( length(TeamsM()) )
-  totalTeamsW <- reactive( length(TeamsW()) )
+  totalTeamsM <- reactive(length(TeamsM()))
+  totalTeamsW <- reactive(length(TeamsW()))
 
-  output$totalTeamsM <- renderText(paste("number of teams:",totalTeamsM()))
-  output$totalTeamsW <- renderText(paste("number of teams:",totalTeamsW()))
+  output$totalTeamsM <- renderText(paste("number of teams:", totalTeamsM()))
+  output$totalTeamsW <- renderText(paste("number of teams:", totalTeamsW()))
 
-  PointsSpentM <- reactive( sum( filter(BracketM(), team %in% TeamsM())$cost ) )
-  PointsSpentW <- reactive( sum( filter(BracketW(), team %in% TeamsW())$cost ) )
+  PointsSpentM <- reactive(sum(filter(BracketM(), team %in% TeamsM())$cost))
+  PointsSpentW <- reactive(sum(filter(BracketW(), team %in% TeamsW())$cost))
 
   output$pointsSpentM <- reactive(PointsSpentM())
   output$pointsSpentW <- reactive(PointsSpentW())
@@ -597,11 +706,17 @@ output$H2HPlotC <- renderVegawidget({
   outputOptions(output, "pointsSpentM", suspendWhenHidden = FALSE)
   outputOptions(output, "pointsSpentW", suspendWhenHidden = FALSE)
 
-  PointsRemainingM <- reactive( maxPoints - PointsSpentM() )
-  PointsRemainingW <- reactive( maxPoints - PointsSpentW() )
+  PointsRemainingM <- reactive(maxPoints - PointsSpentM())
+  PointsRemainingW <- reactive(maxPoints - PointsSpentW())
 
-  output$pointsRemainingM <- renderText(paste("points remaining:", PointsRemainingM()))
-  output$pointsRemainingW <- renderText(paste("points remaining:", PointsRemainingW()))
+  output$pointsRemainingM <- renderText(paste(
+    "points remaining:",
+    PointsRemainingM()
+  ))
+  output$pointsRemainingW <- renderText(paste(
+    "points remaining:",
+    PointsRemainingW()
+  ))
 
   output$year <- renderText(paste(the_year()))
 
@@ -611,7 +726,7 @@ output$H2HPlotC <- renderVegawidget({
   output$spendMessageM <- renderText({
     if (PointsSpentM() < maxPoints) {
       "choose a team, you've got points to spend."
-    } else if  (PointsSpentM() > maxPoints ) {
+    } else if (PointsSpentM() > maxPoints) {
       "you have overspent.  please remove a team."
     } else {
       "you have spent all of your points."
@@ -620,31 +735,37 @@ output$H2HPlotC <- renderVegawidget({
   output$spendMessageW <- renderText({
     if (PointsSpentW() < maxPoints) {
       "choose a team, you've got points to spend."
-    } else if  (PointsSpentW() > maxPoints ) {
+    } else if (PointsSpentW() > maxPoints) {
       "you have overspent.  please remove a team."
     } else {
       "you have spent all of your points."
     }
   })
 
-  output$confirmation <- renderUI( {
+  output$confirmation <- renderUI({
     if (input$submitButton > 0) {
       lasttimestamp <<- Sys.time()
-#      output$statusMessage <- renderText({paste("last entry submited at", lasttimestamp)})
-      output$statusMessage <- renderText({paste("preparing to submit", lasttimestamp)})
+      #      output$statusMessage <- renderText({paste("last entry submited at", lasttimestamp)})
+      output$statusMessage <- renderText({
+        paste("preparing to submit", lasttimestamp)
+      })
       newentry <-
-      isolate(
-        list( name= input$name,
-              email = input$email,
-              dept = input$dept,
-              points = PointsSpentM(),
-              pointsw = PointsSpentW(),
-              teams = TeamsM(),
-              TeamsW = TeamsW(),
-              teamslogical = sapply(BracketM()$team, function(x) x %in% TeamsM()),
-              teamslogicalw = sapply(BracketW()$team, function(x) x %in% TeamsW()),
-              time = lasttimestamp)
-      )
+        isolate(
+          list(
+            name = input$name,
+            email = input$email,
+            dept = input$dept,
+            points = PointsSpentM(),
+            pointsw = PointsSpentW(),
+            teams = TeamsM(),
+            TeamsW = TeamsW(),
+            teamslogical = sapply(BracketM()$team, function(x) x %in% TeamsM()),
+            teamslogicalw = sapply(BracketW()$team, function(x) {
+              x %in% TeamsW()
+            }),
+            time = lasttimestamp
+          )
+        )
       board |> pin_write_entry(newentry, year = config[['year']])
 
       # createlogentry(paste("entry submitted for", isolate(input$email)))
@@ -656,20 +777,30 @@ output$H2HPlotC <- renderVegawidget({
       )
     } else {
       tagList(HTML(
-        paste0("<h4>Thank you, ", isolate(input$name), ", your selections have been submitted.</h4>",
-               "<ul>",
-               "<li>You spent ", isolate(PointsSpentM()), " points on the following ", isolate(length(TeamsM())),
-               " teams: ", paste( isolate(TeamsM()), collapse=", " ),
-               "</li><li>You spent ", isolate(PointsSpentW()), " points on the following ", isolate(length(TeamsW())),
-               " teams: ", paste( isolate(TeamsW()), collapse=", " ),
-               "</li></ul>"
+        paste0(
+          "<h4>Thank you, ",
+          isolate(input$name),
+          ", your selections have been submitted.</h4>",
+          "<ul>",
+          "<li>You spent ",
+          isolate(PointsSpentM()),
+          " points on the following ",
+          isolate(length(TeamsM())),
+          " teams: ",
+          paste(isolate(TeamsM()), collapse = ", "),
+          "</li><li>You spent ",
+          isolate(PointsSpentW()),
+          " points on the following ",
+          isolate(length(TeamsW())),
+          " teams: ",
+          paste(isolate(TeamsW()), collapse = ", "),
+          "</li></ul>"
         )
       ))
     }
-  }
-  )
+  })
 
-  output$numEntries <- reactive( length(Entries()) )
+  output$numEntries <- reactive(length(Entries()))
 
   ############ download data ###########
   # todo: restore or ignore?
@@ -684,7 +815,6 @@ output$H2HPlotC <- renderVegawidget({
   #   "download" %in% names(Query())
   # } )
   # outputOptions(output, "showDownloadButton", suspendWhenHidden = FALSE)
-
 
   ########### turn controls on and off ############
 
@@ -701,12 +831,12 @@ output$H2HPlotC <- renderVegawidget({
     TRUE
   })
   output$showCrystalBallC <- reactive({
-    ( n_teams_remaining(TW()) + n_teams_remaining(TM()) )<= 16
+    (n_teams_remaining(TW()) + n_teams_remaining(TM())) <= 16
     FALSE
   })
 
   output$showEntryForm <- reactive({
-    ( as.numeric(input$submitButton) + as.numeric(input$reviseButton) ) %% 2 == 0
+    (as.numeric(input$submitButton) + as.numeric(input$reviseButton)) %% 2 == 0
   })
   outputOptions(output, "showEntryForm", suspendWhenHidden = FALSE)
 
@@ -746,31 +876,43 @@ output$H2HPlotC <- renderVegawidget({
   # todo: turn scoring back on
   output$showScoresM <- reactive({
     nrow(CompletedGamesM()) > 0
-  } )
+  })
   output$showScoresW <- reactive({
     nrow(CompletedGamesW()) > 0
-  } )
+  })
   outputOptions(output, "showScoresM", suspendWhenHidden = FALSE)
   outputOptions(output, "showScoresW", suspendWhenHidden = FALSE)
 
   ############ score updates #############
 
   # todo: turn scoring back on
-  output$password <- renderPrint({input$password})
+  output$password <- renderPrint({
+    input$password
+  })
 
   output$gameScoreSelectorM <- renderUI({
     gs <- all_games(TM(), GameScoresM())
     games <- gs[['game_number']] |> setNames(gs[['description']])
     # print(games)
 
-    selectInput("gameToScoreM", "choose a game", choices = games, selectize=FALSE)
+    selectInput(
+      "gameToScoreM",
+      "choose a game",
+      choices = games,
+      selectize = FALSE
+    )
   })
 
   output$gameScoreSelectorW <- renderUI({
     gs <- all_games(TW(), GameScoresW())
     games <- gs[['game_number']] |> setNames(gs[['description']])
 
-    selectInput("gameToScoreW", "choose a game", choices = games, selectize=FALSE)
+    selectInput(
+      "gameToScoreW",
+      "choose a game",
+      choices = games,
+      selectize = FALSE
+    )
   })
 
   # this block was already commented prior to 15 march 2023
@@ -790,44 +932,52 @@ output$H2HPlotC <- renderVegawidget({
   # todo: turn scoring back on
   output$homeTeamScoreM <- renderUI({
     tourn <- TM()
-    numericInput("hscoreM", step=0,
-                 label = home_team_name(tourn, as.numeric(input$gameToScoreM)),
-                 value = ""
-    #              value = GameScoresM() |>
-    #                filter(game_number == as.numeric(input$gameToScoresM)) |>
-    #                pull(hscore) |> c(na) |> getelement(1)
+    numericInput(
+      "hscoreM",
+      step = 0,
+      label = home_team_name(tourn, as.numeric(input$gameToScoreM)),
+      value = ""
+      #              value = GameScoresM() |>
+      #                filter(game_number == as.numeric(input$gameToScoresM)) |>
+      #                pull(hscore) |> c(na) |> getelement(1)
     )
   })
   output$homeTeamScoreW <- renderUI({
     tourn <- TW()
-    numericInput("hscoreW", step=0,
-                 label = home_team_name(tourn, as.numeric(input$gameToScoreW)),
-                 value = ""
+    numericInput(
+      "hscoreW",
+      step = 0,
+      label = home_team_name(tourn, as.numeric(input$gameToScoreW)),
+      value = ""
     )
   })
 
   output$awayTeamScoreM <- renderUI({
-    numericInput("ascoreM", step=0,
-                 label = away_team_name(TM(), as.numeric(input$gameToScoreM)),
-                 value = ""
-                 # value = GameScoresM() |>
-                 #   filter(game_number == as.numeric(input$gameToScoresM)) |>
-                 #   pull(ascore) |> c(na) |> getelement(1)
+    numericInput(
+      "ascoreM",
+      step = 0,
+      label = away_team_name(TM(), as.numeric(input$gameToScoreM)),
+      value = ""
+      # value = GameScoresM() |>
+      #   filter(game_number == as.numeric(input$gameToScoresM)) |>
+      #   pull(ascore) |> c(na) |> getelement(1)
     )
   })
   output$awayTeamScoreW <- renderUI({
-    numericInput("ascoreW", step=0,
-                 label = away_team_name(TW(), as.numeric(input$gameToScoreW)),
-                 value = ""
-                 # value = GameScoresW() |>
-                 #   filter(game_number == as.numeric(input$gameToScoresW)) |>
-                 #   pull(ascore) |> c(na) |> getelement(1)
+    numericInput(
+      "ascoreW",
+      step = 0,
+      label = away_team_name(TW(), as.numeric(input$gameToScoreW)),
+      value = ""
+      # value = GameScoresW() |>
+      #   filter(game_number == as.numeric(input$gameToScoresW)) |>
+      #   pull(ascore) |> c(na) |> getelement(1)
     )
   })
 
   output$scoreSavedTextM <- renderText({
     # don't react to these until the button is pushed
-    if(TRUE) {
+    if (TRUE) {
       input$saveScoreButtonm
       isolate(gts <- as.numeric(input$gameToScoreM))
       isolate(hs <- as.numeric(input$hscoreM))
@@ -837,16 +987,29 @@ output$H2HPlotC <- renderVegawidget({
       away <- away_team_name(TM(), gts)
 
       # this will react each time the save score button is pressed.
-      if (as.numeric(input$saveScoreButtonM) > 0)
-        paste0("score saved for game ", gts, ": ", away, " ", as, " - ", home, " ", hs )
-      else "select a game and enter scores above."
+      if (as.numeric(input$saveScoreButtonM) > 0) {
+        paste0(
+          "score saved for game ",
+          gts,
+          ": ",
+          away,
+          " ",
+          as,
+          " - ",
+          home,
+          " ",
+          hs
+        )
+      } else {
+        "select a game and enter scores above."
+      }
     } else {
       "sample text."
     }
   })
   output$scoreSavedTextW <- renderText({
     # don't react to these until the button is pushed
-    if(TRUE) {
+    if (TRUE) {
       input$saveScoreButtonW
       isolate(gts <- as.numeric(input$gameToScoreW))
       isolate(hs <- as.numeric(input$hscoreW))
@@ -856,16 +1019,29 @@ output$H2HPlotC <- renderVegawidget({
       away <- away_team_name(TW(), gts)
 
       # this will react each time the save score button is pressed.
-      if (as.numeric(input$saveScoreButtonW) > 0)
-        paste0("score saved for game ", gts, ": ", away, " ", as, " - ", home, " ", hs )
-      else "select a game and enter scores above."
+      if (as.numeric(input$saveScoreButtonW) > 0) {
+        paste0(
+          "score saved for game ",
+          gts,
+          ": ",
+          away,
+          " ",
+          as,
+          " - ",
+          home,
+          " ",
+          hs
+        )
+      } else {
+        "select a game and enter scores above."
+      }
     } else {
       "sample text."
     }
   })
 
   # updates when a new score is saved (button)
-  observeEvent( input$saveScoreButtonM, {
+  observeEvent(input$saveScoreButtonM, {
     if (as.numeric(input$saveScoreButtonM) > 0) {
       gts <- as.numeric(input$gameToScoreM)
       hs <- as.numeric(input$hscoreM)
@@ -883,32 +1059,38 @@ output$H2HPlotC <- renderVegawidget({
       #     name =  paste0("/m-", gsub("/"," or ", home), "-", gsub("/", " or ", away))
       # )
 
-
       previous_scores <-
         board |>
         my_pin_read(name = config[['scores']][1], default = empty_scores_df)
 
       new_score <-
         tibble(
-          game_number = gts, winner_01 = as.numeric(as > hs),
-          home = home, away = away, hscore = hs, ascore = as, timestamp = human_time()
+          game_number = gts,
+          winner_01 = as.numeric(as > hs),
+          home = home,
+          away = away,
+          hscore = hs,
+          ascore = as,
+          timestamp = human_time()
         )
       # replacement for a write_csv() with apend = TRUE
       bind_rows(previous_scores, new_score) |>
         group_by(game_number) |>
         arrange(timestamp, .by_group = TRUE) |>
         slice_tail(n = 1) |>
-        my_pin_write(board = board, name = config[['scores']][1] )
+        my_pin_write(board = board, name = config[['scores']][1])
     }
 
-    if (as.numeric(input$saveScoreButtonM) > 0 &&
+    if (
+      as.numeric(input$saveScoreButtonM) > 0 &&
         AdminMode() &&
-        n_games_remaining(TM()) <= 16) {
-        cacheCrystalBallM() # TODO: turn on crystal ball
+        n_games_remaining(TM()) <= 16
+    ) {
+      cacheCrystalBallM() # TODO: turn on crystal ball
     }
   })
 
-  observeEvent( input$saveScoreButtonW, {
+  observeEvent(input$saveScoreButtonW, {
     if (as.numeric(input$saveScoreButtonW) > 0) {
       gts <- as.numeric(input$gameToScoreW)
       hs <- as.numeric(input$hscoreW)
@@ -927,12 +1109,21 @@ output$H2HPlotC <- renderVegawidget({
       # )
 
       previous_scores <-
-        my_pin_read(board = board, name = config[['scores']][2], default = empty_scores_df)
+        my_pin_read(
+          board = board,
+          name = config[['scores']][2],
+          default = empty_scores_df
+        )
 
       new_score <-
         tibble(
-          game_number = gts, winner_01 = as.numeric(as > hs),
-          home = home, away = away, hscore = hs, ascore = as, timestamp = human_time()
+          game_number = gts,
+          winner_01 = as.numeric(as > hs),
+          home = home,
+          away = away,
+          hscore = hs,
+          ascore = as,
+          timestamp = human_time()
         )
       # replacement for a write_csv() with apend = TRUE
 
@@ -942,12 +1133,14 @@ output$H2HPlotC <- renderVegawidget({
         group_by(game_number) |>
         arrange(timestamp, .by_group = TRUE) |>
         slice_tail(n = 1) |>
-        my_pin_write( board = board, name = config[['scores']][2] )
+        my_pin_write(board = board, name = config[['scores']][2])
     }
-    if (as.numeric(input$saveScoreButtonW) > 0 &&
+    if (
+      as.numeric(input$saveScoreButtonW) > 0 &&
         AdminMode() &&
-        n_games_remaining(TW()) <= 16) {
-        cacheCrystalballW()  # TODO: turn crystal ball back on
+        n_games_remaining(TW()) <= 16
+    ) {
+      cacheCrystalballW() # TODO: turn crystal ball back on
     }
   })
 
@@ -962,11 +1155,10 @@ output$H2HPlotC <- renderVegawidget({
   #   addteamstatus(BracketW(), scheduledgames(bracket=BracketW(), results = GameScoresW()))
   # })
 
-
   ############ query stuff #############
   output$queryText <- renderText({
     # return a string with key-value pairs
-    paste(names(Query()), Query(), sep = "=", collapse=", ")
+    paste(names(Query()), Query(), sep = "=", collapse = ", ")
   })
 
   ########################################
@@ -977,115 +1169,141 @@ output$H2HPlotC <- renderVegawidget({
 
   output$CostTable1 <- DT::renderDT(
     rownames = FALSE,
-    options=list(lengthChange=0,                      # show/hide records per page dropdown
-                 searching=0,                         # global search box on/off
-                 info=0,                              # information on/off (how many records filtered, etc)
-                 paging=FALSE,
-                 ordering = FALSE,
-                 autoWidth=TRUE                       # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ),  {
-    SeedTable <-
-      BracketM() %>% group_by(seed) %>%
-      summarise(cost = max(cost), `pre-2019 cost` = max(cost.old)) %>%
-      arrange(seed)
-    SeedTable %>% head(nrow(SeedTable) / 2)
-  })
+    options = list(
+      lengthChange = 0, # show/hide records per page dropdown
+      searching = 0, # global search box on/off
+      info = 0, # information on/off (how many records filtered, etc)
+      paging = FALSE,
+      ordering = FALSE,
+      autoWidth = TRUE # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ),
+    {
+      SeedTable <-
+        BracketM() %>%
+        group_by(seed) %>%
+        summarise(cost = max(cost), `pre-2019 cost` = max(cost.old)) %>%
+        arrange(seed)
+      SeedTable %>% head(nrow(SeedTable) / 2)
+    }
+  )
 
   output$CostTable2 <- DT::renderDT(
     rownames = FALSE,
-    options=list(lengthChange=0,                      # show/hide records per page dropdown
-                 searching=0,                         # global search box on/off
-                 info=0,                              # information on/off (how many records filtered, etc)
-                 paging=FALSE,
-                 ordering = FALSE,
-                 autoWidth=TRUE                       # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ),  {
-    SeedTable <-
-      BracketM() %>% group_by(seed) %>%
-      summarise(cost = max(cost), `pre-2019 cost` = max(cost.old)) %>%
-      arrange(seed)
-    SeedTable %>% tail(-nrow(SeedTable) / 2)
-  })
+    options = list(
+      lengthChange = 0, # show/hide records per page dropdown
+      searching = 0, # global search box on/off
+      info = 0, # information on/off (how many records filtered, etc)
+      paging = FALSE,
+      ordering = FALSE,
+      autoWidth = TRUE # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ),
+    {
+      SeedTable <-
+        BracketM() %>%
+        group_by(seed) %>%
+        summarise(cost = max(cost), `pre-2019 cost` = max(cost.old)) %>%
+        arrange(seed)
+      SeedTable %>% tail(-nrow(SeedTable) / 2)
+    }
+  )
 
   output$PastWinners <- DT::renderDT(
     rownames = FALSE,
-    options=list(lengthChange=0,                      # show/hide records per page dropdown
-                 searching=0,                         # global search box on/off
-                 info=0,                              # information on/off (how many records filtered, etc)
-                 ordering = FALSE,
-                 paging=FALSE,
-                 autoWidth=TRUE                       # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ),  {
-    History <- readr::read_csv("data/historical-winners.csv") # , header=TRUE)
-    History %>% arrange(desc(year))
-  })
+    options = list(
+      lengthChange = 0, # show/hide records per page dropdown
+      searching = 0, # global search box on/off
+      info = 0, # information on/off (how many records filtered, etc)
+      ordering = FALSE,
+      paging = FALSE,
+      autoWidth = TRUE # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ),
+    {
+      History <- readr::read_csv("data/historical-winners.csv") # , header=TRUE)
+      History %>% arrange(desc(year))
+    }
+  )
 
   ############# game scores table #####################
 
   # todo: turn scoring back on
   output$ScoresTableM <- DT::renderDT(
     rownames = FALSE,
-    options=list(pageLength = 63,                     # initial number of records
-                 lengthMenu=c(5,10,25,50),            # records/page options
-                 lengthChange=0,                      # show/hide records per page dropdown
-                 searching=1,                         # global search box on/off
-                 info=1,                              # information on/off (how many records filtered, etc)
-                 ordering = FALSE,
-                 autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ),  {
+    options = list(
+      pageLength = 63, # initial number of records
+      lengthMenu = c(5, 10, 25, 50), # records/page options
+      lengthChange = 0, # show/hide records per page dropdown
+      searching = 1, # global search box on/off
+      info = 1, # information on/off (how many records filtered, etc)
+      ordering = FALSE,
+      autoWidth = 1 # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ),
+    {
       CompletedGamesM()
-    })
+    }
+  )
   output$ScoresTableW <- DT::renderDT(
     rownames = FALSE,
-    options=list(pageLength = 63,                     # initial number of records
-                 lengthMenu=c(5,10,25,50),            # records/page options
-                 lengthChange=0,                      # show/hide records per page dropdown
-                 searching=1,                         # global search box on/off
-                 info=1,                              # information on/off (how many records filtered, etc)
-                 ordering = FALSE,
-                 autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ),  {
+    options = list(
+      pageLength = 63, # initial number of records
+      lengthMenu = c(5, 10, 25, 50), # records/page options
+      lengthChange = 0, # show/hide records per page dropdown
+      searching = 1, # global search box on/off
+      info = 1, # information on/off (how many records filtered, etc)
+      ordering = FALSE,
+      autoWidth = 1 # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ),
+    {
       CompletedGamesW()
-    })
+    }
+  )
 
   ############# standings table #####################
 
   # todo: turn standing back on
   output$standingsTableM <- DT::renderDT(
     rownames = FALSE,
-    options=list(pageLength = 35,                     # initial number of records
-                 lengthMenu=c(5,10,25,50),            # records/page options
-                 lengthChange=0,                      # show/hide records per page dropdown
-                 searching=1,                         # global search box on/off
-                 info=1,                              # information on/off (how many records filtered, etc)
-                 autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ), {
+    options = list(
+      pageLength = 35, # initial number of records
+      lengthMenu = c(5, 10, 25, 50), # records/page options
+      lengthChange = 0, # show/hide records per page dropdown
+      searching = 1, # global search box on/off
+      info = 1, # information on/off (how many records filtered, etc)
+      autoWidth = 1 # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ),
+    {
       ContestStandingsM()
-    })
+    }
+  )
 
   output$standingsTableW <- DT::renderDT(
     rownames = FALSE,
-    options=list(pageLength = 35,                     # initial number of records
-                 lengthMenu=c(5,10,25,50),            # records/page options
-                 lengthChange=0,                      # show/hide records per page dropdown
-                 searching=1,                         # global search box on/off
-                 info=1,                              # information on/off (how many records filtered, etc)
-                 autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ), {
+    options = list(
+      pageLength = 35, # initial number of records
+      lengthMenu = c(5, 10, 25, 50), # records/page options
+      lengthChange = 0, # show/hide records per page dropdown
+      searching = 1, # global search box on/off
+      info = 1, # information on/off (how many records filtered, etc)
+      autoWidth = 1 # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ),
+    {
       ContestStandingsW()
-    })
+    }
+  )
 
   output$standingsTableAll <- DT::renderDT(
     rownames = FALSE,
-    options=list(pageLength = 35,                     # initial number of records
-                 lengthMenu=c(5,10,25,50),            # records/page options
-                 lengthChange=0,                      # show/hide records per page dropdown
-                 searching=1,                         # global search box on/off
-                 info=1,                              # information on/off (how many records filtered, etc)
-                 autoWidth=1                          # automatic column width calculation, disable if passing column width via aoColumnDefs
-    ), {
+    options = list(
+      pageLength = 35, # initial number of records
+      lengthMenu = c(5, 10, 25, 50), # records/page options
+      lengthChange = 0, # show/hide records per page dropdown
+      searching = 1, # global search box on/off
+      info = 1, # information on/off (how many records filtered, etc)
+      autoWidth = 1 # automatic column width calculation, disable if passing column width via aoColumnDefs
+    ),
+    {
       ContestStandingsAll()
-    })
+    }
+  )
 
   ######### reactive text messages #########
   output$tournyStatusM <- renderText({
@@ -1119,19 +1337,18 @@ output$H2HPlotC <- renderVegawidget({
   #   ),
   #   teamdatam()
   # )
-      # e <- Entries()
-      # m <- do.call(rbind, lapply( e, function(x) x$teamslogical ) )
-      # b <- BracketWithteamstatus()
-      # if (length(e) > 0) {
-      #   row.names(m) <- sapply( e, function(x) x$name)
-      # }
-      #
-      # data.frame(check.names=FALSE,
-      #            team=colnames(m),
-      #            seed = b$seed, region=b$region,
-      #            "number of players selecting"=apply(m,2,sum),
-      #            wins = b$wins)
-
+  # e <- Entries()
+  # m <- do.call(rbind, lapply( e, function(x) x$teamslogical ) )
+  # b <- BracketWithteamstatus()
+  # if (length(e) > 0) {
+  #   row.names(m) <- sapply( e, function(x) x$name)
+  # }
+  #
+  # data.frame(check.names=FALSE,
+  #            team=colnames(m),
+  #            seed = b$seed, region=b$region,
+  #            "number of players selecting"=apply(m,2,sum),
+  #            wins = b$wins)
 
   # todo: more crystal ball stuff?
   output$entrantSelector <- renderUI({
@@ -1143,13 +1360,26 @@ output$H2HPlotC <- renderVegawidget({
         ContestStandings()$score,
         "]"
       )
-    selectInput("oneEntrant", "select a player", choices = entrants[order(- ContestStandings()$score)], selectize=FALSE)
+    selectInput(
+      "oneEntrant",
+      "select a player",
+      choices = entrants[order(-ContestStandings()$score)],
+      selectize = FALSE
+    )
   })
-
 
   who_can_win_plot <- function(data) {
     data |>
-      mutate(chances = paste0(scenarios, "/", sum(scenarios), " = ", round(100*p, 2), "%")) |>
+      mutate(
+        chances = paste0(
+          scenarios,
+          "/",
+          sum(scenarios),
+          " = ",
+          round(100 * p, 2),
+          "%"
+        )
+      ) |>
       # mutate(winner2 = abbreviate(winner, minlength = 20)) |>
       vl_chart() |>
       vl_mark_bar(fill = "steelblue") |>
@@ -1158,11 +1388,10 @@ output$H2HPlotC <- renderVegawidget({
       vl_axis_x(format = "%", title = "") |>
       vl_encode_tooltip("chances:N", title = "") |>
       vl_add_properties(width = 600)
-      # gf_col(winner ~ p, fill = "steelblue") |>
-      # gf_labs(x = "percent of scenarios that win") |>
-      # gf_refine(scale_x_continuous(labels = scales::label_percent()))
+    # gf_col(winner ~ p, fill = "steelblue") |>
+    # gf_labs(x = "percent of scenarios that win") |>
+    # gf_refine(scale_x_continuous(labels = scales::label_percent()))
   }
-
 
   output$WhoCanWinPlotM <- renderVegawidget({
     WinnersTableM() |>
@@ -1170,20 +1399,30 @@ output$H2HPlotC <- renderVegawidget({
   })
 
   output$ScoreHistogramsM <-
-    renderPlot(height = 600,
-      {
+    renderPlot(height = 600, {
       PossibleScoresTableM() |>
-        gf_col(n ~ round(score) | reorder(name, score, function(x) - mean (x)),
-               binwidth = 1, fill = "steelblue") |>
-          gf_labs(x = "score")
+        gf_col(
+          n ~ round(score) | reorder(name, score, function(x) -mean(x)),
+          binwidth = 1,
+          fill = "steelblue"
+        ) |>
+        gf_labs(x = "score")
     })
 
   textmat <- function(m, denom) {
     rn <- rownames(m) |> matrix(nrow = nrow(m), ncol = ncol(m), byrow = FALSE)
     cn <- colnames(m) |> matrix(nrow = nrow(m), ncol = ncol(m), byrow = TRUE)
     paste0(
-      rn , " defeats " , cn , "</br>in " , m , " scenarios</br>",
-      "(" , round(100 * m / denom,2) , "%)") |>
+      rn,
+      " defeats ",
+      cn,
+      "</br>in ",
+      m,
+      " scenarios</br>",
+      "(",
+      round(100 * m / denom, 2),
+      "%)"
+    ) |>
       matrix(nrow = nrow(m))
   }
   oldh2hplot <- function(data) {
@@ -1197,13 +1436,30 @@ output$H2HPlotC <- renderVegawidget({
         hovertext5 = glue::glue('({perc} %)'),
         scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)
       ) |>
-    gf_raster(scenarios ~ other_abbrv + key_abbrv, alpha = 0.8,
-              text = ~hovertext) |>
-      gf_hline(yintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
-      gf_vline(xintercept = 0.5 + (0:nrow(EM())), color = "gray80", inherit = FALSE, linewidth = 0.5) |>
-      gf_labs(title = "head to head winning scenarios",
-              subtitle = "read across rows for wins against the other player",
-              x = "", y = "", fill = "winning\nscenarios" ) |>
+      gf_raster(
+        scenarios ~ other_abbrv + key_abbrv,
+        alpha = 0.8,
+        text = ~hovertext
+      ) |>
+      gf_hline(
+        yintercept = 0.5 + (0:nrow(EM())),
+        color = "gray80",
+        inherit = FALSE,
+        linewidth = 0.5
+      ) |>
+      gf_vline(
+        xintercept = 0.5 + (0:nrow(EM())),
+        color = "gray80",
+        inherit = FALSE,
+        linewidth = 0.5
+      ) |>
+      gf_labs(
+        title = "head to head winning scenarios",
+        subtitle = "read across rows for wins against the other player",
+        x = "",
+        y = "",
+        fill = "winning\nscenarios"
+      ) |>
       gf_refine(
         scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
         coord_cartesian(expand = FALSE)
@@ -1212,9 +1468,9 @@ output$H2HPlotC <- renderVegawidget({
         panel.grid.major.x = element_blank(),
         panel.grid.major.y = element_blank(),
         axis.text.x = element_text(angle = 45, hjust = 1),
-        panel.background = element_rect(fill = rgb(1,0,0, alpha = 0.2))
+        panel.background = element_rect(fill = rgb(1, 0, 0, alpha = 0.2))
       ) |>
-      plotly::ggplotly(tooltip = "text")  # failing with error "undefined columns selected" in 2025
+      plotly::ggplotly(tooltip = "text") # failing with error "undefined columns selected" in 2025
   }
 
   h2h_plot <- function(data) {
@@ -1239,14 +1495,29 @@ output$H2HPlotC <- renderVegawidget({
             hovertext3 = glue::glue('{other_name}'),
             hovertext4 = glue::glue('in {scenarios} scenarios.'),
             hovertext5 = glue::glue('({perc} %)'),
-            scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)
+            scenarios = ifelse(
+              max(scenarios) > 1 & scenarios <= 0,
+              NA,
+              scenarios
+            )
           )
       ) |>
       vl_mark_rect(opacity = 0.7) |>
-      vl_encode_y("key_name:N", title = FALSE, sort = sorted_data |> pull(key_name)) |>
-      vl_encode_x("other_abbrv:N", title = FALSE, sort = sorted_data |> pull(key_abbrv)) |>
+      vl_encode_y(
+        "key_name:N",
+        title = FALSE,
+        sort = sorted_data |> pull(key_name)
+      ) |>
+      vl_encode_x(
+        "other_abbrv:N",
+        title = FALSE,
+        sort = sorted_data |> pull(key_abbrv)
+      ) |>
       vl_encode_fill("prop:Q", legend = FALSE) |>
-      vl_condition_fill(test = "datum['scenarios'] === null", value = "salmon") |>
+      vl_condition_fill(
+        test = "datum['scenarios'] === null",
+        value = "salmon"
+      ) |>
       vl_scale_fill(scheme = "blues") |>
       vl_encode_tooltip("hovertext1", title = " ") |>
       vl_encode_tooltip("hovertext2", title = "  ") |>
@@ -1254,10 +1525,10 @@ output$H2HPlotC <- renderVegawidget({
       vl_encode_tooltip("hovertext4", title = "     ") |>
       vl_encode_tooltip("hovertext5", title = "      ") |>
       vl_add_properties(
-        title =
-          list(text = "head to head winning scenarios",
-               subtitle = "read across rows for wins against the other player"
-          )
+        title = list(
+          text = "head to head winning scenarios",
+          subtitle = "read across rows for wins against the other player"
+        )
       )
   }
 
@@ -1276,13 +1547,15 @@ output$H2HPlotC <- renderVegawidget({
   })
 
   output$ScoreHistogramsW <-
-    renderPlot(height = 600,
-               {
-                 PossibleScoresTableW() |>
-                   gf_col(n ~ round(score) | reorder(name, score, function(x) - mean (x)),
-                          binwidth = 1, fill = "steelblue") |>
-                   gf_labs(x = "score")
-               })
+    renderPlot(height = 600, {
+      PossibleScoresTableW() |>
+        gf_col(
+          n ~ round(score) | reorder(name, score, function(x) -mean(x)),
+          binwidth = 1,
+          fill = "steelblue"
+        ) |>
+        gf_labs(x = "score")
+    })
 
   output$H2HPlotW <- vegabrite::renderVegawidget({
     comps <- competitors(Entries(), division = "W", by = "name")
@@ -1291,7 +1564,6 @@ output$H2HPlotC <- renderVegawidget({
       filter(other_name %in% comps) |>
       h2h_plot()
   })
-
 
   # commented out prior to 15 march 2023
   # output$dendroplot <- renderd3heatmap({
@@ -1313,20 +1585,65 @@ output$H2HPlotC <- renderVegawidget({
   # todo: restore options as reactives come back online
   outputOptions(output, "ScoresTableM", suspendWhenHidden = FALSE)
   outputOptions(output, "ScoresTableW", suspendWhenHidden = FALSE)
-  outputOptions(output, "standingsTableM", suspendWhenHidden = FALSE, priority = 100)
-  outputOptions(output, "standingsTableW", suspendWhenHidden = FALSE, priority = 101)
-  outputOptions(output, "standingsTableAll", suspendWhenHidden = FALSE, priority = 90)
-  outputOptions(output, "WhoCanWinPlotM", suspendWhenHidden = FALSE, priority = 80)
-  outputOptions(output, "WhoCanWinPlotM", suspendWhenHidden = FALSE, priority = 50)
-  outputOptions(output, "WhoCanWinPlotW", suspendWhenHidden = FALSE, priority = 50)
+  outputOptions(
+    output,
+    "standingsTableM",
+    suspendWhenHidden = FALSE,
+    priority = 100
+  )
+  outputOptions(
+    output,
+    "standingsTableW",
+    suspendWhenHidden = FALSE,
+    priority = 101
+  )
+  outputOptions(
+    output,
+    "standingsTableAll",
+    suspendWhenHidden = FALSE,
+    priority = 90
+  )
+  outputOptions(
+    output,
+    "WhoCanWinPlotM",
+    suspendWhenHidden = FALSE,
+    priority = 80
+  )
+  outputOptions(
+    output,
+    "WhoCanWinPlotM",
+    suspendWhenHidden = FALSE,
+    priority = 50
+  )
+  outputOptions(
+    output,
+    "WhoCanWinPlotW",
+    suspendWhenHidden = FALSE,
+    priority = 50
+  )
   outputOptions(output, "H2HPlotM", suspendWhenHidden = FALSE, priority = 40)
   outputOptions(output, "H2HPlotW", suspendWhenHidden = FALSE, priority = 40)
-  outputOptions(output, "ScoreHistogramsM", suspendWhenHidden = FALSE, priority = 80)
-  outputOptions(output, "ScoreHistogramsM", suspendWhenHidden = FALSE, priority = 30)
-  outputOptions(output, "ScoreHistogramsW", suspendWhenHidden = FALSE, priority = 30)
+  outputOptions(
+    output,
+    "ScoreHistogramsM",
+    suspendWhenHidden = FALSE,
+    priority = 80
+  )
+  outputOptions(
+    output,
+    "ScoreHistogramsM",
+    suspendWhenHidden = FALSE,
+    priority = 30
+  )
+  outputOptions(
+    output,
+    "ScoreHistogramsW",
+    suspendWhenHidden = FALSE,
+    priority = 30
+  )
 
   Sys.sleep(1)
   waiter::waiter_hide()
-
-})
+}
+# )
 
