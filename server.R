@@ -30,15 +30,18 @@ if (Sys.getenv("GCS_SERVICE_ACCOUNT_JSON") != "") {
   temp_path <- tempfile(fileext = ".json")
   writeLines(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"), temp_path)
   # Authenticate with the temporary file
-  gcs_auth(scope = c("https://www.googleapis.com"), json_file = temp_path)
+  googleCloudStorageR::gcs_auth(
+    scope = c("https://www.googleapis.com/auth/cloud-platform"),
+    json_file = temp_path
+  )
 } else {
   # grab local file when running locally
   Sys.setenv("GCS_AUTH_FILE" = "/Users/rpruim/.positron/gcs2.json")
+  scope <- "https://www.googleapis.com/auth/cloud-platform"
+  token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
+  googleCloudStorageR::gcs_auth(token = token)
 }
 
-scope <- "https://www.googleapis.com/auth/cloud-platform"
-token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
-googleCloudStorageR::gcs_auth(token = token)
 
 board <- board_gcs("bucket-ncaa")
 
