@@ -104,7 +104,6 @@ regionChoices <- function(region, bracket) {
 
 # shinyServer(
 function(input, output, session) {
-
   shinyjs::logjs("app started")
 
   ############################################################
@@ -113,38 +112,32 @@ function(input, output, session) {
   # GCS_SERVICE_ACCOUNT_JSON is stored on posit connect cloud
 
   shinyjs::logjs("accessing gcs")
+
   if (Sys.getenv("GCS_SERVICE_ACCOUNT_JSON") != "") {
     shinyjs::logjs("using secret")
     shinyjs::logjs(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"))
-    shinyjs::logjs(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON") |> class())
     # Write the secret to a temporary file for authentication
     temp_path <- tempfile(fileext = ".json")
     writeLines(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"), temp_path)
     shinyjs::logjs(paste("temp file ", temp_path, " created", collapse = ""))
-    # Authenticate with the temporary file
-    Sys.setenv("GCS_AUTH_FILE" = temp_path)
-    scope <- "https://www.googleapis.com/auth/cloud-platform"
-    token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
-    shinyjs::logjs("have token")
-    googleCloudStorageR::gcs_auth(token = token)
-
-    # googleCloudStorageR::gcs_auth(
-    #   scope = "https://www.googleapis.com/", # auth/cloud-platform",
-    #   json_file = temp_path
-    # )
-    shinyjs::logjs("authenticated.")
+    googleCloudStorageR::gcs_auth(json_file = temp_path)
   } else {
-    shinyjs::logjs("using file")
-    # grab local file when running locally
-    Sys.setenv("GCS_AUTH_FILE" = "/Users/rpruim/.positron/gcs2.json")
-    scope <- "https://www.googleapis.com/auth/cloud-platform"
-    token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
-    googleCloudStorageR::gcs_auth(token = token)
-    shinyjs::logjs("authenticated.")
+    googleCloudStorageR::gcs_auth(
+      json_file = "/Users/rpruim/.positron/gcs2.json"
+    )
   }
 
-  
-board <- board_gcs("bucket-ncaa")
+  # } else {
+  #   shinyjs::logjs("using file")
+  #   # grab local file when running locally
+  #   Sys.setenv("GCS_AUTH_FILE" = "/Users/rpruim/.positron/gcs2.json")
+  #   scope <- "https://www.googleapis.com/auth/cloud-platform"
+  #   token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
+  #   googleCloudStorageR::gcs_auth(token = token)
+  #   shinyjs::logjs("authenticated.")
+  # }
+
+  board <- board_gcs("bucket-ncaa")
 
   shinyjs::logjs(board |> pins::pin_list())
   ####################################
