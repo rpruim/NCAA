@@ -86,12 +86,12 @@ load_entries_from_pins <-
 
 pin_write_entry <- function(board, entry, year = entry$year, name = NULL, ...) {
   if (is.null(year)) {
-    year <- 2023
+    year <- 2026
   }
   if (is.null(name)) {
     email_name <- entry$email |>
       stringr::str_replace_all("[@.]", "_")
-    name <- paste0("rpruim/NCAA-", year, "-entry-", email_name)
+    name <- paste0("NCAA-", year, "-entry-", email_name)
   }
   pin_write(board, x = entry, name = name, ...)
 }
