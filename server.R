@@ -124,6 +124,7 @@ function(input, output, session) {
       scope = "https://www.googleapis.com/auth/cloud-platform",
       json_file = temp_path
     )
+    shinyjs::logjs("authenticated.")
   } else {
     shinyjs::logjs("using file")
     # grab local file when running locally
@@ -131,13 +132,13 @@ function(input, output, session) {
     scope <- "https://www.googleapis.com/auth/cloud-platform"
     token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
     googleCloudStorageR::gcs_auth(token = token)
+    shinyjs::logjs("authenticated.")
   }
 
   
 board <- board_gcs("bucket-ncaa")
-  
-shinyjs::logjs(board |> pins::pin_list())
 
+  shinyjs::logjs(board |> pins::pin_list())
   ####################################
 
   Query <- reactive(parseQueryString(session$clientData$url_search))
