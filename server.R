@@ -121,7 +121,7 @@ function(input, output, session) {
     writeLines(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"), temp_path)
     # Authenticate with the temporary file
     googleCloudStorageR::gcs_auth(
-      scope = c("https://www.googleapis.com/auth/cloud-platform"),
+      scope = "https://www.googleapis.com/auth/cloud-platform",
       json_file = temp_path
     )
   } else {
@@ -135,6 +135,8 @@ function(input, output, session) {
 
   
 board <- board_gcs("bucket-ncaa")
+  
+shinyjs::logjs(board |> pins::pin_list())
 
   ####################################
 
