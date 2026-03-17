@@ -10,12 +10,14 @@ library(shiny)
 library(shinycssloaders)
 library(waiter)
 library(vegabrite)
+library(shinyjs)
 # library(plotly)
 
 options(spinner.type = 5, spinner.color = "steelblue", spinner.size = 1.5)
 
 shinyUI(
   fluidPage(
+    shinyjs::useShinyjs(),
     useWaiter(),
     waiterShowOnLoad(),
     titlePanel("NCAA Modeling Contest"),

@@ -8,6 +8,7 @@ library(shiny)
 library(dplyr)
 library(pins)
 library(vegabrite)
+library(shinyjs)
 
 yaml_file <- yaml::read_yaml('ncaa.yml')$yaml
 config <- yaml::read_yaml(yaml_file)
@@ -19,33 +20,6 @@ config <- yaml::read_yaml(yaml_file)
 #     server = "https://shinyapps.io",
 #     key = "EMd26Xic4zetNHlf0QyoIu9JIVzBJAspFVzf4xf1"
 #   )
-
-############################################################
-### Connect to pin board on Google Cloud Storage
-
-# GCS_SERVICE_ACCOUNT_JSON is stored on posit connect cloud
-
-if (Sys.getenv("GCS_SERVICE_ACCOUNT_JSON") != "") {
-  # Write the secret to a temporary file for authentication
-  temp_path <- tempfile(fileext = ".json")
-  writeLines(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"), temp_path)
-  # Authenticate with the temporary file
-  googleCloudStorageR::gcs_auth(
-    scope = c("https://www.googleapis.com/auth/cloud-platform"),
-    json_file = temp_path
-  )
-} else {
-  # grab local file when running locally
-  Sys.setenv("GCS_AUTH_FILE" = "/Users/rpruim/.positron/gcs2.json")
-  scope <- "https://www.googleapis.com/auth/cloud-platform"
-  token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
-  googleCloudStorageR::gcs_auth(token = token)
-}
-
-
-board <- board_gcs("bucket-ncaa")
-
-####################################
 
 # library(madness)
 source('package/R/data_utils.R')
@@ -130,6 +104,40 @@ regionChoices <- function(region, bracket) {
 
 # shinyServer(
 function(input, output, session) {
+
+  shinyjs::logjs("app started")
+
+  ############################################################
+  ### Connect to pin board on Google Cloud Storage
+
+  # GCS_SERVICE_ACCOUNT_JSON is stored on posit connect cloud
+
+  shinyjs::logjs("accessing gcs")
+  if (Sys.getenv("GCS_SERVICE_ACCOUNT_JSON") != "") {
+    shinyjs::logjs("using secret")
+    shinyjs::logjs(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"))
+    # Write the secret to a temporary file for authentication
+    temp_path <- tempfile(fileext = ".json")
+    writeLines(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"), temp_path)
+    # Authenticate with the temporary file
+    googleCloudStorageR::gcs_auth(
+      scope = c("https://www.googleapis.com/auth/cloud-platform"),
+      json_file = temp_path
+    )
+  } else {
+    shinyjs::logjs("using file")
+    # grab local file when running locally
+    Sys.setenv("GCS_AUTH_FILE" = "/Users/rpruim/.positron/gcs2.json")
+    scope <- "https://www.googleapis.com/auth/cloud-platform"
+    token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
+    googleCloudStorageR::gcs_auth(token = token)
+  }
+
+  
+board <- board_gcs("bucket-ncaa")
+
+  ####################################
+
   Query <- reactive(parseQueryString(session$clientData$url_search))
 
   AdminMode <- reactive({
@@ -1363,220 +1371,223 @@ function(input, output, session) {
   #            "number of players selecting"=apply(m,2,sum),
   #            wins = b$wins)
 
-  # todo: more crystal ball stuff?
-  output$entrantSelector <- renderUI({
-    entrants <- sapply(Entries(), function(x) x$email)
-    names(entrants) <-
-      paste0(
-        sapply(Entries(), function(x) x$name),
-        " [",
-        ContestStandings()$score,
-        "]"
-      )
-    selectInput(
-      "oneEntrant",
-      "select a player",
-      choices = entrants[order(-ContestStandings()$score)],
-      selectize = FALSE
-    )
-  })
-
-  who_can_win_plot <- function(data) {
-    data |>
-      mutate(
-        chances = paste0(
-          scenarios,
-          "/",
-          sum(scenarios),
-          " = ",
-          round(100 * p, 2),
-          "%"
+  if (TRUE) {
+    # turn off crystal ball stuff for now
+    # todo: more crystal ball stuff?
+    output$entrantSelector <- renderUI({
+      entrants <- sapply(Entries(), function(x) x$email)
+      names(entrants) <-
+        paste0(
+          sapply(Entries(), function(x) x$name),
+          " [",
+          ContestStandings()$score,
+          "]"
         )
-      ) |>
-      # mutate(winner2 = abbreviate(winner, minlength = 20)) |>
-      vl_chart() |>
-      vl_mark_bar(fill = "steelblue") |>
-      vl_encode_x("p:Q") |>
-      vl_encode_y("winner:O", sort = "-x", title = "Winner") |>
-      vl_axis_x(format = "%", title = "") |>
-      vl_encode_tooltip("chances:N", title = "") |>
-      vl_add_properties(width = 600)
-    # gf_col(winner ~ p, fill = "steelblue") |>
-    # gf_labs(x = "percent of scenarios that win") |>
-    # gf_refine(scale_x_continuous(labels = scales::label_percent()))
-  }
-
-  output$WhoCanWinPlotM <- renderVegawidget({
-    WinnersTableM() |>
-      who_can_win_plot()
-  })
-
-  output$ScoreHistogramsM <-
-    renderPlot(height = 600, {
-      PossibleScoresTableM() |>
-        gf_col(
-          n ~ round(score) | reorder(name, score, function(x) -mean(x)),
-          binwidth = 1,
-          fill = "steelblue"
-        ) |>
-        gf_labs(x = "score")
+      selectInput(
+        "oneEntrant",
+        "select a player",
+        choices = entrants[order(-ContestStandings()$score)],
+        selectize = FALSE
+      )
     })
 
-  textmat <- function(m, denom) {
-    rn <- rownames(m) |> matrix(nrow = nrow(m), ncol = ncol(m), byrow = FALSE)
-    cn <- colnames(m) |> matrix(nrow = nrow(m), ncol = ncol(m), byrow = TRUE)
-    paste0(
-      rn,
-      " defeats ",
-      cn,
-      "</br>in ",
-      m,
-      " scenarios</br>",
-      "(",
-      round(100 * m / denom, 2),
-      "%)"
-    ) |>
-      matrix(nrow = nrow(m))
-  }
-  oldh2hplot <- function(data) {
-    data |>
-      mutate(
-        perc = round(100 * prop, 2),
-        hovertext1 = glue::glue('{key_name}'),
-        hovertext2 = glue::glue('defeats'),
-        hovertext3 = glue::glue('{other_name}'),
-        hovertext4 = glue::glue('in {scenarios} scenarios.'),
-        hovertext5 = glue::glue('({perc} %)'),
-        scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)
-      ) |>
-      gf_raster(
-        scenarios ~ other_abbrv + key_abbrv,
-        alpha = 0.8,
-        text = ~hovertext
-      ) |>
-      gf_hline(
-        yintercept = 0.5 + (0:nrow(EM())),
-        color = "gray80",
-        inherit = FALSE,
-        linewidth = 0.5
-      ) |>
-      gf_vline(
-        xintercept = 0.5 + (0:nrow(EM())),
-        color = "gray80",
-        inherit = FALSE,
-        linewidth = 0.5
-      ) |>
-      gf_labs(
-        title = "head to head winning scenarios",
-        subtitle = "read across rows for wins against the other player",
-        x = "",
-        y = "",
-        fill = "winning\nscenarios"
-      ) |>
-      gf_refine(
-        scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
-        coord_cartesian(expand = FALSE)
-      ) |>
-      gf_theme(
-        panel.grid.major.x = element_blank(),
-        panel.grid.major.y = element_blank(),
-        axis.text.x = element_text(angle = 45, hjust = 1),
-        panel.background = element_rect(fill = rgb(1, 0, 0, alpha = 0.2))
-      ) |>
-      plotly::ggplotly(tooltip = "text") # failing with error "undefined columns selected" in 2025
-  }
-
-  h2h_plot <- function(data) {
-    sorted_data <-
+    who_can_win_plot <- function(data) {
       data |>
-      group_by(key_name, key_abbrv) |>
-      summarise(avg_win_p = mean(prop, na.rm = TRUE)) |>
-      arrange(desc(avg_win_p)) |>
-      mutate(
-        key_name = as.character(key_name),
-        key_abbrv = as.character(key_abbrv)
-      )
-
-    vl_chart() |>
-      vl_add_data_frame(
-        data |>
-          # filter(prop > 0) |>
-          mutate(
-            perc = round(100 * prop, 2),
-            hovertext1 = glue::glue('{key_name}'),
-            hovertext2 = glue::glue('defeats'),
-            hovertext3 = glue::glue('{other_name}'),
-            hovertext4 = glue::glue('in {scenarios} scenarios.'),
-            hovertext5 = glue::glue('({perc} %)'),
-            scenarios = ifelse(
-              max(scenarios) > 1 & scenarios <= 0,
-              NA,
-              scenarios
-            )
+        mutate(
+          chances = paste0(
+            scenarios,
+            "/",
+            sum(scenarios),
+            " = ",
+            round(100 * p, 2),
+            "%"
           )
-      ) |>
-      vl_mark_rect(opacity = 0.7) |>
-      vl_encode_y(
-        "key_name:N",
-        title = FALSE,
-        sort = sorted_data |> pull(key_name)
-      ) |>
-      vl_encode_x(
-        "other_abbrv:N",
-        title = FALSE,
-        sort = sorted_data |> pull(key_abbrv)
-      ) |>
-      vl_encode_fill("prop:Q", legend = FALSE) |>
-      vl_condition_fill(
-        test = "datum['scenarios'] === null",
-        value = "salmon"
-      ) |>
-      vl_scale_fill(scheme = "blues") |>
-      vl_encode_tooltip("hovertext1", title = " ") |>
-      vl_encode_tooltip("hovertext2", title = "  ") |>
-      vl_encode_tooltip("hovertext3", title = "    ") |>
-      vl_encode_tooltip("hovertext4", title = "     ") |>
-      vl_encode_tooltip("hovertext5", title = "      ") |>
-      vl_add_properties(
-        title = list(
-          text = "head to head winning scenarios",
-          subtitle = "read across rows for wins against the other player"
-        )
-      )
-  }
-
-  output$H2HPlotM <- vegabrite::renderVegawidget({
-    comps <- competitors(Entries(), division = "M", by = "name")
-    # print(comps)
-    H2HM() |>
-      filter(key_name %in% comps) |>
-      filter(other_name %in% comps) |>
-      h2h_plot()
-  })
-
-  output$WhoCanWinPlotW <- renderVegawidget({
-    WinnersTableW() |>
-      who_can_win_plot()
-  })
-
-  output$ScoreHistogramsW <-
-    renderPlot(height = 600, {
-      PossibleScoresTableW() |>
-        gf_col(
-          n ~ round(score) | reorder(name, score, function(x) -mean(x)),
-          binwidth = 1,
-          fill = "steelblue"
         ) |>
-        gf_labs(x = "score")
+        # mutate(winner2 = abbreviate(winner, minlength = 20)) |>
+        vl_chart() |>
+        vl_mark_bar(fill = "steelblue") |>
+        vl_encode_x("p:Q") |>
+        vl_encode_y("winner:O", sort = "-x", title = "Winner") |>
+        vl_axis_x(format = "%", title = "") |>
+        vl_encode_tooltip("chances:N", title = "") |>
+        vl_add_properties(width = 600)
+      # gf_col(winner ~ p, fill = "steelblue") |>
+      # gf_labs(x = "percent of scenarios that win") |>
+      # gf_refine(scale_x_continuous(labels = scales::label_percent()))
+    }
+
+    output$WhoCanWinPlotM <- renderVegawidget({
+      WinnersTableM() |>
+        who_can_win_plot()
     })
 
-  output$H2HPlotW <- vegabrite::renderVegawidget({
-    comps <- competitors(Entries(), division = "W", by = "name")
-    H2HW() |>
-      filter(key_name %in% comps) |>
-      filter(other_name %in% comps) |>
-      h2h_plot()
-  })
+    output$ScoreHistogramsM <-
+      renderPlot(height = 600, {
+        PossibleScoresTableM() |>
+          gf_col(
+            n ~ round(score) | reorder(name, score, function(x) -mean(x)),
+            binwidth = 1,
+            fill = "steelblue"
+          ) |>
+          gf_labs(x = "score")
+      })
+
+    textmat <- function(m, denom) {
+      rn <- rownames(m) |> matrix(nrow = nrow(m), ncol = ncol(m), byrow = FALSE)
+      cn <- colnames(m) |> matrix(nrow = nrow(m), ncol = ncol(m), byrow = TRUE)
+      paste0(
+        rn,
+        " defeats ",
+        cn,
+        "</br>in ",
+        m,
+        " scenarios</br>",
+        "(",
+        round(100 * m / denom, 2),
+        "%)"
+      ) |>
+        matrix(nrow = nrow(m))
+    }
+    oldh2hplot <- function(data) {
+      data |>
+        mutate(
+          perc = round(100 * prop, 2),
+          hovertext1 = glue::glue('{key_name}'),
+          hovertext2 = glue::glue('defeats'),
+          hovertext3 = glue::glue('{other_name}'),
+          hovertext4 = glue::glue('in {scenarios} scenarios.'),
+          hovertext5 = glue::glue('({perc} %)'),
+          scenarios = ifelse(max(scenarios) > 1 & scenarios <= 0, NA, scenarios)
+        ) |>
+        gf_raster(
+          scenarios ~ other_abbrv + key_abbrv,
+          alpha = 0.8,
+          text = ~hovertext
+        ) |>
+        gf_hline(
+          yintercept = 0.5 + (0:nrow(EM())),
+          color = "gray80",
+          inherit = FALSE,
+          linewidth = 0.5
+        ) |>
+        gf_vline(
+          xintercept = 0.5 + (0:nrow(EM())),
+          color = "gray80",
+          inherit = FALSE,
+          linewidth = 0.5
+        ) |>
+        gf_labs(
+          title = "head to head winning scenarios",
+          subtitle = "read across rows for wins against the other player",
+          x = "",
+          y = "",
+          fill = "winning\nscenarios"
+        ) |>
+        gf_refine(
+          scale_fill_steps(low = "white", high = "steelblue", n.breaks = 8),
+          coord_cartesian(expand = FALSE)
+        ) |>
+        gf_theme(
+          panel.grid.major.x = element_blank(),
+          panel.grid.major.y = element_blank(),
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          panel.background = element_rect(fill = rgb(1, 0, 0, alpha = 0.2))
+        ) |>
+        plotly::ggplotly(tooltip = "text") # failing with error "undefined columns selected" in 2025
+    }
+
+    h2h_plot <- function(data) {
+      sorted_data <-
+        data |>
+        group_by(key_name, key_abbrv) |>
+        summarise(avg_win_p = mean(prop, na.rm = TRUE)) |>
+        arrange(desc(avg_win_p)) |>
+        mutate(
+          key_name = as.character(key_name),
+          key_abbrv = as.character(key_abbrv)
+        )
+
+      vl_chart() |>
+        vl_add_data_frame(
+          data |>
+            # filter(prop > 0) |>
+            mutate(
+              perc = round(100 * prop, 2),
+              hovertext1 = glue::glue('{key_name}'),
+              hovertext2 = glue::glue('defeats'),
+              hovertext3 = glue::glue('{other_name}'),
+              hovertext4 = glue::glue('in {scenarios} scenarios.'),
+              hovertext5 = glue::glue('({perc} %)'),
+              scenarios = ifelse(
+                max(scenarios) > 1 & scenarios <= 0,
+                NA,
+                scenarios
+              )
+            )
+        ) |>
+        vl_mark_rect(opacity = 0.7) |>
+        vl_encode_y(
+          "key_name:N",
+          title = FALSE,
+          sort = sorted_data |> pull(key_name)
+        ) |>
+        vl_encode_x(
+          "other_abbrv:N",
+          title = FALSE,
+          sort = sorted_data |> pull(key_abbrv)
+        ) |>
+        vl_encode_fill("prop:Q", legend = FALSE) |>
+        vl_condition_fill(
+          test = "datum['scenarios'] === null",
+          value = "salmon"
+        ) |>
+        vl_scale_fill(scheme = "blues") |>
+        vl_encode_tooltip("hovertext1", title = " ") |>
+        vl_encode_tooltip("hovertext2", title = "  ") |>
+        vl_encode_tooltip("hovertext3", title = "    ") |>
+        vl_encode_tooltip("hovertext4", title = "     ") |>
+        vl_encode_tooltip("hovertext5", title = "      ") |>
+        vl_add_properties(
+          title = list(
+            text = "head to head winning scenarios",
+            subtitle = "read across rows for wins against the other player"
+          )
+        )
+    }
+
+    output$H2HPlotM <- vegabrite::renderVegawidget({
+      comps <- competitors(Entries(), division = "M", by = "name")
+      # print(comps)
+      H2HM() |>
+        filter(key_name %in% comps) |>
+        filter(other_name %in% comps) |>
+        h2h_plot()
+    })
+
+    output$WhoCanWinPlotW <- renderVegawidget({
+      WinnersTableW() |>
+        who_can_win_plot()
+    })
+
+    output$ScoreHistogramsW <-
+      renderPlot(height = 600, {
+        PossibleScoresTableW() |>
+          gf_col(
+            n ~ round(score) | reorder(name, score, function(x) -mean(x)),
+            binwidth = 1,
+            fill = "steelblue"
+          ) |>
+          gf_labs(x = "score")
+      })
+
+    output$H2HPlotW <- vegabrite::renderVegawidget({
+      comps <- competitors(Entries(), division = "W", by = "name")
+      H2HW() |>
+        filter(key_name %in% comps) |>
+        filter(other_name %in% comps) |>
+        h2h_plot()
+    })
+  }
 
   # commented out prior to 15 march 2023
   # output$dendroplot <- renderd3heatmap({
