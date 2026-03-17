@@ -116,14 +116,21 @@ function(input, output, session) {
   if (Sys.getenv("GCS_SERVICE_ACCOUNT_JSON") != "") {
     shinyjs::logjs("using secret")
     shinyjs::logjs(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"))
+    shinyjs::logjs(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON") |> class())
     # Write the secret to a temporary file for authentication
     temp_path <- tempfile(fileext = ".json")
     writeLines(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"), temp_path)
+    shinyjs::logjs(paste("temp file ", temp_path, " created", collapse = ""))
     # Authenticate with the temporary file
-    googleCloudStorageR::gcs_auth(
-      scope = "https://www.googleapis.com/auth/cloud-platform",
-      json_file = temp_path
-    )
+    Sys.setenv("GCS_AUTH_FILE" = temp_path)
+    scope <- "https://www.googleapis.com/auth/cloud-platform"
+    token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
+    googleCloudStorageR::gcs_auth(token = token)
+
+    # googleCloudStorageR::gcs_auth(
+    #   scope = "https://www.googleapis.com/", # auth/cloud-platform",
+    #   json_file = temp_path
+    # )
     shinyjs::logjs("authenticated.")
   } else {
     shinyjs::logjs("using file")
