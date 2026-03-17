@@ -125,6 +125,7 @@ function(input, output, session) {
     Sys.setenv("GCS_AUTH_FILE" = temp_path)
     scope <- "https://www.googleapis.com/auth/cloud-platform"
     token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
+    shinyjs::logjs("have token")
     googleCloudStorageR::gcs_auth(token = token)
 
     # googleCloudStorageR::gcs_auth(
