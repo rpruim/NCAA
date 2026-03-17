@@ -115,16 +115,18 @@ function(input, output, session) {
 
   if (Sys.getenv("GCS_SERVICE_ACCOUNT_JSON") != "") {
     shinyjs::logjs("using secret")
-    shinyjs::logjs(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"))
+    # shinyjs::logjs(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"))
     # Write the secret to a temporary file for authentication
     temp_path <- tempfile(fileext = ".json")
     writeLines(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"), temp_path)
-    shinyjs::logjs(paste("temp file ", temp_path, " created", collapse = ""))
+    # shinyjs::logjs(paste("temp file ", temp_path, " created", collapse = ""))
     googleCloudStorageR::gcs_auth(json_file = temp_path)
+    shinyjs::logjs("authenticated")
   } else {
     googleCloudStorageR::gcs_auth(
       json_file = "/Users/rpruim/.positron/gcs2.json"
     )
+    shinyjs::logjs("authenticated")
   }
 
   # } else {
@@ -139,7 +141,10 @@ function(input, output, session) {
 
   board <- board_gcs("bucket-ncaa")
 
-  shinyjs::logjs(board |> pins::pin_list())
+  shinyjs::logjs("have access to the board")
+
+  # shinyjs::logjs(board |> pins::pin_list())
+
   ####################################
 
   Query <- reactive(parseQueryString(session$clientData$url_search))
