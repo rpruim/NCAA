@@ -92,7 +92,11 @@ shinyUI(
         conditionalPanel(
           condition = '! output.acceptingEntries',
           p(paste(
-            "We are not accepting entries at this time either because the tournament brackets have",
+            "OK.  Let me see if I have some tournament brackets to load.  Be right back..."
+          )),
+          p(paste(
+            "If the selection widgets don't load shortly, that probably means that",
+            "we are not accepting entries at this time either because the tournament brackets have",
             "not yet been posted or because the tournament has begun."
           ))
         ),
