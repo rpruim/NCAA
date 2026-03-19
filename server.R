@@ -112,7 +112,6 @@ function(input, output, session) {
   # GCS_SERVICE_ACCOUNT_JSON is stored on posit connect cloud
 
   shinyjs::logjs("accessing gcs")
-
   if (Sys.getenv("GCS_SERVICE_ACCOUNT_JSON") != "") {
     shinyjs::logjs("using secret")
     # shinyjs::logjs(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"))
@@ -139,7 +138,7 @@ function(input, output, session) {
   #   shinyjs::logjs("authenticated.")
   # }
 
-  board <- board_gcs("bucket-ncaa")
+  board <- pins::board_gcs("bucket-ncaa")
 
   shinyjs::logjs("have access to the board")
 
