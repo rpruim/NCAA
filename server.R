@@ -8,6 +8,9 @@ library(shiny)
 library(dplyr)
 library(pins)
 library(vegabrite)
+vega_embed(
+  actions = c(source = FALSE, compiled = FALSE, editor = FALSE)
+)
 library(shinyjs)
 
 yaml_file <- yaml::read_yaml('ncaa.yml')$yaml
@@ -59,16 +62,17 @@ my_pin_read <- function(name, board, default) {
   }
 }
 
-my_pin_reactive_read <- function(board, name, default, interval = 60000){
-  clean_name <- clean_name(name)
-  print(clean_name)
-  if (!pin_exists(board, clean_name)) {
-    cat(paste0("pin (", name, ") didn't exist, creating with default. "))
-    pin_write(board, x = default, name = clean_name)
+my_pin_reactive_read <-
+  function(board, name, default, interval = 60000) {
+    clean_name <- clean_name(name)
+    print(clean_name)
+    if (!pin_exists(board, clean_name)) {
+      cat(paste0("pin (", name, ") didn't exist, creating with default. "))
+      pin_write(board, x = default, name = clean_name)
+    }
+    shinyjs::logjs(paste0("reading ", clean_name))
+    pin_reactive_read(board = board, name = clean_name, interval = interval)
   }
-  shinyjs::logjs(paste0("reading ", clean_name))
-  pin_reactive_read(board = board, name = clean_name, interval = interval)
-}
 
 maxPoints <- 200
 
@@ -584,7 +588,8 @@ function(input, output, session) {
           Vectorize(function(r, c) {
             sum(psc[r, ] > psc[c, ])
           })
-        )
+        ) |>
+        bindCache(PossibleScoresC())
 
       rownames(res) <- attr(EM(), "name")
       colnames(res) <- attr(EM(), "name")
@@ -850,19 +855,45 @@ function(input, output, session) {
   # todo: restore crystal ball
 
   output$showCrystalBallM <- reactive({
-    print(n_teams_remaining(TM()))
-    n_teams_remaining(TM()) <= 16
-    TRUE
+    n_games_remaining(TM()) < 16
+    # TRUE
   })
   output$showCrystalBallW <- reactive({
-    print(n_teams_remaining(TW()))
-    n_teams_remaining(TW()) <= 16
-    TRUE
+    n_games_remaining(TW()) < 16
+    # TRUE
   })
-  output$showCrystalBallC <- reactive({
-    (n_teams_remaining(TW()) + n_teams_remaining(TM())) <= 16
-    FALSE
+  showCrystalBallC <- reactive({
+    (n_games_remaining(TW()) + n_games_remaining(TM())) <= 20
+    # FALSE
   })
+  output$showCrystalBallC <- showCrystalBallC
+
+  observeEvent(showCrystalBallC(), {
+    if (showCrystalBallC()) {
+      insertTab(
+        inputId = "crystalBallTabs",
+        tabPanel(
+          "Combined",
+          h3('Who can win?'),
+          vegawidgetOutput('WhoCanWinPlotC') |> withSpinner(),
+          br(),
+          h3('Head to Head'),
+          p(
+            'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
+          ),
+          vegawidgetOutput('H2HPlotC', height = "600px") |> withSpinner()
+        ),
+        target = "Men's Bracket",
+        position = "after"
+      )
+    } else {
+      removeTab(inputId = "crystalBallTabs", target = "Combined")
+    }
+  })
+
+  outputOptions(output, "showCrystalBallW", suspendWhenHidden = FALSE)
+  outputOptions(output, "showCrystalBallM", suspendWhenHidden = FALSE)
+  outputOptions(output, "showCrystalBallC", suspendWhenHidden = FALSE)
 
   output$showEntryForm <- reactive({
     (as.numeric(input$submitButton) + as.numeric(input$reviseButton)) %% 2 == 0
@@ -1171,7 +1202,7 @@ function(input, output, session) {
         AdminMode() &&
         n_games_remaining(TW()) <= 16
     ) {
-      cacheCrystalballW() # TODO: turn crystal ball back on
+      cacheCrystalBallW() # TODO: turn crystal ball back on
     }
   })
 
@@ -1384,22 +1415,24 @@ function(input, output, session) {
   if (TRUE) {
     # turn off crystal ball stuff for now
     # todo: more crystal ball stuff?
-    output$entrantSelector <- renderUI({
-      entrants <- sapply(Entries(), function(x) x$email)
-      names(entrants) <-
-        paste0(
-          sapply(Entries(), function(x) x$name),
-          " [",
-          ContestStandings()$score,
-          "]"
-        )
-      selectInput(
-        "oneEntrant",
-        "select a player",
-        choices = entrants[order(-ContestStandings()$score)],
-        selectize = FALSE
-      )
-    })
+
+    # This seems to be no longer used.
+    # output$entrantSelector <- renderUI({
+    #   entrants <- sapply(Entries(), function(x) x$email)
+    #   names(entrants) <-
+    #     paste0(
+    #       sapply(Entries(), function(x) x$name),
+    #       " [",
+    #       ContestStandings()$score,
+    #       "]"
+    #     )
+    #   selectInput(
+    #     "oneEntrant",
+    #     "select a player",
+    #     choices = entrants[order(-ContestStandings()$score)],
+    #     selectize = FALSE
+    #   )
+    # })
 
     who_can_win_plot <- function(data) {
       data |>

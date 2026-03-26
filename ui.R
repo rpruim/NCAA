@@ -344,49 +344,57 @@ shinyUI(
           ),
         ),
         conditionalPanel(
-          condition = 'true || output.showCrystalBallM || output.showCrystalBallW',
+          condition = 'output.showCrystalBallM || output.showCrystalBallW',
           tabsetPanel(
+            id = "crystalBallTabs",
             type = "pills",
             tabPanel(
               "Women's Bracket",
-              h3("Who can win?"),
-              vegawidgetOutput('WhoCanWinPlotW') |> withSpinner(),
-              br(),
-              h3('Head to Head'),
-              p(
-                'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
-              ),
-              vegawidgetOutput('H2HPlotW', height = "600px") |> withSpinner(),
-              br(),
-              h3('Score Histograms'),
-              plotOutput('ScoreHistogramsW') |> withSpinner(),
-              br()
+              conditionalPanel(
+                condition = 'output.showCrystalBallW',
+                h3("Who can win?"),
+                vegawidgetOutput('WhoCanWinPlotW') |> withSpinner(),
+                br(),
+                h3('Head to Head'),
+                p(
+                  'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
+                ),
+                vegawidgetOutput('H2HPlotW', height = "600px") |> withSpinner(),
+                br(),
+                h3('Score Histograms'),
+                plotOutput('ScoreHistogramsW') |> withSpinner(),
+                br()
+              )
             ),
             tabPanel(
               "Men's Bracket",
-              h3("Who can win?"),
-              vegawidgetOutput('WhoCanWinPlotM') |> withSpinner(),
-              br(),
-              h3('Head to Head'),
-              p(
-                'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
-              ),
-              vegawidgetOutput('H2HPlotM', height = "600px") |> withSpinner(),
-              br(),
-              h3('Score Histograms'),
-              plotOutput('ScoreHistogramsM') |> withSpinner(),
-              br()
+              conditionalPanel(
+                condition = 'output.showCrystalBallM',
+                h3("Who can win?"),
+                vegawidgetOutput('WhoCanWinPlotM') |> withSpinner(),
+                br(),
+                h3('Head to Head'),
+                p(
+                  'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
+                ),
+                vegawidgetOutput('H2HPlotM', height = "600px") |> withSpinner(),
+                br(),
+                h3('Score Histograms'),
+                plotOutput('ScoreHistogramsM') |> withSpinner(),
+                br()
+              )
             ),
             tabPanel(
               "Combined",
-              h3('Who can win?'),
-              vegawidgetOutput('WhoCanWinPlotC') |> withSpinner(),
-              br(),
-              h3('Head to Head'),
-              p(
-                'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
-              ),
-              vegawidgetOutput('H2HPlotC', height = "600px") |> withSpinner()
+              p("Nothing to see here (yet).")
+              #   h3('Who can win?'),
+              #   vegawidgetOutput('WhoCanWinPlotC') |> withSpinner(),
+              #   br(),
+              #   h3('Head to Head'),
+              #   p(
+              #     'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
+              #   ),
+              #   vegawidgetOutput('H2HPlotC', height = "600px") |> withSpinner()
             )
           )
         )
