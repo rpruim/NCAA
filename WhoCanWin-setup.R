@@ -136,6 +136,35 @@ if (write_pins) {
   rownames(WM) <- aliveTeams(b) |> pull(team)
   WM |>
     my_pin_write(board = board, name = "WM-M")
+  tm <- isolate(TM())
+  tc <- tournament_completions(tm, max_games_remaining = 15)
+  tc |>
+    my_pin_write(name = 'TCM', board = board)
+  entries <- isolate(Entries())
+  em <- build_entry_matrix(entries, ext = "M")
+  h2h <- head2head(tm, em, tc, result = "data.frame")
+  h2h |>
+    my_pin_write(name = "H2HM", board = board)
+
+  psm <- tc |>
+    apply(2, function(x, e = em) {
+      contest_scores(x, e)
+    })
+  psm |> round(12) |> my_pin_write(name = 'PossibleScoresM', board = board)
+
+  psm |>
+    apply(2, which.max) |>
+    tibble(winner = _) |>
+    group_by(winner) |>
+    summarise(scenarios = n()) |>
+    mutate(
+      winner = rownames(em)[winner],
+      p = scenarios / sum(scenarios)
+    ) |>
+    mutate(
+      winner = reorder(winner, scenarios)
+    ) |>
+    my_pin_write(name = "WinnersTableM", board = board)
 }
 
 if (write_pins) {
@@ -146,4 +175,70 @@ if (write_pins) {
   rownames(WM) <- aliveTeams(b) |> pull(team)
   WM |>
     my_pin_write(board = board, name = "WM-W")
+  tw <- isolate(TW())
+  tc <- tournament_completions(tw, max_games_remaining = 15)
+  tc |>
+    my_pin_write(name = 'TCW', board = board)
+  entries <- isolate(Entries())
+  ew <- build_entry_matrix(entries, ext = "W")
+  h2h <- head2head(tw, ew, tc, result = "data.frame")
+  h2h |>
+    my_pin_write(name = "H2HW", board = board)
+
+  psw <- tc |>
+    apply(2, function(x, e = ew) {
+      contest_scores(x, e)
+    })
+  psw |> round(12) |> my_pin_write(name = 'PossibleScoresW', board = board)
+
+  psw |>
+    apply(2, which.max) |>
+    tibble(winner = _) |>
+    group_by(winner) |>
+    summarise(scenarios = n()) |>
+    mutate(
+      winner = rownames(ew)[winner],
+      p = scenarios / sum(scenarios)
+    ) |>
+    mutate(
+      winner = reorder(winner, scenarios)
+    ) |>
+    my_pin_write(name = "WinnersTableW", board = board)
+}
+
+if (write_pins) {
+  ## individual bracket winners removed from competition
+  mm <- apply(psm, 2, max)
+  mw <- apply(psw, 2, max)
+
+  zerom <- apply(psm, 1, function(x) x == mm) |> t()
+  zerow <- apply(psw, 1, function(x) x == mw) |> t()
+
+  psm[zerom] <- 0
+  psw[zerow] <- 0
+
+  denom <- ncol(psm) * ncol(psw)
+  n <- nrow(em)
+  ps <-
+    sapply(1:n, function(x) {
+      outer(psm[x, ], psw[x, ], "+")
+    }) |>
+    t()
+  if (nrow(ps) != n) {
+    ps <- t(ps)
+  }
+  ps |> round(12) |> my_pin_write(name = 'PossibleScoresC', board = board)
+  ps |>
+    apply(2, which.max) |>
+    tibble(winner = _) |>
+    group_by(winner) |>
+    summarise(scenarios = n()) |>
+    mutate(
+      winner = rownames(em)[winner],
+      p = scenarios / sum(scenarios)
+    ) |>
+    mutate(
+      winner = reorder(winner, scenarios)
+    ) |>
+    my_pin_write(name = 'WinnersTableC', board = board)
 }
