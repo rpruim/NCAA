@@ -184,15 +184,13 @@ function(input, output, session) {
 
   Entries <-
     reactivePoll(
-      300000,
+      60000,
       session = session,
       function() {
-        pin_search(
+        pin_meta(
           board,
-          search = paste0("NCAA-", config[['year']], "-entry")
-        ) |>
-          pull(created) |>
-          max()
+          name = paste0("NCAA-", config[['year']], "-last-entry")
+        )$pin_hash
       },
       function() {
         board |>
@@ -323,7 +321,7 @@ function(input, output, session) {
   ContestStandingsW <- reactive({
     contest_standings(TW(), EW(), BracketW())
   }) |>
-    bindCache(TM(), EM())
+    bindCache(TW(), EW())
 
   ContestStandingsAll <- reactive({
     csm <- ContestStandingsM()
@@ -437,7 +435,8 @@ function(input, output, session) {
         setNames(c('name', 'sceneario', 'score')) |>
         group_by(name, score) |>
         tally()
-    })
+    }) |>
+      bindCache(PossibleScoresM())
 
     cacheCrystalBallW <- function() {
       tc <- tournament_completions(TW(), max_games_remaining = 15)
@@ -487,7 +486,8 @@ function(input, output, session) {
         setNames(c('name', 'sceneario', 'score')) |>
         group_by(name, score) |>
         tally()
-    })
+    }) |>
+      bindCache(PossibleScoresW())
 
     observeEvent(
       input$reCacheButton,
@@ -1617,66 +1617,56 @@ function(input, output, session) {
   # })
 
   # todo: restore options as reactives come back online
-  outputOptions(output, "ScoresTableM", suspendWhenHidden = FALSE)
-  outputOptions(output, "ScoresTableW", suspendWhenHidden = FALSE)
+  outputOptions(output, "ScoresTableM", suspendWhenHidden = TRUE)
+  outputOptions(output, "ScoresTableW", suspendWhenHidden = TRUE)
   outputOptions(
     output,
     "standingsTableM",
-    suspendWhenHidden = FALSE,
+    suspendWhenHidden = TRUE,
     priority = 100
   )
   outputOptions(
     output,
     "standingsTableW",
-    suspendWhenHidden = FALSE,
+    suspendWhenHidden = TRUE,
     priority = 101
   )
   outputOptions(
     output,
     "standingsTableAll",
-    suspendWhenHidden = FALSE,
+    suspendWhenHidden = TRUE,
     priority = 90
   )
+
   outputOptions(
     output,
     "WhoCanWinPlotM",
-    suspendWhenHidden = FALSE,
-    priority = 80
-  )
-  outputOptions(
-    output,
-    "WhoCanWinPlotM",
-    suspendWhenHidden = FALSE,
+    suspendWhenHidden = TRUE,
     priority = 50
   )
   outputOptions(
     output,
     "WhoCanWinPlotW",
-    suspendWhenHidden = FALSE,
+    suspendWhenHidden = TRUE,
     priority = 50
   )
-  outputOptions(output, "H2HPlotM", suspendWhenHidden = FALSE, priority = 40)
-  outputOptions(output, "H2HPlotW", suspendWhenHidden = FALSE, priority = 40)
+  outputOptions(output, "H2HPlotM", suspendWhenHidden = TRUE, priority = 40)
+  outputOptions(output, "H2HPlotW", suspendWhenHidden = TRUE, priority = 40)
+
   outputOptions(
     output,
     "ScoreHistogramsM",
-    suspendWhenHidden = FALSE,
-    priority = 80
-  )
-  outputOptions(
-    output,
-    "ScoreHistogramsM",
-    suspendWhenHidden = FALSE,
+    suspendWhenHidden = TRUE,
     priority = 30
   )
   outputOptions(
     output,
     "ScoreHistogramsW",
-    suspendWhenHidden = FALSE,
+    suspendWhenHidden = TRUE,
     priority = 30
   )
 
-  Sys.sleep(1)
+  # Sys.sleep(1)
   waiter::waiter_hide()
 }
 # )
