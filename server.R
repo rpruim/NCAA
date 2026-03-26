@@ -33,6 +33,9 @@ theme_set(theme_bw())
 # library(reactlog)
 # reactlog_enable()
 
+History <-
+  readr::read_csv("data/historical-winners.csv") |>
+  arrange(desc(year))
 
 clean_name <- function(name) {
   # removed rpruim/ from this since trying to use gcs instead of connect server.
@@ -180,7 +183,7 @@ function(input, output, session) {
 
   Entries <-
     reactivePoll(
-      60000,
+      300000,
       session = session,
       function() {
         pin_search(
@@ -313,10 +316,14 @@ function(input, output, session) {
 
   ContestStandingsM <- reactive({
     contest_standings(TM(), EM(), BracketM())
-  })
+  }) |>
+    bindCache(TM(), EM())
+
   ContestStandingsW <- reactive({
     contest_standings(TW(), EW(), BracketW())
-  })
+  }) |>
+    bindCache(TM(), EM())
+
   ContestStandingsAll <- reactive({
     csm <- ContestStandingsM()
     csw <- ContestStandingsW()
@@ -1242,8 +1249,8 @@ function(input, output, session) {
       autoWidth = TRUE # automatic column width calculation, disable if passing column width via aoColumnDefs
     ),
     {
-      History <- readr::read_csv("data/historical-winners.csv") # , header=TRUE)
-      History |> arrange(desc(year))
+      # History <- readr::read_csv("data/historical-winners.csv") # , header=TRUE)
+      History
     }
   )
 
