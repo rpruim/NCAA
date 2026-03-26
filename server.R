@@ -66,6 +66,7 @@ my_pin_reactive_read <- function(board, name, default, interval = 60000){
     cat(paste0("pin (", name, ") didn't exist, creating with default. "))
     pin_write(board, x = default, name = clean_name)
   }
+  shinyjs::logjs(paste0("reading ", clean_name))
   pin_reactive_read(board = board, name = clean_name, interval = interval)
 }
 
@@ -359,7 +360,6 @@ function(input, output, session) {
       tc <- tournament_completions(TM(), max_games_remaining = 15)
       tc |>
         my_pin_write(name = 'TCM', board = board)
-
       h2h <- head2head(TM(), EM(), tc, result = "data.frame")
       h2h |>
         my_pin_write(name = "H2HM", board = board)
@@ -372,7 +372,7 @@ function(input, output, session) {
 
       ps |>
         apply(2, which.max) |>
-        tibble(winner = .) |>
+        tibble(winner = _) |>
         group_by(winner) |>
         summarise(scenarios = n()) |>
         mutate(
@@ -455,7 +455,7 @@ function(input, output, session) {
 
       ps |>
         apply(2, which.max) |>
-        tibble(winner = .) |>
+        tibble(winner = _) |>
         group_by(winner) |>
         summarise(scenarios = n()) |>
         mutate(
@@ -536,7 +536,7 @@ function(input, output, session) {
       ps |> round(12) |> my_pin_write(name = 'PossibleScoresC', board = board)
       ps |>
         apply(2, which.max) |>
-        tibble(winner = .) |>
+        tibble(winner = _) |>
         group_by(winner) |>
         summarise(scenarios = n()) |>
         mutate(
