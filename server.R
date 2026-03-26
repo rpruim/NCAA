@@ -102,45 +102,38 @@ regionChoices <- function(region, bracket) {
   res
 }
 
-# shinyServer(
-function(input, output, session) {
-  shinyjs::logjs("app started")
-
   ############################################################
   ### Connect to pin board on Google Cloud Storage
 
   # GCS_SERVICE_ACCOUNT_JSON is stored on posit connect cloud
 
-  shinyjs::logjs("accessing gcs")
+  # shinyjs::logjs("accessing gcs")
   if (Sys.getenv("GCS_SERVICE_ACCOUNT_JSON") != "") {
-    shinyjs::logjs("using secret")
-    # shinyjs::logjs(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"))
     # Write the secret to a temporary file for authentication
     temp_path <- tempfile(fileext = ".json")
     writeLines(Sys.getenv("GCS_SERVICE_ACCOUNT_JSON"), temp_path)
-    # shinyjs::logjs(paste("temp file ", temp_path, " created", collapse = ""))
     googleCloudStorageR::gcs_auth(json_file = temp_path)
-    shinyjs::logjs("authenticated")
   } else {
     googleCloudStorageR::gcs_auth(
       json_file = "/Users/rpruim/.positron/gcs2.json"
     )
-    shinyjs::logjs("authenticated")
   }
 
   # } else {
-  #   shinyjs::logjs("using file")
-  #   # grab local file when running locally
-  #   Sys.setenv("GCS_AUTH_FILE" = "/Users/rpruim/.positron/gcs2.json")
-  #   scope <- "https://www.googleapis.com/auth/cloud-platform"
-  #   token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
-  #   googleCloudStorageR::gcs_auth(token = token)
-  #   shinyjs::logjs("authenticated.")
-  # }
+#   shinyjs::logjs("using file")
+#   # grab local file when running locally
+#   Sys.setenv("GCS_AUTH_FILE" = "/Users/rpruim/.positron/gcs2.json")
+#   scope <- "https://www.googleapis.com/auth/cloud-platform"
+#   token <- gargle::token_fetch(scopes = scope, account = "rpruim@gmail.com")
+#   googleCloudStorageR::gcs_auth(token = token)
+#   shinyjs::logjs("authenticated.")
+# }
 
-  board <- pins::board_gcs("bucket-ncaa")
+board <- pins::board_gcs("bucket-ncaa")
 
-  shinyjs::logjs("have access to the board")
+# shinyServer(
+function(input, output, session) {
+  shinyjs::logjs("app started")
 
   # shinyjs::logjs(board |> pins::pin_list())
 
@@ -871,7 +864,9 @@ function(input, output, session) {
 
   output$acceptingEntries <- reactive({
     # TODO: fix this time-based check
-    (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
+    AdminMode() ||
+      (Sys.time() <
+        lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
     # TRUE
     # FALSE
     # AdminMode() || (Sys.time() < lubridate::ymd_hm(config[['deadline']]) + lubridate::hours(5))
