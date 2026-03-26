@@ -334,55 +334,63 @@ shinyUI(
         )
       ),
 
-      # tabPanel(
-      #   "Crystal Ball",
-      #   conditionalPanel(
-      #     condition = 'false',
-      #     br(),
-      #     p('Information will be displayed here after the first two rounds of the tournament have been played.'),
-      #     ),
-      #   conditionalPanel(
-      #     condition = 'true || output.showCrystalBallM || output.showCrystalBallW',
-      #     tabsetPanel(
-      #       type = "pills",
-      #       tabPanel(
-      #         "Women's Bracket",
-      #         h3("Who can win?"),
-      #         vegawidgetOutput('WhoCanWinPlotW') |> withSpinner(),
-      #         br(),
-      #         h3('Head to Head'),
-      #         p('Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'),
-      #         vegawidgetOutput('H2HPlotW', height = "600px") |> withSpinner(),
-      #         br(),
-      #         h3('Score Histograms'),
-      #         plotOutput('ScoreHistogramsW') |> withSpinner(),
-      #         br()
-      #       ),
-      #       tabPanel(
-      #         "Men's Bracket",
-      #         h3("Who can win?"),
-      #         vegawidgetOutput('WhoCanWinPlotM') |> withSpinner(),
-      #         br(),
-      #         h3('Head to Head'),
-      #         p('Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'),
-      #         vegawidgetOutput('H2HPlotM', height = "600px") |> withSpinner(),
-      #         br(),
-      #         h3('Score Histograms'),
-      #         plotOutput('ScoreHistogramsM') |> withSpinner(),
-      #         br()
-      #       ),
-      #       tabPanel(
-      #         "Combined",
-      #         h3('Who can win?'),
-      #         vegawidgetOutput('WhoCanWinPlotC') |> withSpinner(),
-      #         br(),
-      #         h3('Head to Head'),
-      #         p('Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'),
-      #         vegawidgetOutput('H2HPlotC', height = "600px") |> withSpinner()
-      #       )
-      #     )
-      #   )
-      # ), # crystal ball panel,
+      tabPanel(
+        "Crystal Ball",
+        conditionalPanel(
+          condition = 'false',
+          br(),
+          p(
+            'Information will be displayed here after the first two rounds of the tournament have been played.'
+          ),
+        ),
+        conditionalPanel(
+          condition = 'true || output.showCrystalBallM || output.showCrystalBallW',
+          tabsetPanel(
+            type = "pills",
+            tabPanel(
+              "Women's Bracket",
+              h3("Who can win?"),
+              vegawidgetOutput('WhoCanWinPlotW') |> withSpinner(),
+              br(),
+              h3('Head to Head'),
+              p(
+                'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
+              ),
+              vegawidgetOutput('H2HPlotW', height = "600px") |> withSpinner(),
+              br(),
+              h3('Score Histograms'),
+              plotOutput('ScoreHistogramsW') |> withSpinner(),
+              br()
+            ),
+            tabPanel(
+              "Men's Bracket",
+              h3("Who can win?"),
+              vegawidgetOutput('WhoCanWinPlotM') |> withSpinner(),
+              br(),
+              h3('Head to Head'),
+              p(
+                'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
+              ),
+              vegawidgetOutput('H2HPlotM', height = "600px") |> withSpinner(),
+              br(),
+              h3('Score Histograms'),
+              plotOutput('ScoreHistogramsM') |> withSpinner(),
+              br()
+            ),
+            tabPanel(
+              "Combined",
+              h3('Who can win?'),
+              vegawidgetOutput('WhoCanWinPlotC') |> withSpinner(),
+              br(),
+              h3('Head to Head'),
+              p(
+                'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
+              ),
+              vegawidgetOutput('H2HPlotC', height = "600px") |> withSpinner()
+            )
+          )
+        )
+      ), # crystal ball panel,
 
       tabPanel(
         "Admin",

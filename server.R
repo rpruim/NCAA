@@ -353,7 +353,7 @@ function(input, output, session) {
       )
   })
 
-  if (FALSE) {
+  if (TRUE) {
     # todo: deal with crystal ball
     cacheCrystalBallM <- function() {
       tc <- tournament_completions(TM(), max_games_remaining = 15)
