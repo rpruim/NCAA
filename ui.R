@@ -350,6 +350,7 @@ shinyUI(
             type = "pills",
             tabPanel(
               "Women's Bracket",
+              value = "womensCrystal",
               conditionalPanel(
                 condition = 'output.showCrystalBallW',
                 h3("Who can win?"),
@@ -368,6 +369,7 @@ shinyUI(
             ),
             tabPanel(
               "Men's Bracket",
+              value = "mensCrystal",
               conditionalPanel(
                 condition = 'output.showCrystalBallM',
                 h3("Who can win?"),
@@ -386,6 +388,7 @@ shinyUI(
             ),
             tabPanel(
               "Combined",
+              value = "combined",
               p("Nothing to see here (yet).")
               #   h3('Who can win?'),
               #   vegawidgetOutput('WhoCanWinPlotC') |> withSpinner(),
@@ -436,11 +439,11 @@ shinyUI(
               condition = 'output.showGameEntry',
               h3("Enter Game Results"),
               tabsetPanel(
-                id = "gameScores",
+                value = "gameScores",
                 type = "tabs",
                 tabPanel(
                   "Women's",
-                  id = "gameScoresW",
+                  value = "gameScoresW",
                   uiOutput("gameScoreSelectorW") |> withSpinner(),
                   uiOutput("awayTeamScoreW"),
                   uiOutput("homeTeamScoreW"),
@@ -449,7 +452,7 @@ shinyUI(
                 ),
                 tabPanel(
                   "Men's",
-                  id = "gameScoresM",
+                  value = "gameScoresM",
                   uiOutput("gameScoreSelectorM") |> withSpinner(),
                   uiOutput("awayTeamScoreM"),
                   uiOutput("homeTeamScoreM"),
@@ -458,7 +461,7 @@ shinyUI(
                 ), # tabPanel
                 tabPanel(
                   "Other stuff",
-                  id = 'otherStuff',
+                  value = 'otherStuff',
                   br(),
                   br(),
                   actionButton("reCacheButton", "Refresh Crystal Ball Cache"),

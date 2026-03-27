@@ -874,6 +874,7 @@ function(input, output, session) {
         inputId = "crystalBallTabs",
         tabPanel(
           "Combined",
+          id = "combined",
           h3('Who can win?'),
           vegawidgetOutput('WhoCanWinPlotC') |> withSpinner(),
           br(),
@@ -883,11 +884,11 @@ function(input, output, session) {
           ),
           vegawidgetOutput('H2HPlotC', height = "600px") |> withSpinner()
         ),
-        target = "Men's Bracket",
+        target = "mensCrystal",
         position = "after"
       )
     } else {
-      removeTab(inputId = "crystalBallTabs", target = "Combined")
+      removeTab(inputId = "crystalBallTabs", target = "combined")
     }
   })
 
