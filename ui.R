@@ -388,16 +388,21 @@ shinyUI(
             ),
             tabPanel(
               "Combined",
-              value = "combined",
-              p("Nothing to see here (yet).")
-              #   h3('Who can win?'),
-              #   vegawidgetOutput('WhoCanWinPlotC') |> withSpinner(),
-              #   br(),
-              #   h3('Head to Head'),
-              #   p(
-              #     'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
-              #   ),
-              #   vegawidgetOutput('H2HPlotC', height = "600px") |> withSpinner()
+              conditionalPanel(
+                condition = '! output.showCrystalBallC',
+                p("Nothing to see here (yet).")
+              ),
+              conditionalPanel(
+                condition = 'output.showCrystalBallC',
+                h3('Who can win?'),
+                vegawidgetOutput('WhoCanWinPlotC') |> withSpinner(),
+                br(),
+                h3('Head to Head'),
+                p(
+                  'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
+                ),
+                vegawidgetOutput('H2HPlotC', height = "600px") |> withSpinner()
+              )
             )
           )
         )

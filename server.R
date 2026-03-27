@@ -868,29 +868,29 @@ function(input, output, session) {
   })
   output$showCrystalBallC <- showCrystalBallC
 
-  observeEvent(showCrystalBallC(), {
-    if (showCrystalBallC()) {
-      insertTab(
-        inputId = "crystalBallTabs",
-        tabPanel(
-          "Combined",
-          id = "combined",
-          h3('Who can win?'),
-          vegawidgetOutput('WhoCanWinPlotC') |> withSpinner(),
-          br(),
-          h3('Head to Head'),
-          p(
-            'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
-          ),
-          vegawidgetOutput('H2HPlotC', height = "600px") |> withSpinner()
-        ),
-        target = "mensCrystal",
-        position = "after"
-      )
-    } else {
-      removeTab(inputId = "crystalBallTabs", target = "combined")
-    }
-  })
+  # observeEvent(showCrystalBallC(), {
+  #   if (showCrystalBallC()) {
+  #     insertTab(
+  #       inputId = "crystalBallTabs",
+  #       tabPanel(
+  #         "Combined",
+  #         id = "combined",
+  #         h3('Who can win?'),
+  #         vegawidgetOutput('WhoCanWinPlotC') |> withSpinner(),
+  #         br(),
+  #         h3('Head to Head'),
+  #         p(
+  #           'Read across rows for wins. Read up columns for losses. A red column indicates that someone has clinced victory. A red row, that someone has clinced defeat.'
+  #         ),
+  #         vegawidgetOutput('H2HPlotC', height = "600px") |> withSpinner()
+  #       ),
+  #       target = "mensCrystal",
+  #       position = "after"
+  #     )
+  #   } else {
+  #     removeTab(inputId = "crystalBallTabs", target = "combined")
+  #   }
+  # })
 
   outputOptions(output, "showCrystalBallW", suspendWhenHidden = FALSE)
   outputOptions(output, "showCrystalBallM", suspendWhenHidden = FALSE)
