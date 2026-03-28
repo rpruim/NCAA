@@ -588,8 +588,7 @@ function(input, output, session) {
           Vectorize(function(r, c) {
             sum(psc[r, ] > psc[c, ])
           })
-        ) |>
-        bindCache(PossibleScoresC())
+        )
 
       rownames(res) <- attr(EM(), "name")
       colnames(res) <- attr(EM(), "name")
@@ -611,7 +610,8 @@ function(input, output, session) {
           other_name = reorder(other_name, scenarios, function(x) -mean(x)),
           other_abbrv = reorder(other_abbrv, scenarios, function(x) -mean(x))
         )
-    })
+    }) |>
+      bindCache(PossibleScoresC())
 
     output$H2HPlotC <- renderVegawidget({
       H2HC() |>

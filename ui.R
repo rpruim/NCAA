@@ -352,6 +352,10 @@ shinyUI(
               "Women's Bracket",
               value = "womensCrystal",
               conditionalPanel(
+                condition = '! output.showCrystalBallW',
+                p("Nothing to see here (yet).")
+              ),
+              conditionalPanel(
                 condition = 'output.showCrystalBallW',
                 h3("Who can win?"),
                 vegawidgetOutput('WhoCanWinPlotW') |> withSpinner(),
@@ -370,6 +374,10 @@ shinyUI(
             tabPanel(
               "Men's Bracket",
               value = "mensCrystal",
+              conditionalPanel(
+                condition = '! output.showCrystalBallM',
+                p("Nothing to see here (yet).")
+              ),
               conditionalPanel(
                 condition = 'output.showCrystalBallM',
                 h3("Who can win?"),
